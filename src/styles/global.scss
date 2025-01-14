@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&family=Special+Elite&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  a {
+    @apply underline;
+  }
+  a:hover {
+    @apply text-gray-700;
+  }
+}
+
+html {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+
+  &.dark {
+    @apply bg-gray-900;
+  }
+}
+
+main {
+  padding-top: 3rem;
+}
+
+// Prose
+//
+//
+//
+
+.prose {
+  @apply dark:prose-invert;
+  @apply common-ligatures;
+  code{
+    @apply no-contextual;
+  }
+
+  ol {
+    @apply text-left;
+    @apply list-decimal;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+    padding-bottom: 1rem !important;
+    @apply font-mono;
+  }
+
+  img {
+    @apply my-0;
+  }
+
+  table {
+    @apply border-collapse border border-slate-500 table-auto;
+    td,
+    th {
+      @apply text-left;
+    }
+    thead {
+      @apply bg-slate-50 dark:bg-slate-700;
+      th {
+        @apply w-1/2 border border-slate-300 dark:border-slate-600 font-semibold p-4 text-slate-900 dark:text-slate-200 text-left;
+      }
+    }
+    tbody {
+      td {
+        @apply border border-slate-300 dark:border-slate-700 p-1 text-slate-500 dark:text-slate-400;
+      }
+    }
+  }
+}
+
+ul {
+  @apply text-left;
+  @apply list-disc;
+  padding-left: 2rem !important;
+  @apply font-mono;
+  li {
+    @apply leading-snug;
+  }
+}
+
+p {
+  @apply text-justify;
+  @apply font-mono;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply text-left;
+  @apply font-serif;
+}
+
+// Components
+//
+// Ideally these should be in the components themselves.
+// But they're here either because of laziness or because
+// of shared behavior that's not easily encapsulated in a single
+// react component.
+
+.bc-framed-image {
+  border-image-source: url('@assets/fancy-frame.png');
+  padding: 1rem 1.5rem 1rem 1.5rem;
+  border-image-slice: 15% 20% fill;
+  border-width: 2.25rem 1.5rem 2.25rem 1.5rem;
+  margin-left: 1.5rem;
+  margin-right: 2rem;
+  opacity: 100%;
+}
+
+.bc-nav-header {
+  @apply w-full;
+  @apply fixed;
+  @apply h-10;
+  @apply z-10;
+  @apply flex;
+  @apply flex-row;
+  @apply justify-end;
+  @apply items-center;
+  @apply space-x-4;
+  @apply p-8;
+  @apply bg-white;
+  @apply bg-opacity-90;
+  @apply shadow-sm;
+  @apply dark:bg-gray-900;
+  @apply dark:bg-opacity-90;
+
+  .bc-menu-link-text {
+    @apply hidden;
+    @apply 2xl:block;
+  }
+}
+
+.bc-tool-button {
+  @apply cursor-pointer;
+  @apply select-none;
+  @apply size-12;
+  @apply p-2;
+  @apply rounded-full;
+  @apply focus:outline-none;
+  @apply elevation-4;
+  @apply dark:bg-gray-600;
+  @apply bg-opacity-100;
+
+  @apply bg-white;
+  @apply group-hover:elevation-12;
+  @apply group-hover:dark:bg-gray-500;
+}
+
+.bc-tool-button-current {
+  @apply ring-4 group-hover:ring-4;
+  @apply ring-yellow-400;
+  @apply group-hover:cursor-default;
+}
+
+.bc-menu-link-text {
+  @apply dark:text-gray-400;
+  @apply cursor-pointer;
+  @apply text-xl;
+  @apply px-4;
+  @apply no-underline;
+  @apply group-hover:text-gray-600;
+}
+
+// Animation
+//
+// Spins a button when it's clicked.
+//
+
+.bc-animate-new-thing {
+  animation-name: spin;
+  animation-duration: 1.5s;
+  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  animation-iteration-count: 1;
+  @apply cursor-wait;
+
+  @keyframes spin {
+    75%,
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// Code block: Formatting
+//
+// Unlike the other component-specific formatting, this can't easily be moved to a component file.
+//
+div.expressive-code {
+  @apply text-left;
+}
+
+// Code block: Responsive stuff
+//
+// This is kind of tacky. But for some reason Tailwind's sm:, md:, and lg: aren't working.
+
+@media (min-width: 768px) {
+  div.expressive-code {
+    overflow-x: hidden !important;
+  }
+}
+
+@media (max-width: 376px) {
+  div.expressive-code {
+    @apply max-w-xs;
+  }
+}
+
+@media (min-width: 377px) and (max-width: 599px) {
+  div.expressive-code {
+    @apply max-w-md;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 768px) {
+  div.expressive-code {
+    @apply max-w-xl;
+  }
+}
+
+/// Mermaidjs
+
+svg[aria-roledescription='xychart'] {
+  @apply rounded-md;
+  @apply pl-2;
+
+  g.main rect {
+    fill: var(--color-white);
+    fill-opacity: 0.25;
+  }
+
+  g.left-axis g.title text,
+  g.bottom-axis g.title text {
+    fill: var(--color-current);
+  }
+
+  g.line-plot-0 path {
+    stroke-width: 4;
+    stroke: var(--color-red-400);
+  }
+
+  g.line-plot-1 path {
+    stroke-width: 4;
+    stroke: var(--color-blue-400);
+  }
+}

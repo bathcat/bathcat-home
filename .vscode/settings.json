@@ -1,0 +1,14 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "scss.validate": false,
+  "css.validate": false,
+  "eslint.validate": ["typescript"],
+  "[mdx]": {
+    "editor.wordWrap": "off"
+  },
+  "github.copilot.enable": {
+    "mdx": false
+  }
+}

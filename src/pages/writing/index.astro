@@ -1,0 +1,17 @@
+---
+import Info from '../../layouts/Info.astro';
+import { PostInfoLink } from '../../components/PostInfoLink';
+import { Divider } from '../../components/Divider';
+import { BigPostInfoLink } from '../../components/BigPostInfoLink';
+import { getLivePosts } from '../../content';
+
+const posts = await getLivePosts();
+---
+
+<Info title={'Writing'} description={'Articles, reviews, essays,etc.'} class=''>
+  <BigPostInfoLink post={posts.shift()!} />
+  <Divider />
+  <div class='clear-both'>
+    {posts.map(info => <PostInfoLink post={info} />)}
+  </div>
+</Info>

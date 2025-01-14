@@ -1,0 +1,16 @@
+---
+import Info from '../layouts/Info.astro';
+import { PostInfoLink } from '../components/PostInfoLink';
+import { Divider } from '../components/Divider';
+import { getLivePosts } from '../content';
+
+const posts = await getLivePosts();
+---
+
+<Info title={'404: Page not found'} description={'Page not found'} class=''>
+  <p>Maybe you're looking for an article? Take a look below.</p>
+  <Divider />
+  <div class='clear-both'>
+    {posts.map(info => <PostInfoLink post={info} />)}
+  </div>
+</Info>

@@ -1,0 +1,15 @@
+---
+// Note: This has to be an astro component in order to use the optimizing <Image> component.
+
+import { Image } from 'astro:assets';
+import { PaperFilter } from './PaperFilter';
+
+const { src, alt, className } = Astro.props;
+---
+
+<PaperFilter client:only='react' />
+<div
+  style='filter: url(#roughpaper) sepia(80%) drop-shadow(0 0 0.2rem darkgrey);'
+>
+  <Image src={src} alt={alt ?? ''} class={className} />
+</div>

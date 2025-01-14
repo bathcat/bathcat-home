@@ -1,0 +1,55 @@
+---
+layout: ../layouts/Info.astro
+title: 'About'
+description: 'Lorem ipsum'
+---
+
+import guy from '../assets/mcmullen.jpg';
+import email from '../assets/email.png';
+import { Image } from 'astro:assets';
+
+<Image
+  src={guy}
+  alt='Disheveled man, black and white.'
+  class='bc-framed-image w-64 float-right'
+  loading='eager'
+/>
+
+Hello. I'm Eric McMullen. I build software.
+
+In olden times, I would ocassionally I do open source projects and staff augmentation.
+But mostly I consult and train on a variety of technologies, including--
+
+- **Languages**: Typescript, Javascript, C#, Python, F#
+- **Platforms**: Node, .NET
+- **UI Frameworks**: React, React Native, Svelte, Angular
+- **RDBMS**: SQL Server
+
+I still do that stuff. So check out my projects on [Github](https://github.com/bathcat)
+and reach out if you think I can help.
+
+<Image
+  src={email}
+  alt='Email address.'
+  class='w-40 dark:invert mx-16 my-0'
+  loading='eager'
+/>
+
+But AI tools have changed my approach. Things like [GitHub Copilot](https://github.com/features/copilot)
+and [Replit](https://replit.com/) have convinced me that the practice of software engineering will
+change a lot in the next few years. So recently I spend more time consulting with teams on how
+to use AI stuff-- and helping management to ... lorem ipsum.
+
+## About this Site
+
+It's still a work in progress, built with:
+
+- Astro
+- React
+- Tailwind
+
+Here's the [repo](https://github.com/bathcat/bathcat-home).
+
+## About the Animation
+
+It's based on a wall drawing by [Sol Lewitt](https://en.wikipedia.org/wiki/Sol_LeWitt).

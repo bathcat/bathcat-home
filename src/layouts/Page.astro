@@ -1,0 +1,30 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+
+import { Sol } from '../components/BackgroundAnimation';
+import Header from '../components/Header.astro';
+import { Footer } from '../components/Footer';
+
+const { title, description } = Astro.props;
+
+if (!title) {
+  throw new Error('Title is required');
+}
+
+if (!description) {
+  throw new Error('Description is required');
+}
+---
+
+<html lang='en'>
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+
+  <body>
+    <Sol client:only='react' transition:persist />
+    <Header transition:persist />
+    <slot />
+    <Footer />
+  </body>
+</html>

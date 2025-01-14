@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Page from './Page.astro';
+import { Main } from '../components/Main';
+import { ContentHeader } from '../components/ContentHeader';
+import { Divider } from '../components/Divider';
+
+type Props = CollectionEntry<'writing'>['data'];
+
+const post = Astro.props;
+---
+
+<Page title={post.title} description={post.description}>
+  <Main className='prose'>
+    <ContentHeader {post} />
+    <Divider />
+    <slot />
+  </Main>
+</Page>

@@ -1,0 +1,17 @@
+---
+import { ClientSideHeader } from '../components/ClientSideHeader';
+import { Menu } from '../components/Menu';
+
+/// <summary>
+/// This seems goofy, but it's the best way (so far) to display
+/// server-rendered fallback content while the client renders.
+/// </summary>
+---
+
+<ClientSideHeader client:only='react'>
+  <header class='pb-6' slot='fallback'>
+    <nav class='bc-nav-header'>
+      <Menu client:only='react' />
+    </nav>
+  </header>
+</ClientSideHeader>

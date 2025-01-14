@@ -1,0 +1,97 @@
+---
+title: 'Github Copilot Review'
+description: 'Lorem ipsum dolor sit amet'
+pubDate: 'Dec 30 2024'
+heroImage: '/review-copilot.jpg'
+status: 'Draft'
+---
+
+## What's Copilot?
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium.
+
+## Complaints
+
+Some of it's just linting.
+
+**Bug Found** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium.
+
+```ts showLineNumbers=true
+export function useThing() {
+  const [thing, setThing] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function doSomething() {
+      const t = await somethingSomething();
+      if (cancelled) {
+        return;
+      }
+      setThing(t);
+    }
+    doSomething();
+    () => {
+      cancelled = true;
+    };
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return thing;
+}
+```
+
+Something something `useEffect` something
+
+### Message:
+
+> **Incorrect Cleanup** in `useEffect` ... the cleanup function is not correctly defined.
+
+**Feature Added**
+
+```tsx
+export const YoutubeVideo = ({ videoId }: YoutubeVideoProps) => {
+  const playerId = useRef('bc-video-holder');
+  const player = useRef<YT.Player>(null);
+  useEffect(() => {
+    loadYoutubePlayer(videoId, playerId.current).then(
+      p => (player.current = p),
+    );
+  }, [videoId]);
+
+  useEffect(() => {
+    //TODO: Wait for thing to load
+    if (!player.current) {
+      return;
+    }
+    player.current?.playVideo();
+  }, []);
+
+  return <div id={playerId.current}></div>;
+};
+```
+
+**Fixed:**
+
+```tsx ins={4,9}
+export const YoutubeVideo = ({ videoId }: YoutubeVideoProps) => {
+  const playerId = useRef('bc-video-holder');
+  const player = useRef<YT.Player>(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+
+  useEffect(() => {
+    loadYoutubePlayer(videoId, playerId.current).then(p => {
+      player.current = p;
+      setIsPlayerReady(true);
+    });
+    return () => player.current?.destroy();
+  }, [videoId]);
+
+  useEffect(() => {
+    player.current?.playVideo();
+  }, [isPlayerReady]);
+
+  return <div id={playerId.current}></div>;
+};
+```

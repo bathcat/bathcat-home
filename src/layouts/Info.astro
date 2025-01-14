@@ -1,0 +1,20 @@
+---
+import { Main } from '../components/Main';
+import { Title } from '../components/Title';
+import Page from './Page.astro';
+
+let title = Astro.props.title;
+let description = Astro.props.description;
+
+if (Astro.props.frontmatter) {
+  title = Astro.props.frontmatter.title;
+  description = Astro.props.frontmatter.description;
+}
+---
+
+<Page {title} {description}>
+  <Main className='prose'>
+    <Title>{title}</Title>
+    <slot />
+  </Main>
+</Page>

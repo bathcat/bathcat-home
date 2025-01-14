@@ -1,0 +1,203 @@
+---
+title: 'Review: Astro'
+description: 'Not everything I want, but everything I need.'
+pubDate: 'Dec 11 2024'
+updatedDate: 'Jan 14 2025'
+heroImage: '/review-astro.png'
+status: 'Live'
+---
+
+This site used to be Vite's [React Pages](https://github.com/vitejs/vite-plugin-react-pages) plugin, which, honestly, was fine. But I switched to [Astro](https://astro.build/) recently, mostly because I wanted to explore another alternative to [Next.js](https://nextjs.org/).
+
+## What's Astro?
+
+From the [docs](https://docs.astro.build/en/concepts/why-astro/):
+
+> Astro is the web framework for building content-driven websites like blogs, marketing, and e-commerce. Astro is best known for pioneering a new frontend architecture to reduce JavaScript overhead and complexity compared to other frameworks.
+
+Key points:
+
+1. **Content-Driven**: Astro is tailored for content-rich websites, making it ideal for blogs, documentation sites, and marketing pages.
+2. **Zero JavaScript by Default**: Astro outputs static HTML without relying on JavaScript unless explicitly required.
+3. **Framework Agnostic (Sort of)**: Developers can integrate components from various UI frameworks such as
+   React, Vue, Svelte, or others. However, native Astro components occupy a privileged position.
+
+## Complaints
+
+### Complaint #1: Yet Another HTML Template Syntax
+
+Astro has its own template [syntax](https://docs.astro.build/en/reference/astro-syntax/) that's like JSX but not quite. So it's not a massive headache—just a minor annoyance.
+
+Here's an example:
+
+```astro title='Header.astro'
+---
+//This stuff runs on build
+import Info from '../layouts/Info.astro';
+import { PostInfoLink } from '../components/PostInfoLink';
+import { Divider } from '../components/Divider';
+import { getLivePosts } from '../content';
+
+const posts = await getLivePosts();
+---
+
+<script>
+  //This stuff runs on in the browser.
+  console.log('Hello world!');
+</script>
+
+<Info title={'404: Page not found'} description={'Page not found'}>
+  <p>Maybe you're looking for an article? Take a look below.</p>
+  <div class='clear-both'>
+    {posts.map(info => <PostInfoLink post={info} />)}
+  </div>
+</Info>
+```
+
+### Complaint #2: Islands are Segregated
+
+An 'island' is a branch of the DOM tree that's treated differently from the 'ocean' of statically
+rendered content.
+
+From the docs:
+
+> Think of a client island as an interactive widget floating in a sea of otherwise static,
+> lightweight, server-rendered HTML. Server islands can be added for personalized or dynamic
+> server-rendered elements, such as a logged in visitor's profile picture.
+
+The distinction is important and not just for dynamic content. It's fine to use a React component
+inside an Astro component, but not the other way around. Any React component in the DOM tree makes
+a React-only branch.
+
+So this works fine:
+
+```astro title='Footer.astro'
+---
+// React component
+import { CreativeCommonsLink } from './CreativeCommonsLink';
+---
+<div>
+    <CreativeCommonsLink/>
+    2020-2025 by Joe Bloggs
+</div>
+```
+
+But once you're on the React island, you can't use Astro components. This doesn't work:
+
+```tsx title='Body.tsx' {3}
+import {Header} from './Header';
+//Bork! React components can't consume Astro components.
+import Footer from './Footer.astro';
+
+export const Body = ({children})=>(
+  <body>
+    <Header/>
+    {children}
+    <Footer />
+  </body>
+);
+```
+
+Astro components are the ocean. Everything else is an island.
+
+### Complaint #3: Different React Idiom
+
+Even the React you write for Astro isn't quite the React you'd write for an SPA. If you're render
+everything on the client, then it makes sense to render only what's really necessary. (This is a
+general complaint about server-side generators, not Astro specifically.)
+
+As an example, here's a somewhat naive `React.FC` component that decides what to render
+based on the screen size of the client:
+
+```tsx title='Header.tsx (SPA-flavored)'
+export const Header = () => {
+  const isWideScreen = useMediaQuery({
+    query: '(min-width: 1224px)',
+  });
+
+  if (isWideScreen) {
+    return <Navbar />;
+  }
+
+  return <MenuButton />;
+};
+```
+
+But with an SSG like Astro, rendering is essentially free. You render everything and use styles
+with media queries to show or hide appropriate components.
+
+Something like this:
+
+```tsx title='Header.tsx'
+export const Header = () => (
+    <><Navbar/><MenuButton/></>
+);
+```
+
+```css title='global.css'
+.bc-navbar {display: none;}
+.bc-menu-button {display: block;}
+
+@media (min-width: 1224px) {
+  .bc-navbar {display: block;}
+  .bc-menu-button {display: none;}
+}
+```
+
+It's not the end of the world. But you can't expect to cut and paste jsx files and expect them
+to just work.
+
+Similarly, you can't expect 3rd party React components to just work. For example, [@iconify/react](https://iconify.design/docs/icon-components/react/).
+I haven't looked at the implementation, but there's some kind of magic preventing it from being
+rendered on statically. So making it look right takes a little work.
+
+Alternatively, there is an Astro-native [Iconify integration](https://iconify.design/docs/usage/svg/astro/).
+But that would be even _more_ work for me because, since it's an Astro component, it can't be used inside my React
+header component.
+
+### Good Part #1: Ecosystems
+
+Astro has a lot of integrations with technologies you already use. Even the plugins have plugins.
+
+So just this site uses:
+
+- [React](https://react.dev/)
+- [Tailwind](https://tailwindcss.com/)
+- [Mdx](https://mdxjs.com/) + [Remark](https://github.com/remarkjs/remark) + [ReHype](https://github.com/remarkjs/remark-rehype)
+- [Mermaid](https://mermaid.js.org/)
+- [Expressive Code](https://example.com)
+
+All with minimal hassle.
+
+### Good Part #2: Look and feel
+
+Static pages usually require loading a entirely new page whereas SPA-style applications can
+selectively render only the content that changes. To me, the SPA just feels better.
+
+Astro can give you the best of both worlds with its [view transitions](https://docs.astro.build/en/reference/modules/astro-transitions/)
+lending your statically-rendered content SPA-like user experience. The entire page doesn't seem to reload, and
+components can keep state across page transitions.
+
+### Good Part #3: Developer Experience
+
+Astro Works out of the box with sensible defaults.
+
+- **CLI tooling** makes it easy to add integrations.
+- **Documentation** is actually good and helpful.
+- **Simple routing** based on directories.
+- **Performance** is practically free.
+
+## Rating
+
+import {Rating} from '../../components/Rating';
+
+<Rating value='4' client:only/>
+
+I guess my ideal SSG tool would be completely transparent. I would love to build a
+content-heavy React SPA and have Astro magically render everything into static pages. But complete transparency isn't a
+reasonable demand. Vite's [React Pages](https://github.com/vitejs/vite-plugin-react-pages) isn't transparent and
+neither is [Next.js](https://nextjs.org/) or [Gatsby](https://www.gatsbyjs.com/).
+
+Same with Astro. Effective use requires learning a little Astro.
+
+So, overall, Astro is pretty good. It's simple, well-documented, and comes with lots of integrations. Pretty much what I needed.
