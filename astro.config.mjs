@@ -12,6 +12,8 @@ import ecTwoSlash from 'expressive-code-twoslash';
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections';
 import remarkMermaid from 'remark-mermaidjs';
 
+import partytown from '@astrojs/partytown';
+
 export default defineConfig({
   site: 'https://bathcat.net',
   markdown: {
@@ -40,6 +42,11 @@ export default defineConfig({
     sitemap(),
     react(),
     tailwind(),
+    partytown({
+      config: {
+        forward: ['datalayer.push'],
+      },
+    }),
   ],
   prefetch: { prefetchAll: true },
 
