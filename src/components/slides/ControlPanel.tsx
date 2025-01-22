@@ -7,7 +7,6 @@ import {
   ForwardStep,
   Print,
 } from '../FlowbiteIcons';
-import { BreadCrumbs } from '../navigation/BreadCrumbs';
 import { DeckProgress } from './DeckProgress';
 import { FullscreenToggler } from './FullscreenToggler';
 import { IconButton } from './IconButton';
