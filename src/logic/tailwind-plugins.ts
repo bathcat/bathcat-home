@@ -2,7 +2,7 @@ import { type PluginAPI } from 'tailwindcss/types/config';
 
 //
 // Extracts Tailwind colors so you can use them in handrolled css
-//   as variables. e.g. 
+//   as variables. e.g.
 // ```css
 //   g.line-plot-1 path{
 //     stroke-width: 5;

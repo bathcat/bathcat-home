@@ -1,0 +1,414 @@
+---
+title: "Quality"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Quality
+
+---
+
+### Goals
+
+1. Explain the tradeoffs involved with testing components
+1. List 3 best practices
+
+---
+
+## Lint Extravaganza
+
+---
+
+### Linting Defined
+
+<figure class='bc-framed-image' style='float:right;' >
+![Image sans description.](./assets/Douglas_Crockford.jpg)
+</figure>
+
+- Linting is
+  - Static analysis
+  - Finds style and quality issues
+- In JavaScript
+  - JSLint created in 2002 by Doug Crockford
+  - ESLint is the current standard
+
+---
+
+### Pros and Cons
+
+- **Advantages**
+  - Catch possible errors
+  - Enforce consistent style
+  - Automatically fix problems
+- **Disadvantages**
+  - Irritating and overbearing out of the box
+
+---
+
+### Category: Likely Errors
+
+- Obvious problems that a compiler would catch
+- Best practice: Treat these as compilation errors
+
+---
+
+### Duplicates
+
+- Weirdly, this is legit JavaScript
+
+```js
+function xyz(a, b, a) {
+  //Do stuff
+}
+```
+
+- Same here
+
+```js
+var cone = {
+  flavor: "vanilla",
+  flavor: "chocolate"
+};
+```
+
+---
+
+### Reassign Function
+
+```js
+function format(){/*...*/}
+//Other stuff
+function format(){/*...*/}
+```
+
+---
+
+### Unreachable Code
+
+```js
+function xyz() {
+  //Do stuff
+  return something;
+  console.log("Warning!!");
+}
+```
+
+---
+
+### `typeof` failures
+
+- Operator `typeof` returns well known strings
+- Linters can catch bad spelling
+
+```js
+typeof label === "strnig"
+typeof value == "undefimed"
+typeof result != "nunber"
+```
+
+---
+
+### Template string confusion
+
+```js []
+"Hello ${name}!";
+'Hello ${name}!';
+"Time: ${12*60*60*1000}";
+```
+
+---
+
+### Ruleset Menu
+
+- [Airbnb](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb)
+- [Google](https://github.com/google/eslint-config-google)
+- [ESLint](https://github.com/eslint/eslint/tree/master/packages/eslint-config-eslint)
+- [ie11](https://github.com/Volox/eslint-plugin-ie11)
+
+---
+
+### Customization
+
+- From **.eslintrc.json**
+
+```js
+{
+  "extends": "google",
+  "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module",
+  },
+  "rules": {
+      "semi": "error",
+      "prefer-regex-literals": 0,
+  }
+}
+```
+
+---
+
+### Integration: IDEs
+
+- Linters have IDE Plugins
+- Autofix problems where possible
+
+```js [3,4,5]
+{
+    "files.autoSave": "onFocusChange",
+    "xo.enable": true,
+    "xo.format.enable": true,
+    "editor.formatOnSave": true,
+}
+```
+
+---
+
+### Build Integration
+
+- Treat linting like compiling
+- Lint failure means a broken build
+
+```shell
+  > eslint src/**
+```
+
+---
+
+## Testing
+
+---
+
+### Options (From [reactjs.org](https://legacy.reactjs.org/docs/testing.html))
+
+> There are a few ways to test React components. Broadly, they divide into two categories:
+>
+> - Rendering component trees in a simplified test environment and asserting on their output.
+> - Running a complete app in a realistic browser environment (also known as “end-to-end” tests).
+
+---
+
+### Example Component
+
+```jsx
+export default function Hello(props) {
+  if (props.name) {
+    return <h1>Hello, {props.name}!</h1>;
+  } else {
+    return <span>Hey, stranger</span>;
+  }
+}
+```
+
+---
+
+### Example Tests
+
+```jsx
+it("renders with or without a name", () => {
+  act(() => render(<Hello />, container););
+  expect(container.textContent).toBe("Hey, stranger");
+
+  act(() => render(<Hello name="Jenny" />, container););
+  expect(container.textContent).toBe("Hello, Jenny!");
+
+  act(() => render(<Hello name="Margaret" />, container););
+  expect(container.textContent).toBe("Hello, Margaret!");
+});
+```
+
+<br/>
+
+-- From the old [reactjs.org](https://legacy.reactjs.org/docs/testing-recipes.html#rendering)
+
+---
+
+### Infrastructure
+
+```ts
+import { unmountComponentAtNode } from "react-dom";
+
+let container = null;
+beforeEach(() => {
+  // setup a DOM element as a render target
+  container = document.createElement("div");
+  document.body.appendChild(container);
+});
+
+afterEach(() => {
+  // cleanup on exiting
+  unmountComponentAtNode(container);
+  container.remove();
+  container = null;
+});
+```
+
+---
+
+### Complaints
+
+- Bad design: Mixes burdens
+- Uncaptured abstractions
+- Lots of setup and things to mock
+
+---
+
+### Alternative Perspective (From me)
+
+- Don't test rendering
+- **_As much as possible_**, tease application logic apart from rendering
+- That means
+  1. Keep views very thin
+  2. Put the actual logic in services and pure functions
+  3. Unit test the services and pure functions
+
+---
+
+### Example Refactored (I)
+
+```jsx
+interface Greeting{
+    content:string;
+    isLaidBack:boolean;
+}
+
+export const makeGreeting = (name?:string):Greeting=>
+    !name ? {content:'Hey, stranger', isLaidBack:true};
+          : {content:`Hello, ${name}!`, isLaidBack:false};
+
+export default function Hello(props) {
+  const greeting = makeGreeting(props.name);
+  if (props.isLaidBack) {
+    return <span>{greeting.content}</span>;
+  }
+  return <h1>{greeting.content}</h1>;
+}
+```
+
+---
+
+### Refactored Test
+
+```ts
+import { expect, test } from 'vitest';
+import { makeGreeting } from './hello';
+
+test('makeGreeting should be laidback for empty', () => {
+    const actual = makeGreeting('');
+    expect(actual.isLaidBack).toBe(true);
+});
+
+test('makeGreeting should be laidback for spaces', () => {
+    const actual = makeGreeting('    ');
+    expect(actual.isLaidBack).toBe(true);
+});
+
+```
+
+---
+
+### Example Refactored (II)
+
+```jsx
+interface Greeting{
+    content:string;
+    className:string;
+}
+
+export const makeGreeting = (name?:string):Greeting=>
+    !name ? {content:'Hey, stranger', className: 'g-laid-back'};
+          : {content:`Hello, ${name}!`, className:'g-enthusiastic'};
+
+export default function Hello(props) {
+  const greeting = makeGreeting(props.name);
+  return <span className={greeting.className}>
+            {greeting.content}
+         </span>;
+}
+```
+
+---
+
+### Tools
+
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/)
+- [Jest]()
+- [Vitest]()
+
+---
+
+### Useful [`renderHook`](https://testing-library.com/docs/react-testing-library/api#renderhook)
+
+#### Word of Warning
+
+> This is a convenience wrapper around render
+> with a custom test component. The API emerged
+> from a popular testing pattern and is mostly
+> interesting for libraries publishing hooks.
+> You should prefer render since a custom test
+> component results in more readable and robust
+> tests since the thing you want to test is not
+> hidden behind an abstraction.
+
+---
+
+### Example: Fail
+
+```ts
+test('useFrozenState should freeze at runtime', () => {
+  const [ n, ] = useFrozenState(10);
+  try {
+    const nUnknown:any = n;
+    nUnknown.content= 50;
+  } catch {
+    return;
+  }
+  assert(false);
+});
+```
+
+---
+
+### Example: Fixed
+
+```ts
+test('useFrozenState should freeze at runtime', () => {
+  const {result} = renderHook(()=>useFrozenState(10));
+  try {
+    const nUnknown:any = result.current;
+    nUnknown.content= 50;
+  } catch (e:unknown) {
+    console.log(`\n\n------\nError:${JSON.stringify(e)}\n\n--------\n`)
+    return;
+  }
+  assert.fail("No error thrown.");
+});
+```
+
+---
+
+### Example (I)
+
+```ts
+import {renderHook} from '@testing-library/react'
+
+test('returns logged in user', () => {
+  const {result} = renderHook(() => useLoggedInUser())
+  expect(result.current).toEqual({name: 'Alice'})
+});
+```
+
+---
+
+## Best Practices
+
+---
+
+### Incomplete and Mostly Wrong
+
+1. Keep views thin
+1. Test flow control instead of rendering
+1. Organize files by problem domain, _not_ react types
+1. If you have multiple routes, use a framework
+1. Use pre-commit hooks to lint, test, format, and typecheck
+1. All the usual advice: DRY, low coupling, high cohesion, etc.

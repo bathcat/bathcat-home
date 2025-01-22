@@ -1,4 +1,4 @@
-import { EmptyStar, HalfStar, Star } from './Icons';
+import { EmptyStar, HalfStar, Star } from './FlowbiteIcons';
 
 interface Props {
   value: number;

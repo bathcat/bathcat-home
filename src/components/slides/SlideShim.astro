@@ -1,0 +1,20 @@
+---
+import { Slide } from './Slide';
+
+// This is just to inject the client directive.
+//
+// The actual work is done in the [slug].astro file.
+// But, since the content comes from the MDX file, we
+// need to inject the client directive here.
+//
+
+interface Props {
+  slideIndex: number;
+}
+
+const props = Astro.props as Props;
+---
+
+<Slide client:only='react' {...props}>
+  <slot />
+</Slide>

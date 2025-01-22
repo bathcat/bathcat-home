@@ -1,0 +1,375 @@
+---
+title: "Overview"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus tincidunt tincidunt dui vitae eleifend."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Overview
+
+---
+
+### Goals
+
+1. Compare React v. Angular
+1. Explain the advantage of using a React framework
+1. Describe Vite
+
+---
+
+## What's React?
+
+---
+
+### What's **React**?
+
+- **Library** for creating user interfaces
+- Created at Facebook in 2011
+- Open source
+- Hugely popular: [**40% of new web apps**](https://thenewstack.io/the-angular-renaissance-why-frontend-devs-should-revisit-it/)
+  - (Angular is ~18% and falling)
+
+import { Image } from 'astro:assets';
+import react from './assets/React-icon.svg';
+
+<a href='https://react.dev/' target='_blank'>
+  <Image
+    src={react}
+    style='width:25%;height:auto;float:right;display:inline;margin-top:-5rem;'
+    loading='eager'
+    alt='xyz'
+  />
+</a>
+
+---
+
+### Compared to [Angular](https://angular.io/)
+
+| **Angular**        | **React**                |
+| ------------------ | ------------------------ |
+| Framework          | Library                  |
+| Opinionated        | Laissez-faire            |
+| Batteries included | A la carte               |
+| Templates          | JSX                      |
+| 2-way binding      | Unidirectional data flow |
+| Component-based    | Same!                    |
+
+import angular from './assets/Angular_full_color_logo.svg';
+
+<a href='https://angular.io/' target='_blank'>
+  <Image 
+    src={angular}
+    alt='Angular logo'
+    style='width:25%;height:auto;float:right;display:inline;margin-top:-25rem;'
+  />
+</a>
+
+---
+
+### React is a Library
+
+- Library for interactive UIs
+- View-only
+  - **Not** MVC
+  - **Not** bundling
+  - **Not** transpiling
+
+---
+
+### React is an **Architecture**
+
+- React software outputs a dynamic tree
+  - Of [DOM](https://en.wikipedia.org/wiki/Document_Object_Model) nodes
+  - Of iOS controls
+  - Etc...
+- A **_renderer_** mediates between React and its in-memory tree
+- **_Reconciliation_** makes the host tree match the in-memory tree
+
+---
+
+### React is an **Ecosystem**
+
+- React is 'just a library'
+- Most projects rely on a vast ecosystem for other things
+
+---
+
+### Things You Might Need
+
+- **Dependency management** - [npm](https://www.npmjs.com/), [yarn](https://yarnpkg.com/)
+- **Bundler** - Webpack, Rollup
+- **Compiler** -- jsx, typescript, modern javascript
+- **SSR** - Next.js
+- **Development tools** - Hot reload, etc.
+- **State management** - Zustand, Redux
+- **Styling** - CSS / CSS-in-js
+- **Routing** - React Router
+- **HTTP** - React Query
+
+---
+
+### Frameworks
+
+import gatsby from './assets/Gatsby_Logo.png';
+
+<a href='https://www.gatsbyjs.com/' target='_blank'>
+  <Image 
+    src={gatsby}
+    alt='Gatsby logo'
+    style='width:15%;height:auto;float:right;clear:right;margin-top:1rem;'
+  />
+</a>
+
+import next from './assets/Nextjs-logo.svg';
+
+<a href='https://nextjs.org/' target='_blank'>
+  <Image 
+    src={next}
+    alt='Next logo'
+    style='width:20%;height:auto;float:right;clear:right;margin-top:2rem;'
+  />
+</a>
+
+- You can configure everything a-la-carte
+  - Configuration is hard
+  - Making choices is harder
+  - Upgrades are the worst
+- Or you can use a more opinionated framework
+  - [Next.js](https://nextjs.org/)
+  - [Remix](https://remix.run/)
+  - [Astro](https://astro.build/)
+
+---
+
+## Creating a React App
+
+---
+
+### Option 0: Framework-Free
+
+- All you really need--
+  - **React** - For the core framework
+  - **React-dom** - For web stuff
+  - **Babel** - For JSX, and ES6+
+- **Pros** No build process, Good for learning
+- **Cons** No build process, no web server, not industrial strength
+
+---
+
+### Demo: Framework-Free
+
+```html
+<html>
+  <head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"/>
+    <script type="text/babel">
+      const App = () =>  <h1>Hello World!</h1>;
+      ReactDOM.createRoot(document.getElementById('root'))
+              .render(<App />);
+    </script>
+  </body>
+</html>
+```
+
+---
+
+### Option 0.5: [`create-react-app`](https://create-react-app.dev/)
+
+- Go-to project scaffolding for a long time
+- There are better options now
+- **Pros:** Familiar to lots of React developers
+- **Cons:** DX, Not really evolving
+
+<br/>
+
+- Magic words:
+
+```shell
+npx create-react-app some-spa
+```
+
+---
+
+### Option 1: [Vite](https://vitejs.dev/)
+
+import vite_logo from './assets/Vitejs-logo.svg';
+
+<a href='https://vitejs.dev/'  target='_blank'>
+  <Image
+    src= {vite_logo}
+    alt='Vite logo'
+    style='width:15%;height:auto;float:right;clear:right;'
+  />
+</a>
+
+- Modern front-end tooling
+- Major parts:
+  - Dev server with <u>H</u>ot <u>M</u>odule <u>R</u>eplacement
+  - Compiles with [esbuild](https://esbuild.github.io/) or [SWC](https://swc.rs/)
+  - Builds with [Rollup](https://rollupjs.org/)
+  - Provides scaffolding for various project types
+- Magic words:
+
+```shell
+npm create vite@latest
+```
+
+---
+
+### Vite: Pros and Cons
+
+#### Pro
+
+- Unopinionated (Relatively)
+  - Good for learning plain React
+  - Good for building pure old-school SPAs
+- Great DX: Fast HMR, small bundles
+
+#### Con
+
+- Unopinionated (Relatively)
+  - Still lots of configuration todo before production
+- On your own for code splitting, routing, SSR
+
+---
+
+### Dan on Vite
+
+import dan_on_vite from './assets/tweet.dan-on-vite.png'
+
+<a href='https://twitter.com/dan_abramov/status/1648518471083495425'  target='_blank'>
+  <Image 
+    src={dan_on_vite}
+    alt='Dan on vite'
+    style='width:85%;height:auto;margin-right:5rem;'
+  />
+</a>
+
+#### Harsh!
+
+---
+
+### Consensus: Use a Framework
+
+import tweet_use_a_framework from './assets/tweet.use-a-framework.png'
+
+<a href='https://twitter.com/acdlite/status/1617611126514266112?lang=en'  target='_blank'>
+  <Image 
+    src={tweet_use_a_framework}
+    alt='Tweet: Use a framework'
+    style='width:65%;height:auto;margin-right:13rem;'
+  />
+</a>
+---
+
+### Lab: Create a React App
+
+1. Use Vite to scaffold a new project
+
+```shell
+npm create vite@latest some-throwaway-project
+cd ./some-throwaway-project
+npm install
+code .
+```
+
+2. Examine the project
+3. Fire up the dev server
+
+```shell
+npm run dev
+```
+
+---
+
+## Project Anatomy
+
+---
+
+### Folder Structure
+
+import vite_folder_structure from './assets/screenshot.vite-folder-structure.png';
+
+<Image 
+  src={vite_folder_structure}
+  alt='Vite folder structure'
+  style='width:28%;height:auto;float:right;margin-top:-7rem;margin-left:1rem;'
+/>
+
+- React is flexible, so projects are different
+- Usually a project consists of
+  - **Root** contains
+    - Tooling configuration. e.g. `package.json`
+    - **index.html**
+  - **/public** contains everything _not_ managed by the build system
+  - **/src** holds all executable code, styling, and assets
+
+---
+
+### Familiar Faces
+
+<br/>
+
+#### If you know Angular, lots of the files should look familiar
+
+<br/>
+
+- **`tsconfig.json`**
+- **`package.json`** /**`package-lock.json`** -
+- **.prettierrc** / **.prettierignore**
+- **.gitignore**
+- **.eslintrc.cjs**
+
+---
+
+### File: `index.html`
+
+```html
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vite + React + TS</title>
+ </head>
+ <body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+ </body>
+</html>
+
+```
+
+---
+
+### File: `index.tsx`
+
+- Entrypoint
+- Loads the root component (often called **App**)
+
+```ts
+import React from 'react';
+import { Root } from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Root />
+  </React.StrictMode>,
+  document.getElementById('root'),
+);
+
+```
+
+---
+
+### About [React.StrictMode](https://react.dev/reference/react/StrictMode)
+
+- Turns on dev-mode
+  - Double-rendering, double-effects
+  - Checks for deprecations

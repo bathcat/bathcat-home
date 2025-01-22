@@ -1,0 +1,516 @@
+---
+title: "Objects"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Objects
+
+---
+
+### Goals
+
+1. List 2 benefits of using classes
+1. And 2 drawbacks
+1. Explain why to use an enum
+
+---
+
+## What and Why?
+
+---
+
+### Need for a Record
+
+- Heterogeneous data structure with
+  - Guardrails
+  - Metadata
+  - Intellisense
+- E.g.
+  - User account
+  - Car model
+  - Incident report
+
+---
+
+### Complaints about Tuples
+
+- No naming for clarity
+- No help from intellisense
+- No help from `Get-Help`
+- No protection of invariants
+
+```powershell
+# Destructuring
+$Login, $Groups = Get-UserInfo -SID 192921
+
+# Color tuple
+$red = 255,0,'chicken'
+$yellow = 255,275,0
+$purple = 128,0,128
+```
+
+---
+
+### Dictionary Complaints
+
+- No help from intellisense
+- No help from `Get-Help`
+- No protection of invariants
+
+```powershell
+
+$yellow = @{red=755; green=255; blue=0}
+
+$purple = @{
+  red=128
+  green=0
+  blue='spam'
+}
+```
+
+---
+
+### [`PSCustomObject`](https://docs.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-pscustomobject) Complaints
+
+- Not much better than a Dictionary
+  - No intellisense
+  - No fixed set of members
+
+```powershell
+$user = [PSCustomObject]@{
+    ID       = 11
+    Name     = 'Kevin'
+    State    = 'Texas'
+}
+
+```
+
+---
+
+## Adding Class
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_classes)
+
+- Relatively new
+- Great as [Data Transfer Objects (DTOs)](https://martinfowler.com/eaaCatalog/dataTransferObject.html)
+  - aka POCO / POJO
+- Limited
+  - No syntax for getter/setter
+  - Not discoverable
+  - Reference semantics
+- Heavy OO-style isn't idiomatic to PowerShell
+
+---
+
+### Example
+
+```powershell
+class User{
+    [int]$id
+    [string]$name
+}
+
+# Call the default constructor
+$admin = [User]::new()
+
+# Set properties
+$admin.id=3881
+$admin.name='administrator'
+```
+
+---
+
+### Better: Casting
+
+#### Works
+
+```powershell
+$admin = [User]@{
+  id = 3881
+  name= 'administrator'
+}
+```
+
+#### Fail
+
+```powershell
+$admin = [User]@{
+  id = 3881
+  name = 'administrator'
+  handle = 'jerry' # Bork! Extra field.
+}
+```
+
+---
+
+### Validation
+
+- Use the same attributes as you would for function parameters
+
+```powershell
+class Color{
+   [ValidateRange(0, 255)]
+   [int]$red
+
+   [ValidateRange(0, 255)]
+   [int]$green
+
+   [ValidateRange(0, 255)]
+   [int]$blue
+}
+
+```
+
+---
+
+### Methods
+
+- A function on a a class is a _method_
+- Totally supported
+- **But** doesn't feel idiomatic
+
+```powershell
+class Color{
+   [int]$red
+   [int]$green
+   [int]$blue
+
+   [void]Darken([int] $amount){
+      $this.green += $amount
+      $this.red += $amount
+      $this.blue += $amount
+   }
+}
+```
+
+---
+
+### Example
+
+#### Maybe don't do this...
+
+```powershell
+[Color]$primary = @{red = 250; green = 100; blue = 31}
+[Color]$accent = @{red = 190; green = 19; blue = 100}
+[Color]$alert = @{red = 25; green = 128; blue = 56}
+
+$basePallette = $primary, $accent, $alert
+
+# This doesn't look much like Pwsh
+$myPalette =  $basePallette | %{$_.Darken(10)}
+
+```
+
+---
+
+### Idiomatic Alternative
+
+#### Manipulate **objects** with **cmdlets**
+
+```powershell
+function Add-Darkness{
+   [CmdletBinding()]
+   [OutputType([Color])]
+   param(
+      [Parameter(Mandatory)]
+      [int] $Amount,
+      [Parameter(ValueFromPipeline,Mandatory)]
+      [Color] $Original
+   )
+   process{
+    return [Color] @{
+        red = $Original.red + $amount
+        green = $Original.green + $amount
+        blue = $Original.blue + $amount
+    }
+   }
+}
+```
+
+---
+
+### Consumption
+
+#### Much better!
+
+```powershell
+[Color]$primary = @{red = 250; green = 100; blue = 31}
+[Color]$accent = @{red = 190; green = 19; blue = 100}
+[Color]$alert = @{red = 25; green = 128; blue = 56}
+
+$basePallette = $primary, $accent, $alert
+
+$myPalette =  $basePallette | Add-Darkness -amount 10
+```
+
+---
+
+### Exception #1: [**`ToString`**](https://docs.microsoft.com/en-us/dotnet/api/system.object.tostring)
+
+- Normally, methods on Powershell classes aren't idiomatic
+  - `ToString` is one exception
+- Built in to .NET base object, displays objects as text
+
+```powershell
+# Motivation: Built-in ToString kind of sucks.
+class User{
+  [string] $GivenName
+  [string] $Surname
+}
+
+$newHire = [User]@{GivenName='Joe';Surname='Bloggs'}
+
+Write-Host "Welcome, $newHire"
+```
+
+---
+
+### Custom [**`ToString`**](https://docs.microsoft.com/en-us/dotnet/api/system.object.tostring)
+
+```powershell
+class User{
+  [string] $GivenName
+  [string] $Surname
+
+  [string]ToString(){
+    return "$($this.Surname), $($this.GivenName)"
+  }
+}
+
+# Use case
+$newHire = [User]@{GivenName='Joe';Surname='Bloggs'}
+Write-Host "Welcome, $newHire"
+
+```
+
+---
+
+### Exception 2: `Equals`
+
+#### Motivation
+
+```powershell
+class Vendor{
+  [string]$id
+  [string]$name
+}
+$a = [Vendor]@{id='10';name='Acme'}
+$b = [Vendor]@{id='10';name='Acme'}
+
+Write-Host "Surely, a and b are equal? $($a -eq $b)"
+
+```
+
+---
+
+### `Equals` Implementation
+
+```powershell
+class Vendor{
+  [string]$id
+  [string]$name
+  [bool]Equals([object]$that){
+    return ($that -is [Vendor]) -and
+           ($that.id -eq $this.id) -and
+           ($that.name -eq $this.name)
+  }
+}
+$a = [Vendor]@{id='10';name='Acme'}
+$b = [Vendor]@{id='10';name='Acme'}
+
+Write-Host "Surely, a and b are equal? $($a -eq $b)"
+
+```
+
+---
+
+### Class and Modules
+
+#### Problem 1: `Import-Module`
+
+```powershell
+Import-Module ./Build-Color.psm1
+$white = [Color]@{red=0;blue=0;green=0}
+```
+
+#### Result
+
+<div style='color:red;padding:1rem;font-size:150%;'>InvalidOperation: Unable to find type [Color].</div>
+
+#### Fix: `using module`
+
+```powershell
+using module './Build-Color.psm1'
+$white = [Color]@{red=0;blue=0;green=0}
+```
+
+---
+
+### Factory Pattern
+
+- **Best practice**: Make a factory function for instantiating custom objects
+
+```powershell
+function Initialize-Color {
+   [CmdletBinding()]
+   [OutputType([Color])]
+   Param (
+      [int]$Red = 0,
+      [int]$Green = 0,
+      [int]$Blue = 0
+   )
+   return [Color]@{
+      red = $Red
+      green = $Green
+      blue = $blue
+   }
+}
+```
+
+---
+
+### OO Shortcomings
+
+- **Ergonomics**
+  - Doesn't feel like Powershell
+  - Not discoverable
+  - Ignored by [`Import-Module`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module)
+- Always mutable
+- Advice:
+  - Use classes only for DTOs
+  - Write a factory function
+
+---
+
+## Enumerations
+
+---
+
+### Motivation
+
+- Sometimes you have values that are
+  - Distinct
+  - Discrete
+  - Easily countable
+- Examples:
+  - Small, Medium, Large
+  - StartingUp, Online, Offline, ShuttingDown
+  - Unknown, Yes, No, RefusedToAnswer
+
+---
+
+### Bad Ideas
+
+- Anti-Pattern: **Magic Strings**
+  - What are acceptable values for **Urgency**?
+- Anti-Pattern: **Excluded Middle**
+  - What happens if we add sophistication?
+
+```powershell
+function Invoke-Cleanup{
+  Param(
+    [bool]$BeThorough = $false,
+    [string]$Urgency = 'Normal'
+  )
+  Write-Output 'Cleaning up....'
+}
+```
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_enum)
+
+- An `enum` is a strongly typed set of labels
+  - Values can be any integer
+- No parsing or misspelling
+- Supports flags
+
+#### \*\*
+
+---
+
+### Refactored
+
+```powershell
+enum CleanLevel{
+   Lazy
+   Normal
+   Compulsive
+}
+enum Urgency{
+   Normal
+   Priority
+}
+function Invoke-Cleanup {
+   Param(
+      [CleanLevel]$Thoroughness = 'Normal',
+      [Urgency]$Urgency = 'Normal'
+   )
+   Write-Output "Cleaning up $Thoroughness-style...."
+}
+```
+
+---
+
+### [Flags](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_enum?view=powershell-7.1#flags-usage-example)
+
+- An `enum` can be a collection of bit flags
+- Use for non-mutually exclusive values
+
+```powershell
+[Flags()]enum FilePermision{
+  None = 0
+  Read = 1
+  Write = 2
+  Execute = 4
+}
+
+```
+
+---
+
+### Motivation
+
+```powershell
+function New-Burger{
+  Param(
+    [bool]$HasPickles=$false,
+    [bool]$HasOnions=$false,
+    [bool]$HasMustard=$false
+  )
+  # ...
+}
+```
+
+---
+
+### Refactored
+
+```powershell
+[Flags()] enum Fixins {
+  None = 0
+  Pickles = 1
+  Onions = 2
+  Mustard = 4
+}
+
+function New-Burger{
+  Param(
+    [Fixins]$Fixins='None'
+  )
+  return "New burger with $Fixins"
+}
+
+New-Burger 'Pickles','Onions'
+```
+
+---
+
+### Lab: Weather
+
+- Read instructions: $/labs/weather/README.md
+- Build the applications starting with 'startingpoint'

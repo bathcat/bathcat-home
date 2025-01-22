@@ -1,0 +1,780 @@
+---
+title: "Components"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus tincidunt tincidunt dui vitae eleifend."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Components
+
+---
+
+### Goals
+
+1. Compare JSX with standard HTML
+1. List 3 advantages of functional components
+
+---
+
+## JSX
+
+---
+
+### According to Hoyle
+
+#### [Spec says](https://facebook.github.io/jsx/)
+
+> JSX is an XML-like syntax extension to ECMAScript
+> without any defined semantics. It's NOT intended
+> to be implemented by engines or browsers. It's NOT
+> a proposal to incorporate JSX into the ECMAScript
+> spec itself. It's intended to be used by various
+> preprocessors (transpilers) to transform these
+> tokens into standard ECMAScript.
+
+---
+
+### [JSX](<https://en.wikipedia.org/wiki/JSX_(JavaScript)>)
+
+#### <u>J</u>avaScript <u>S</u>yntax <u>E</u>xtension
+
+- _Very_ similar to string-based html templates-- just without the quotes
+- Created by Facebook for React
+- Used by other frameworks -- e.g. [Vue.js](https://vuejs.org/)
+- Transformed into JavaScript by a compiler -- e.g. [Babel](https://babeljs.io/)
+
+---
+
+### No Magic
+
+- Shorthand syntax
+
+```js
+
+const Greet = () => <h1>Hello, world!</h1>;
+
+```
+
+- Transformed (for React)
+
+```js
+import { jsx as _jsx } from "react/jsx-runtime";
+const Greet = () => /*#__PURE__*/_jsx("h1", {
+  children: "Hello, world!"
+});
+```
+
+- Use [babeljs.io/repl](https://babeljs.io/repl) if you're ever curious
+
+---
+
+### JSX Rules
+
+- Stricter than HTML
+  - Properly nested
+  - 1 root element
+  - All elements closed
+- Subtleties: `className`, `style`
+- [No longer required](https://dev.to/titungdup/you-no-longer-need-to-import-react-from-react-3pbj)
+  - **`import React from 'react';`**
+
+---
+
+### Root Element
+
+- Every component must have 1 root element
+
+#### Not this
+
+```jsx
+const App = () => <h1>Hello World!</h1>
+                  <h2>Part I: The Beginning</h2>
+                  <p>It was a dark and stormy night....</p>;
+```
+
+#### This
+
+```jsx
+const App =  () => <div>
+                     <h1>Hello World!</h1>
+                     <h2>Part I: The Beginning</h2>
+                     <p>It was a dark and stormy night....</p>
+                   </div>;
+```
+
+---
+
+### [Fragments](https://react.dev/reference/react/Fragment)
+
+- Grouping construct, not rendered
+
+#### Fragment
+
+```jsx
+const App =  () => <Fragment>
+                     <h1>Hello World!</h1>
+                     <h2>Part I: The Beginning</h2>
+                   </Fragment>;
+```
+
+#### Shorthand
+
+```jsx
+const App =  () => <>
+                     <h1>Hello World!</h1>
+                     <h2>Part I: The Beginning</h2>
+                   </>;
+```
+
+Notes:
+
+- TODO: Make sure this is valid
+
+---
+
+### On Parentheses
+
+- Only **required** in the presence of linebreaks and `return`
+  - i.e. [Automatic Semicolon Insertion](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#automatic_semicolon_insertion)
+- Your formatter may add them for **all** multiline jsx
+
+#### Not required
+
+```ts
+export const App = () =>
+ <h1>Hello World.</h1>;
+
+export const App =() =>{
+  return <h1>Hello World.</h1>;
+}
+export const App = () => {
+  return <h1>
+          Helloo World.
+         </h1>;
+}
+
+```
+
+---
+
+### Required Parens
+
+#### This doesn't work
+
+```ts
+export const App = () => {
+  return
+    <h1>
+      Helloo World.
+    </h1>;
+}
+```
+
+#### Fixed
+
+```ts
+export const App = () => {
+  return (
+    <h1>
+      Helloo World.
+    </h1>;
+  )
+}
+```
+
+---
+
+### Templating _(sort of)_
+
+- Any valid _expression_ gets evaluated inside curly brackets.
+
+#### Example
+
+```jsx
+export function App() {
+  const time = new Date().toLocaleTimeString();
+  return  <div className='root'>
+            <h2>It is {time}.</h2>
+          </div>;
+}
+
+```
+
+#### Shorthand
+
+```jsx
+export const App = () => <div className='root'>
+              <h2>It is {new Date().toLocaleTimeString()}.</h2>
+            </div>;
+
+
+```
+
+---
+
+### [Conditionals](https://react.dev/learn/conditional-rendering)
+
+- `If`/`then`/`else` works fine in a component
+- (But not inside JSX)
+
+```jsx
+export function App() {
+  const day = new Date().getDay();
+  if (day > 0 && day < 6){
+    return <h2>Go to work!</h2>
+  }
+  return <h2>Relax man!</h2>
+}
+```
+
+---
+
+### [Ternary](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator)
+
+- Use the ternary inside an expression
+
+```js
+export function App() {
+  const day = new Date().getDay();
+  return <>
+          <h1>Hello World!</h1>
+          {(day > 0 && day < 6)
+            ? (<h2>Go to work!</h2>)
+            : (<h2>Relax man!</h2>)
+          }
+         </>;
+}
+```
+
+---
+
+### `null` for nothing
+
+- Returning null means the component renders nothing
+
+```jsx
+export const Greeter = ({isBirthday}:props) => {
+  if (!isBirthday){
+    return null;
+  }
+  return <h1>Happy birthday!</h1>
+}
+```
+
+#### Alternative
+
+```jsx
+export const Greeter = ({isBirthday}:props) =>
+  isBirthday ? <h1>Happy birthday!</h1> : null;
+
+```
+
+Note:
+
+- TODO: Make sure this works
+
+---
+
+### [Short-circuit](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_AND)
+
+```jsx
+export const Greeter = ({isBirthday}:props) =>
+  isBirthday && <h1>Happy birthday!;
+
+```
+
+Note:
+
+- TODO: Make sure this works.
+
+---
+
+### [Lists](https://react.dev/learn/rendering-lists)
+
+- Use [Array.map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map) as a functional loop
+
+```js
+export function App() {
+  const innerPlanets = ['Mercury', 'Venus','Earth','Mars'];
+  return <>
+           <h1>The inner planets are:</h1>
+           <ul>
+             {innerPlanets.map(p=><li>{p}</li>)}
+           </ul>
+         </>;
+}
+```
+
+---
+
+### Lists: Better with [`key`](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key)
+
+- Uniquely identify a list item with `key`
+- Best practice
+- Potential performance improvement
+
+```js
+export function App() {
+  const innerPlanets = ['Mercury', 'Venus','Earth','Mars'];
+  return <>
+           <h1>The inner planets are:</h1>
+           <ul>
+             {innerPlanets.map((p)=><li key={p}>{p}</li>)}
+           </ul>
+         </>;
+}
+```
+
+---
+
+## Component Flavors
+
+---
+
+### Components come in 2 flavors
+
+- **Class-based**
+  - Primary method for creating components before React 16.8
+  - Inherit from [Component](https://react.dev/reference/react/Component)
+  - Implement a `render` method
+  - Keep state as member variables
+- **Functional**
+  - Reccomended
+  - Simple rendering function
+  - Keep state using hooks
+
+---
+
+### Example: FizzBuzzComponent
+
+```jsx
+export class FizzBuzz extends Component {
+  render() {
+    return <div className="prose">
+            <h1>FizzBuzz <i>[Complete]</i></h1>
+            <ul>
+              {getMessages().map(m => (
+                <li>{m}</li>
+              ))}
+            </ul>
+          </div>;
+  }
+}
+```
+
+---
+
+### Functional Equivalent
+
+```jsx
+export const FizzBuzz = () =>
+  <div className="prose">
+    <h1>FizzBuzz <i>[Complete]</i></h1>
+    <ul>
+      {getMessages().map(m => (
+        <li>{m}</li>
+      ))}
+    </ul>
+  </div>;
+
+```
+
+---
+
+### Functional advantages
+
+- **Faster.** No instantiation overhead
+- **Simpler.** Just a render function.
+- **More composable.** No lifecycle methods.
+- **Easier to learn.** Especially for programming noobs.
+- **Popular** Everyone else uses them.
+
+<br/>
+
+#### The **Big One**
+
+<br/>
+
+- **_You can use hooks_**
+
+---
+
+## Properties
+
+---
+
+### Overview
+
+- Properties are passed by parameter
+  - 1 parameter object
+  - Keys correspond to JSX attributes
+
+#### Example
+
+```jsx
+const Greet = (props)=>
+  <h1>Hello {props.givenName} {props.surname}!</h1>
+
+export const App = () =>
+  <Greet givenName='Joe' surname='Bloggs'/>
+
+```
+
+---
+
+### Aside: Destructuring
+
+- ECMAScript [>= 6 syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)
+- Neat syntax for taking elements out of data structures
+- Often used in idiomatic React
+
+```js
+// Array destructure
+const [first, second, ...rest] = [10, 20, 30, 40, 50];
+
+// Object destructure
+const person = {givenName:'joe',surname:'bloggs'};
+const {givenName, surname} = person;
+```
+
+---
+
+### Destructured Props
+
+- Arguably more readable
+- Let you ignore anything else in `props`
+
+```jsx
+const Greet = ({givenName,surname})=>
+  <h1>Hello {givenName} {surname}!</h1>
+
+export const App = () =>
+  <Greet givenName='Joe' surname='Bloggs'/>
+
+```
+
+---
+
+### Typed Props Pattern
+
+- With typescript:
+  - Clearer intent
+  - Help from compiler & editor
+
+```ts
+interface Props {
+  intro:Model.Intro;
+  skin:Skin;
+}
+
+export const Intro = ({ intro,skin }: Readonly<Props>) =>
+  <Deck theme={skin.theme}>
+    <TopicTitle skin={skin}># Introductions</TopicTitle>
+    /*Etc...*/
+  </Deck>;
+
+```
+
+---
+
+### Alternative
+
+- Inline type definitions are good for simple props
+- Get unwieldy
+
+```ts
+const Greet = ({givenName,surname}:{givenName:string,surname:string})=>
+  <h1>Hello {givenName} {surname}!</h1>
+
+export const App = () =>
+  <Greet givenName='Joe' surname='Bloggs'/>
+
+```
+
+---
+
+### [`Props.children`](https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children)
+
+- Props have a special (optional) property called `children`
+- Used for nesting components
+- Can be anything
+
+```tsx
+const SectionTitle = (props)=>
+  <h1>{props.children}</h1>
+
+const App = () =>
+  <>
+    <SectionTitle>Overview</SectionTitle>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+  </>
+```
+
+---
+
+### Better: `PropsWithChildren<T>`
+
+- No implicit `any`
+
+```tsx
+const SectionTitle = (props: PropsWithChildren) =>
+  <h1>{props.children}</h1>;
+
+export const App = () => (
+  <>
+     <SectionTitle>Overview</SectionTitle>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+  </>
+);
+```
+
+---
+
+### Mix'n'Match
+
+```ts
+import { PropsWithChildren } from 'react'
+
+interface Props{
+  fontSize:string;
+}
+
+const SectionTitle = (props: PropsWithChildren<Props>)=>
+  <h1 style={{'fontSize':props.fontSize}}>
+    {props.children}
+  </h1>
+
+const App = () =>
+  <>
+    <SectionTitle fontSize='400%'>Overview</SectionTitle>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+  </>
+
+```
+
+---
+
+### Component Rules
+
+- Keep it [pure](https://react.dev/learn/keeping-components-pure)
+  - No side effects
+  - Referentially transparent
+
+#### Bad idea
+
+```jsx
+let guest = 0;
+
+const Cup = ()=>
+  <h2>Tea cup for guest #{guest++}</h2>;
+
+export default TeaSet = () =>
+   <><Cup /><Cup /><Cup /></>;
+```
+
+---
+
+## Events
+
+---
+
+### [Overview](https://react.dev/learn/responding-to-events)
+
+> React lets you add event handlers to your JSX.
+> Event handlers are your own functions that will be
+> triggered in response to interactions like clicking,
+> hovering, focusing form inputs, and so on.
+
+<br/>
+
+#### Events drive user-initiated changes in state!
+
+---
+
+### Anonymous Event Handler
+
+- Just like native browser events **_But_** camel cased
+
+<br/>
+
+```ts
+export const App = () => (
+  <button
+    onClick={() => alert('Hello world')}
+  >
+    Click me!
+  </button>
+);
+```
+
+---
+
+### Named Equivalent
+
+- **Names are good**: Express intent, easy to refactor
+- **Best practice**: Use named event handlers for all but the simplest actions
+
+```ts
+export const App = () => {
+  const handleClick = ()=>alert('Hello world!');
+  return (
+    <button
+      onClick={handleClick}
+    >
+      Click me!
+    </button>
+  );
+};
+```
+
+---
+
+### Handler Conventions
+
+- Event handlers can be anything, but:
+  - They're usually defined inside a component
+  - Named 'handle' + _something_
+
+---
+
+### Handlers as Props
+
+- Child components can expose their own handlers
+
+```ts
+interface ButtonProps extends PropsWithChildren{
+  onClick():void;
+}
+
+const Button = ({onClick,children}:ButtonProps) =>
+  <button onClick={onClick}>{children}</button>
+
+export const App = () =>
+  <Button onClick={()=>alert('Hello world!')}>Click me</Button>
+```
+
+---
+
+### Event Information
+
+- In React, events are ['sythetic'](https://legacy.reactjs.org/docs/events.html#overview)
+- `SyntheticEvent` is a thin wrapper around the native browser event to abstract over browser differences
+- Key members
+  - `target` - For getting updated state
+  - `preventDefault` - Useful for forms
+  - `stopPropagation`
+
+---
+
+### Example
+
+```jsx
+interface Props {
+  onColorChange(color: Color): void;
+  color: Color;
+}
+
+export const ColorPicker = (props: Props) => (
+  <select
+    value={props.color}
+    onChange={event => props.onColorChange(event.target.value as Color)}
+  >
+    <option value={Color.Black}>Black</option>
+    <option value={Color.Brown}>Brown</option>
+    <option value={Color.Red}>Red</option>
+    <option value={Color.Blue}>Blue</option>
+  </select>
+);
+
+```
+
+---
+
+### Stopping Propagation
+
+```jsx
+const Button = ({ onClick, children }) =>
+    <button onClick={e => {
+      e.stopPropagation();
+      onClick();
+    }}>
+      {children}
+    </button>;
+```
+
+---
+
+## Style
+
+---
+
+### Styling
+
+- In ECMAScript, `class` is a keyword
+- In JSX, use **`className`** instead
+
+#### Not this
+
+```js
+const App = () => <div class='root'>
+                    <h1>Hello World!</h1>
+                  </div>;
+```
+
+#### This
+
+```js
+const App = () => <div className='root'>
+                    <h1>Hello World!</h1>;
+                  </div>;
+```
+
+---
+
+### [Style](https://react.dev/reference/react-dom/components/common#applying-css-styles)
+
+- Style is an object, not a string
+- For script friendlyness, properties are camelCase
+
+```ts
+export const App = () => {
+  const greetingStyle = {
+    fontWeight:'bold', //NOT font-weight
+    color:'green'
+  };
+
+  return <h1 style={greetingStyle}>Hello World.</h1>;
+}
+```
+
+---
+
+### Style Pattern
+
+- Common pattern: Wrap HTML with styled
+- Passing props with spread syntax
+
+```jsx
+export const TextInput = (props)=>
+  <input
+    className="border-2 border-gray-300 p-2"
+    type="text"
+    {...props}
+  />
+
+```
+
+---
+
+### Lab: FizzBuzz
+
+#### Instructions: `src/practice/fizz-buzz`
+
+#### **Summary**:
+
+<ul>
+  <li>List numbers 1 to 100.</li>
+  <li>For multiples of 3 print 'Fizz' instead</li>
+  <li>For multiples of 5 print 'Buzz'</li>
+  <li>Multiples of 3 and 5 print 'FizzBuzz'</li>
+</ul>

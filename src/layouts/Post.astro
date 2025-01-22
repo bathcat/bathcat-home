@@ -4,16 +4,28 @@ import Page from './Page.astro';
 import { Main } from '../components/Main';
 import { ContentHeader } from '../components/ContentHeader';
 import { Divider } from '../components/Divider';
+import { BreadCrumbs } from '../components/navigation/BreadCrumbs';
+import type { PostFrontMatter } from '../content-posts';
 
 type Props = CollectionEntry<'writing'>['data'];
 
-const post = Astro.props;
+const post = Astro.props as PostFrontMatter;
 ---
 
 <Page title={post.title} description={post.description}>
-  <Main className='prose'>
-    <ContentHeader {post} />
-    <Divider />
-    <slot />
+  <Main>
+    <BreadCrumbs
+      links={[
+        { href: '/', text: 'Home' },
+        { href: '/writing', text: 'Writing' },
+      ]}
+      current={post.title}
+      className='py-4'
+    />
+    <div class='prose'>
+      <ContentHeader {post} />
+      <Divider />
+      <slot />
+    </div>
   </Main>
 </Page>

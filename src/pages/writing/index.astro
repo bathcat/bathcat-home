@@ -1,9 +1,9 @@
 ---
 import Info from '../../layouts/Info.astro';
-import { PostInfoLink } from '../../components/PostInfoLink';
 import { Divider } from '../../components/Divider';
-import { BigPostInfoLink } from '../../components/BigPostInfoLink';
-import { getLivePosts } from '../../content';
+import { getLivePosts } from '../../content-posts';
+import { BigPostInfoLink } from '../../components/writing/BigPostInfoLink';
+import { PostInfoLink } from '../../components/writing/PostInfoLink';
 
 const posts = await getLivePosts();
 ---

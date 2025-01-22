@@ -1,0 +1,284 @@
+---
+title: "Potpourri"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Potpourri
+
+---
+
+### Goals
+
+1. Lorem
+1. Ipsum
+1. Sic
+
+---
+
+## Scaling
+
+---
+
+### Best: Scale **Up**
+
+- The scoundrel developer solution is:
+  - Get a bigger server!
+- The first rule of distributed applications is: do not distribute your application
+- Problems:
+  - Only goes so far
+  - Not elastic
+    <figure  style='width:40vw;position:absolute;right:0;bottom:3vw;'>
+    ![Image sans description.](./assets/scale-up.png)
+    </figure>
+
+---
+
+### Scale **Out** (Traditional)
+
+#### Add more commodity hardware
+
+- Advantages:
+  - Cheaper than scaling up (Cheaper hardware)
+  - Adds redundancy
+- Challenges
+  - Orchestration
+  - Still not elastic!
+    <figure  style='width:45vw;position:absolute;right:0;bottom:3vw;'>
+    ![Image sans description.](./assets/scale-out.png)
+    </figure>
+
+---
+
+### Elasticity
+
+- Grow or shrink infrastructure resources dynamically in response to workload
+- Also known as **Autoscaling**.
+
+<figure  style='width:50vw;position:absolute;right:15vw;bottom:5vw;'>
+![Image sans description.](./assets/elastic.png)
+</figure>
+
+---
+
+### Container Implications
+
+- Containers are different than traditional deployments
+  - Deployments are repeatable
+  - Provisioning is cheap
+  - Instances are ephemeral
+- **But**
+  - There's lots to learn
+  - Old-school patterns need augmenting
+
+<figure  style='width:25vw;position:absolute;right:1vw;bottom:2vw;'>
+![Image sans description.](./assets/container.png)
+</figure>
+
+---
+
+## API Gateway
+
+---
+
+### Motivation
+
+- Lorem
+- Ipsum
+
+<figure  style='width:30%;position:absolute; right:1vw;bottom:3vh;'>
+![Image sans description.](./assets/direct-client-to-microservice-communication.png)
+</figure>
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/architect-microservice-container-applications/direct-client-to-microservice-communication-versus-the-api-gateway-pattern)
+
+<figure  style='width:30%;position:absolute; right:1vw;bottom:3vh;'>
+![Image sans description.](./assets/gate.png)
+</figure>
+
+<div class='n-overview' style='width:80%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'><h4>Cloud</h4></div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lots of small, independent services are hard for clients to use</li>
+      <li>Avoid duplication</li>
+    </ul>
+  </div>
+  
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Create a component to route external requests</li>
+      <li>Consolidate common functionality like authentication, instrumentation, aggregation, etc</li>
+    </ul>
+  </div>
+
+## </div>
+
+### Diagram
+
+<figure  style='width:80%;position:absolute; right:5vw;bottom:4vh;'>
+![Image sans description.](./assets/api-gateway.png)
+</figure>
+
+---
+
+## Sidecar
+
+---
+
+### Overview
+
+<figure  style='width:35%;position:absolute; right:1vw;bottom:4vh;'>
+![Image sans description.](./assets/sidecar.png)
+</figure>
+
+<div class='n-overview' style='width:80%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'>Cloud</div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>      
+    </ul>
+  </div>
+  
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>       
+    </ul>
+  </div>
+
+</div>
+
+---
+
+### Diagram
+
+<figure  style='width:70%;position:absolute; right:6vw;bottom:6vh;'>
+![Image sans description.](./assets/sidecar-diagram.png)
+</figure>
+
+---
+
+## Circuit Breaker
+
+---
+
+### Overview
+
+<figure  style='width:15vw;position:absolute; right:1vw;bottom:3vh;'>
+![Image sans description.](./assets/circuit-breaker.png)
+</figure>
+
+<div class='n-overview' style='width:80%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'>Cloud</div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>      
+    </ul>
+  </div>
+  
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>       
+    </ul>
+  </div>
+
+</div>
+
+---
+
+### Diagram
+
+<figure  style='height:70%;position:absolute; right:8vw;bottom:6vh;'>
+![Image sans description.](./assets/circuit-breaker-entities.png)
+</figure>
+
+---
+
+### Diagram
+
+<figure  style='height:70%;position:absolute; right:8vw;bottom:6vh;'>
+![Image sans description.](./assets/retry.png)
+</figure>
+
+---
+
+## BFF
+
+---
+
+### Overview
+
+<figure  style='width:15vw;position:absolute; right:1vw;top:3vh;'>
+![Image sans description.](./assets/bff-locket.png)
+</figure>
+
+<div class='n-overview' style='width:80%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'>Cloud</div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>      
+    </ul>
+  </div>
+  
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Lorem</li>
+      <li>Ipsum</li>
+      <li>Sic</li>       
+    </ul>
+  </div>
+
+</div>
+
+---
+
+### General Purpose API
+
+<figure  style='height:70%;position:absolute; right:8vw;bottom:6vh;'>
+![Image sans description.](./assets/general-purpose-api.png)
+</figure>
+
+---
+
+### Diagram
+
+<figure  style='height:70%;position:absolute; right:8vw;bottom:6vh;'>
+![Image sans description.](./assets/bff-diagram.png)
+</figure>
+
+---
+
+### Resources
+
+<figure  style='height:10%;'>
+![Image sans description.](./assets/release-it.png)
+</figure>

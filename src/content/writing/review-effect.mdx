@@ -95,9 +95,9 @@ Here's a fake example:
 import { Effect } from 'effect';
 
 type SomeFakeEffect = Effect.Effect<
-  SuccessReturnType, //e.g. DTO, HttpResponse, string
-  PossibleErrorA | PossibleErrorB, //e.g. SchemaValidationError, HttpError
-  RequiredResource //e.g. Logger, Shared state, Transaction scope
+  SuccessType, //e.g. DTO, HttpResponse, string
+  ErrorA | ErrorB, //e.g. SchemaValidationError, HttpError
+  ResourceX //e.g. Logger, Shared state, Transaction scope
 >;
 ```
 
@@ -111,7 +111,9 @@ type SocketServerEffect = Effect.Effect<
   Scope.Scope
 >;
 
-export const make = (options: Net.ServerOpts & Net.ListenOptions): SocketServerEffect
+type MakeOptions = Net.ServerOpts & Net.ListenOptions;
+
+export const make = (options: MakeOptions): SocketServerEffect
   => {/*...*/}
 ```
 
@@ -250,7 +252,7 @@ export const fetchGridLocationEffect = (p: Position) =>
   );
 ```
 
-So that's when an investment in Effect starts to pay off: when you can stack up 
+So that's when an investment in Effect starts to pay off: when you can stack up
 functionality without obscuring your intention.
 
 ### Effect: the Standard Library
@@ -285,7 +287,7 @@ everything I've seen is at least competent-- then you don't have to shop alterna
 on NPM.
 
 Additionally, even if you like shopping, selling a team on adding a new dependency is often hard-- especially
-on a mature code base. If you already use Effect Schema, then it's easy to also leverage its Dependency 
+on a mature code base. If you already use Effect Schema, then it's easy to also leverage its Dependency
 Injection functionality without adding to `package.json`.
 
 ## Good Parts
@@ -303,9 +305,9 @@ Injection functionality without adding to `package.json`.
 ## Things I'm Less Enthusiastic About
 
 1. **Different Idiom** Effect has a learning curve. For developers new to functional programming,
-    Effect has a steep learning curve. Even when your team is up to speed, onboarding new engineers will take longer.
-2. **Opinionated** The library strongly encourages you to do things a certain way. Errors, for example. Even if you have no 
-   stylistic problem with normal TypeScript exception handling, using Effect means handling errors the Effect way. 
+   Effect has a steep learning curve. Even when your team is up to speed, onboarding new engineers will take longer.
+2. **Opinionated** The library strongly encourages you to do things a certain way. Errors, for example. Even if you have no
+   stylistic problem with normal TypeScript exception handling, using Effect means handling errors the Effect way.
 3. **(Relatively) Small Community** The docs are good, but seaching on Stackoverflow isn't always great.
 
 ## **Rating**: Impressive, but not for Everyone
@@ -318,7 +320,7 @@ It's overkill for some things. The biggest barrier to entry is that Effect requi
 than standard TypeScript. However, this new idiom brings some good things with it: composability,
 type safety, and a big standard library.
 
-So deciding to use Effect means evaluating the break-even point for your application and your team. It's a bit like the phase 
-transition from a bunch of shell scripts to a real application. 
+So deciding to use Effect means evaluating the break-even point for your application and your team. It's a bit like the phase
+transition from a bunch of shell scripts to a real application.
 
 ---

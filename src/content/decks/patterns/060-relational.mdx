@@ -1,0 +1,210 @@
+---
+title: "Relational"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Persistence
+
+---
+
+### Goals
+
+#### Compare two data access patterns
+
+1. Active Record
+1. Repository
+
+---
+
+## Active Record
+
+---
+
+### [Overview](https://martinfowler.com/eaaCatalog/activeRecord.html)
+
+<figure  style='width: 20%;position:absolute;right:0; bottom:2.4rem;'>
+![Image sans description.](./assets/record.png)
+</figure>
+
+<div class='n-overview' style='width:85%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'>Persistence</div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>You want to persist records in the easiest way possible</li>
+      <li>Other applications, reports, & etc need access to the database.</li>
+    </ul>  
+  </div>
+
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li> Wrap each table in a class</li>
+      <li>Use instance methods and static methods to persist data</li>
+    </ul>      
+  </div>
+</div>
+
+---
+
+### AR Libraries
+
+<figure  style='width: 40%;position:absolute;bottom:3rem;right:2rem;'>
+![Image sans description.](./assets/sql-alchemy-logo.png)
+</figure>
+
+- **Active Record** is popular for small-scale apps
+  - [Ruby on Rails](https://guides.rubyonrails.org/active_record_basics.html) made it popular
+  - Python has [SQL Alchemy](https://www.sqlalchemy.org/)
+- Less popular for enterprise development
+
+---
+
+### AR Usage
+
+#### Create
+
+```python
+part = Part()
+part.name = "Sample part"
+part.price = 123.45
+part.save()
+```
+
+```java
+var part = new Part();
+part.setName("Sample part");
+part.setPrice(123.45);
+part.save();
+```
+
+#### Delete
+
+```python
+part = Part.byID(22918)
+part.delete()
+```
+
+```java
+var part = Part.byID(22918);
+part.delete();
+```
+
+---
+
+### AR Complaints
+
+- Mixes burderns
+  - Representation
+  - Persistence mechanism
+- Doesn't scale with complexity
+  - e.g. complex queries
+- Hard to refactor
+
+---
+
+## Repository
+
+---
+
+### [Overview](https://martinfowler.com/eaaCatalog/repository.html)
+
+<figure  style='width: 20%;height:auto;position:absolute;right:0;bottom:2.5rem;'>
+![Image sans description.](./assets/safe.png)
+</figure>
+<div class='n-overview' style='width:85%;'>
+  <div class='n-o-label'>Category</div>
+  <div class='n-o-value'>Persistence</div>
+
+  <div class='n-o-label'>Problem</div>
+  <div class='n-o-value'>
+    <ul>
+        <li> Your domain model is getting too complex for the active record pattern</li>
+        <li> You don’t want to couple a representation to its persistence mechanism</li>
+    </ul>  
+  </div>
+
+  <div class='n-o-label'>Solution</div>
+  <div class='n-o-value'>
+    <ul>
+      <li>Add a mediating component between the business code and the persistence layer.</li>
+    </ul>      
+  </div>
+</div>
+
+---
+
+### Repo Interface
+
+```java
+interface Repository<T> {
+    List<T> read();
+    T readById(Integer id);
+    T create(T entity);
+    T update(T entity);
+    T delete(T entity);
+}
+```
+
+**Remember:** With generics we can define an interface without specifying what it’s holding.
+
+---
+
+### Interface Variation
+
+```java
+interface Repository<T, K> {
+    List<T> read();
+    T readById(K id);
+    T save(T entity);
+    T delete(T entity);
+}
+```
+
+**Notice:** Now the type of identifier is generic too
+
+---
+
+### Usage
+
+```python
+def UpgradeUser(id):
+   repo = UserRepository()
+   user = repo.GetByID(id)
+   user.perksLevel = 9000
+   repo.save(user)
+```
+
+```cpp
+void UpgradeUser(int id){
+   auto repo = UserRepository();
+   auto user = repo.GetByID(id);
+   user.perksLevel = 9000;
+   repo.save(user);
+}
+```
+
+```java
+void upgradeUser(Integer id){
+   IRepository<User,Integer> repo = new UserRepository();
+   var user = repo.getByID(id);
+   user.setPerksLevel(9000);
+   repo.save(user);
+}
+```
+
+#### Note
+
+In real life, clients will probably get repository via
+Dependency Injection
+
+---
+
+### Selling Points
+
+- Clear seperation of concerns
+- Easier refactoring

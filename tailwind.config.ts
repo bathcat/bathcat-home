@@ -3,7 +3,6 @@ import elevation from 'tailwindcss-elevation';
 import { colorVariables } from './src/logic/tailwind-plugins';
 import tailwindcssOpentype from 'tailwindcss-opentype';
 
-
 export default {
   darkMode: 'class',
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],

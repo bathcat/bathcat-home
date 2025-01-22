@@ -4,7 +4,6 @@
 @tailwind utilities;
 
 @layer base {
-
   a {
     @apply underline;
   }
@@ -27,31 +26,7 @@ main {
   padding-top: 3rem;
 }
 
-// Prose
-//
-//
-//
-
-.prose {
-  @apply dark:prose-invert;
-  @apply common-ligatures;
-  code{
-    @apply no-contextual;
-  }
-
-  ol {
-    @apply text-left;
-    @apply list-decimal;
-    padding-left: 3rem !important;
-    padding-right: 3rem !important;
-    padding-bottom: 1rem !important;
-    @apply font-mono;
-  }
-
-  img {
-    @apply my-0;
-  }
-
+.bc-table {
   table {
     @apply border-collapse border border-slate-500 table-auto;
     td,
@@ -72,10 +47,37 @@ main {
   }
 }
 
+// Prose
+//
+//
+//
+
+.prose {
+  @apply dark:prose-invert;
+  @apply common-ligatures;
+  @apply bc-table;
+  code {
+    @apply no-contextual;
+  }
+
+  ol {
+    @apply text-left;
+    @apply list-decimal;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+    padding-bottom: 1rem !important;
+    @apply font-mono;
+  }
+
+  img {
+    @apply my-0;
+  }
+}
+
 ul {
   @apply text-left;
   @apply list-disc;
-  padding-left: 2rem !important;
+  padding-left: 2rem;
   @apply font-mono;
   li {
     @apply leading-snug;
@@ -147,7 +149,6 @@ h6 {
   @apply elevation-4;
   @apply dark:bg-gray-600;
   @apply bg-opacity-100;
-
   @apply bg-white;
   @apply group-hover:elevation-12;
   @apply group-hover:dark:bg-gray-500;
@@ -248,5 +249,139 @@ svg[aria-roledescription='xychart'] {
   g.line-plot-1 path {
     stroke-width: 4;
     stroke: var(--color-blue-400);
+  }
+}
+
+.bc-slide {
+  @apply overflow-hidden;
+  @apply list-inside;
+  font-size: 5vmin;
+
+  width: 90%;
+  aspect-ratio: 16 / 9;
+
+  div.expressive-code .ec-line {
+    @apply text-left;
+    font-size: 2vmin;
+  }
+
+  ul,
+  ol {
+    padding-left: 1em;
+  }
+
+  ol {
+    @apply list-decimal;
+    @apply text-left;
+  }
+
+  div.expressive-code {
+    @apply max-w-4xl;
+    @apply pl-2;
+  }
+
+  .bc-slide-title {
+    font-size: 8vmin;
+  }
+
+  h4 {
+    font-size: 6vmin;
+    padding-left: 1em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+  }
+
+  .bc-slide-title {
+    & a {
+      font-size: 100%;
+      //color: ${alpha(colors.title,.8)};
+      //text-decoration-color: ${alpha(colors.title,.1)};
+      //@apply brightness-75;
+      @apply no-underline;
+
+      transition: all 0.5s ease;
+    }
+
+    & a:hover {
+      transition: all 0.5s ease;
+      @apply underline;
+      @apply brightness-90;
+      //color:${alpha(colors.title,.9)};
+      //text-decoration-color: ${alpha(colors.title,.5)};
+    }
+  }
+
+  figure {
+    float: right;
+  }
+
+  // TODO: This is pretty sleazy.
+  //   * Put these back into slides.scss
+  //   * Or maybe just on the components themselves.
+  div.n-overview > * {
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+  }
+
+  div.n-overview {
+    @apply w-3/4;
+    display: inline-grid;
+    grid-template-columns: 1fr 4fr;
+    position: relative;
+    z-index: 500;
+
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+
+    font-size: 150% !important;
+    float: left;
+
+    box-shadow: 0.1rem 0.25rem 0.75rem rgba(0, 0, 0, 0.5);
+
+    .n-o-value {
+      padding: 0.5rem;
+      @apply text-xl;
+    }
+    .n-o-label {
+      padding: 1rem;
+      font-size: x-large;
+      font-weight: 800;
+      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+        'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+  }
+}
+
+// Print
+//
+// The goal here is to avoid a page break after the final slide.
+//
+// This isn't ideal. But because of the astro-island nesting, it's a hassle
+// to select the last slide in the deck via Tailwind utility classes.
+//
+@media print {
+  @page {
+    margin: 1cm;
+    padding: 2cm;
+  }
+  header,
+  footer {
+    display: none;
+  }
+  .bc-slide {
+    @apply w-3/4;
+    @apply h-3/4;
+    @apply border-none;
+  }
+
+  .bc-deck {
+    @apply opacity-100;
+    @apply w-max;
+    @apply h-max;
+    @apply pt-16;
+    @apply m-10;
+    astro-slot astro-island:last-of-type div.bc-slide {
+      @apply break-after-auto !important;
+    }
   }
 }

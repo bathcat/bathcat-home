@@ -1,0 +1,395 @@
+---
+title: "Terminal"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Terminal
+
+---
+
+### Goals
+
+1. Define the term `cmdlet`
+1. Explain how to get help on a specific command
+1. Name an advantage of pipes
+
+---
+
+## Cmdlets
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/cmdlet-overview)
+
+- Pronounced _com-MAND-let_
+
+* Powershell-native
+* Take the form **Verb**-**Noun**
+
+```powershell
+#Equivalent to dir or ls
+Get-ChildItem
+
+#Equivalent to del or rm
+Remove-Item
+
+#Equivalent to echo
+Write-Output
+
+```
+
+---
+
+### Tips
+
+- Tab completion
+  - Type `Get-Com` then tab
+  - Works for parameters too
+- Ctrl + space for a menu
+- Up arrow to get previous commands
+- `clear` aka [`Clear-Host`](https://docs.microsoft.com/en-us/powershell/module/Microsoft.PowerShell.Core/Clear-Host) to clear the console
+
+```powershell
+# Get all shortcuts with this:
+Get-PSReadLineKeyHandler
+```
+
+---
+
+### The Magic of Meta
+
+- Cmdlets are just objects
+  - Like files or services
+- Interrogate them with [`Get-Command`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/get-command)
+
+```powershell
+# List all available
+Get-Command
+
+# Just process-related
+Get-Command -Noun 'Process'
+
+# Find out the syntax
+Get-Command 'Stop-Process' -Syntax
+```
+
+---
+
+### [about_Parameters](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parameters)
+
+- Passed by position
+
+```powershell
+Get-Command 'Get-Help'
+```
+
+- Passed by name
+
+```powershell
+Get-Command -Name 'Get-Help'
+```
+
+- Mix
+
+```powershell
+Get-Command 'Get-Help' -OnLine
+```
+
+---
+
+### The Magic of [`Get-Help`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/get-help)
+
+#### Commands
+
+```powershell
+Get-Help Get-ChildItem
+```
+
+#### Wildcards
+
+```powershell
+Get-Help Remove-*
+Get-Help about*
+```
+
+#### Useful parameters
+
+```powershell
+Get-Help Get-Random -Detailed
+Get-Help Get-Date -Full
+Get-Help Invoke-RestMethod -Online
+```
+
+---
+
+### Aliases
+
+- Alternative version of command to
+  - Save keystrokes (allegedly)
+  - Feel familiar
+
+| Pwsh            | Shorthand | Cmd.exe | Bash         |
+| --------------- | --------- | ------- | ------------ |
+| `Get-ChildItem` | `gci`     | `dir`   | `ls`         |
+| `Set-Location`  | `sl`      | `chdir` | `cd`         |
+| `Write-Output`  | `write`   | `echo`  | `echo`       |
+| `New-Item`      | `ni`      | `md`    | `mkdir`      |
+| `Remove-Item`   | `ri`      | `del`   | `rm`,`rmdir` |
+
+---
+
+### Combining Commands
+
+- Statements run sequentially
+
+```powershell
+Write-Output "Hello"; Write-Output "World"
+```
+
+- Conditional on **success**
+
+```powershell
+Set-ExecutionPolicy RemoteSigned && Write-Output "Success!"
+```
+
+- Conditional on **failure**
+
+```powershell
+Write-Output $xyz || Write-Output 'Variable "$xyz" not found'
+```
+
+---
+
+### More
+
+- Gets stuff one page at a time
+- Mostly the same on:
+  - Windows: [`more.com`](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/more)
+  - \*Nix: [`/usr/bin/more`](<https://en.wikipedia.org/wiki/More_(command)>)
+- Example:
+
+```powershell
+# Classic
+Get-Command | more
+
+# Alternative
+Get-Command | Out-Host -Paging
+```
+
+---
+
+## Pipes & Streams
+
+---
+
+### Motivation
+
+#### This kind of sucks
+
+```powershell
+$files = Get-ChildItem -Path *.txt
+$longFiles =  Where-Object -InputObject $files {$_.length -gt 10000}
+$sortedFiles = Sort-Object -InputObject $longFiles -Property length
+Format-Table -InputObject $sortedFiles -Property name, length
+```
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pipelines)
+
+- Series of commands connected by pipeline operators (|)
+- Sends the results of the preceding command to the next command
+
+```powershell
+Get-ChildItem -Path *.txt |
+  Where-Object {$_.length -gt 10000} |
+    Sort-Object -Property length |
+      Format-Table -Property name, length
+```
+
+---
+
+### Multiline
+
+```powershell
+# 1
+Get-Process notepad |
+  Stop-Process
+
+#2
+Get-ChildItem -Path *.txt |
+  Where-Object {$_.length -gt 10000} |
+    Sort-Object -Property length |
+      Format-Table -Property name, length
+```
+
+---
+
+### Filtering
+
+- **Cmdlet:** [`Where-Object`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object)
+- **Alias:** **?**
+- **`$_`** is an [automatic variable](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_automatic_variables) representing the current item in the pipeline
+
+```powershell
+# Commands containing 'job'
+Get-Command | Where-Object {$_.Name -like '*job*'}
+
+# Writeable files
+Get-ChildItem -File  | ? -not IsReadOnly
+
+```
+
+---
+
+### Sorting
+
+- Cmdlet: [`Sort-Object`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/sort-object)
+
+```powershell
+# Verbs, alphapetized
+Get-Verb |
+   Sort-Object -Property Verb
+
+# Biggest pigs
+Get-Process |
+   Sort-Object -Property WS
+```
+
+---
+
+### Transforming
+
+- **Cmdlet**: [`Foreach-Object`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/foreach-object)
+- **Alias:** **%**
+- Works like a [map](<https://en.wikipedia.org/wiki/Map_(parallel_pattern)>) idiom
+
+```powershell
+# Report on service status
+Get-Service | Foreach-Object {$_.Name + " is " + $_.Status}
+
+# Get Squares
+1..10 | %{ $_ * $_ }
+
+```
+
+---
+
+### [Redirection](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection)
+
+- Create a new file with **`>`**
+- Append to an existing file with **`>>`**
+
+```powershell
+Write-Output "Services:`n" > system_state.log
+Get-Service >> .\system_state.log
+
+Write-Output "Processes:`n" >> system_state.log
+Get-Process >> .\system_state.log
+
+Get-Content .\system_state.log
+```
+
+---
+
+## Drives
+
+---
+
+### Overview
+
+- The drive is central abstraction for
+  - Navigation
+  - C.R.U.D. operations
+- Good for files, but also:
+  - Registry keys
+  - WMI / CIM
+  - Functions & variables
+- Cmdlet: [`Get-PSDrive`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-psdrive)
+
+---
+
+### Example: File System
+
+```powershell
+Test-Path C:\Temp\
+New-Item -Path c:\temp -ItemType Directory
+
+# Equivalent to cd
+Set-Location C:\temp\
+New-Item .\notes.txt -Value 'TODO: Remember the milk'
+
+#Equivalent to cat, type
+Get-Content .\notes.txt
+```
+
+---
+
+### [Providers](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_providers)
+
+- Expose hierarchical data
+- Consistent paradigm
+- Build-in:
+  - File system
+  - Registry
+  - Environment
+- Also:
+  - Azure
+  - PowerPoint
+
+---
+
+### [Core Commands](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_core_commands?)
+
+- Common interface for all Providers
+- Examples
+  - [New-Item](https://loremipsum.com)
+  - [Set-Location](https://loremipsum.com)
+  - [Get-Item](https://loremipsum.com)
+  - [Get-ChildItem](https://loremipsum.com)
+  - [Remove-Item](https://loremipsum.com)
+
+---
+
+### More Exotic Examples
+
+#### Registry
+
+```powershell
+# 'CD' into a registry key
+Set-Location 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\'
+
+# Create a value to fire up notepad on startup
+Set-ItemProperty -Path . -Name 'editor' -Value 'notepad.exe'
+```
+
+#### Environment Variables
+
+```powershell
+Set-Location 'Env:\'
+Get-ChildItem
+```
+
+---
+
+### Provider Complaints
+
+- Leaky abstraction
+- Inconsistent implementation
+  - e.g. Registry values are properties, not files
+- Not always applicable
+  - e.g. Environment variables aren't hierarchical
+
+---
+
+## Lab: Terminal Golf
+
+---
+
+### Lab: Terminal Golf
+
+- Read instructions: $/labs/terminal-golf/README.md
+- Complete 9 holes
+- No file editing necessary

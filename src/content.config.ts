@@ -1,5 +1,8 @@
 import { glob } from 'astro/loaders';
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { deckFrontmatterSchema } from './content-decks';
+import { postFrontmatterSchema } from './content-posts';
+import { deckCollectionFrontmatterSchema } from './content-deck-collections';
 
 // TODO: Dynamically load images-- right now they're all unoptimized in /public
 //
@@ -9,16 +12,23 @@ import { defineCollection, z } from 'astro:content';
 
 const writing = defineCollection({
   loader: glob({ base: './src/content/writing', pattern: '**/*.{md,mdx}' }),
-  // Type-check frontmatter using a schema
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    // Transform string to Date object
-    pubDate: z.coerce.date(),
-    updatedDate: z.coerce.date().optional(),
-    heroImage: z.string().optional(),
-    status: z.string().optional(),
-  }),
+  schema: postFrontmatterSchema,
 });
 
-export const collections = { writing };
+const decks = defineCollection({
+  loader: glob({
+    base: './src/content/decks/',
+    pattern: ['**/*.{md,mdx}', '!**/index.mdx'],
+  }),
+  schema: deckFrontmatterSchema,
+});
+
+const deckCollections = defineCollection({
+  loader: glob({
+    base: './src/content/decks/',
+    pattern: ['**/index.{md,mdx}'],
+  }),
+  schema: deckCollectionFrontmatterSchema,
+});
+
+export const collections = { writing, decks, deckCollections };

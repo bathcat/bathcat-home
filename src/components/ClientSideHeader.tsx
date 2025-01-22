@@ -1,6 +1,6 @@
 import { useMediaQuery } from 'react-responsive';
-import { Navbar } from './Navbar';
-import { Menu } from './Menu';
+import { Navbar } from './navigation/Navbar';
+import { Menu } from './navigation/Menu';
 
 /// <summary>
 /// This seems goofy, but it's the best way (so far) to allow the display

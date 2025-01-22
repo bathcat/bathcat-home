@@ -1,10 +1,9 @@
+import type { PostFrontMatter } from '../content-posts';
 import { PrettyDate } from './PrettyDate';
 import { Title } from './Title';
 
-import type { PostInfo } from '../types';
-
 interface Props {
-  post: Omit<PostInfo, 'id' | 'status'>;
+  post: PostFrontMatter;
 }
 
 export const ContentHeader = ({

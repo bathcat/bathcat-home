@@ -1,0 +1,122 @@
+---
+title: "Windows"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Windows
+
+---
+
+### Goals
+
+1. Lorem ipsum
+1. Sic dolor
+
+---
+
+## Overview
+
+---
+
+### Roadmap
+
+- Cmdlets work with RESTful services
+- Light coverage
+- Code samples use
+  - [_AzAD_](https://learn.microsoft.com/en-us/powershell/module/azuread/)
+  - [_ExchangeOnline_](https://learn.microsoft.com/en-us/powershell/exchange/exchange-online-powershell-v2)
+
+---
+
+### Connection
+
+```powershell
+$credential = Get-Credential
+
+# Connect Azure
+Connect-AzAccount $credential
+
+# OR Connect Exchange
+Connect-ExchangeOnline $credential
+```
+
+---
+
+### [SecureString](https://learn.microsoft.com/en-us/dotnet/api/system.security.securestring)
+
+> Represents text that should be kept confidential, such as by
+> deleting it from computer memory when no longer needed.
+
+- Accounts need initial passwords in a **SecureString** format
+- Use [ConvertTo-SecureString](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/convertto-securestring)
+
+<br />
+
+```powershell
+$password = ConvertTo-SecureString -String 'P@ssw0rd' -AsPlainText -Force
+```
+
+---
+
+### New AzAccount
+
+```powershell
+$password = ConvertTo-SecureString -String 'P@ssw0rd' -AsPlainText -Force
+
+New-AzADUser `
+   -DisplayName frankt `
+   -MailNickname frankt `
+   -UserPrincipalName frankt@bathcat.onmicrosoft.com `
+   -AccountEnabled $true  `
+   -Password $password
+
+Get-AzADUser |
+  ? DisplayName -like '*frank*' |
+  Remove-AzADUser
+
+```
+
+---
+
+### New Mailbox
+
+```powershell
+$password = ConvertTo-SecureString -String 'P@ssw0rd' -AsPlainText -Force
+
+ New-Mailbox -Alias lexit `
+   -Name lexit `
+   -FirstName Lexi `
+   -LastName TheExecutive `
+   -DisplayName "Lexi TheExecutive" `
+   -MicrosoftOnlineServicesID lexit@bathcat.onmicrosoft.com `
+   -Password $password `
+   -ResetPasswordOnNextLogon $true
+
+
+Get-AzADUser |
+  ? DisplayName -like '*lexi*' |
+  Remove-AzADUser
+
+```
+
+---
+
+### Delegate Calendar Permissions
+
+```powershell
+
+Add-MailboxFolderPermission `
+  -Identity lexit@bathcat.onmicrosoft.com:\calendar `
+  -user abbytheadmin@bathcat.onmicrosoft.com `
+  -AccessRights Reviewer
+
+Get-MailboxFolderPermission `
+  -Identity lexit@bathcat.onmicrosoft.com:\calendar
+
+```
+
+Note:
+
+- https://thomasmitchell.net/managing-calendar-permissions-in-o365-with-powershell/

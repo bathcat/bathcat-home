@@ -1,0 +1,46 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import { DeckLink } from '../../components/DeckLink';
+import { getLiveDecks } from '../../content-decks';
+import Info from '../../layouts/Info.astro';
+import {  TabGroup } from '../../components/tabs/TabGroup';
+import { TabContent } from '../../components/tabs/TabContent';
+
+export const getStaticPaths = (async () => {
+  const deckCollections = await getCollection('deckCollections');
+  return deckCollections.map(deckCollection => ({
+    params: { collection: deckCollection.id },
+    props: deckCollection,
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = CollectionEntry<'deckCollections'>;
+
+const post = Astro.props;
+
+const { Content } = await render(post);
+
+const decks = await getLiveDecks(post.id);
+---
+
+<Info title={post.data.title} description={post.data.description} class=''>
+  <TabGroup
+    client:only='react'
+    activeTabID='1'
+    tabs={[
+      { tabID: '0', label: 'Overview' },
+      { tabID: '1', label: 'Slides' },
+    ]}
+  >
+    <TabContent tabID='0' client:only='react'>
+      <Content />
+    </TabContent>
+    <TabContent tabID='1' client:only='react'>
+      <div class='clear-both flex flex-col w-4/5 mt-4'>
+        {decks.map(info => <DeckLink info={info} />)}
+      </div>
+    </TabContent>
+  </TabGroup>
+</Info>

@@ -1,10 +1,10 @@
-rm -recurse -Force ./dist 
+Remove-Item -recurse -Force ./dist -ErrorAction ignore
 npm run build
 
-cd dist
+Set-Location dist
 
 # By default, gihub pages ignores folders prefixed with underscores.
-echo '' > .nojekyll
+Write-Output '' > .nojekyll
 
 # This is so the custom domain setting won't get clobbered
 'bathcat.net' | Out-File -FilePath CNAME -Encoding ascii -NoNewline
@@ -15,4 +15,4 @@ git commit -m 'deploy'
 
 git push -f https://github.com/bathcat/bathcat.github.io +master
 
-cd ..
+Set-Location ..

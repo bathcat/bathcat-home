@@ -1,0 +1,274 @@
+---
+title: "Big Picture"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# The Big Picture
+
+---
+
+### Goals
+
+1. List 2 versions of Powershell
+1. Compare Powershell with similar tools
+1. Name 1 cool thing about Powershell
+
+---
+
+## History
+
+---
+
+### Overview
+
+<figure class='bc-framed-image' style='width:20%;margin-left:1rem;transform: scaleX(-1);float:right;'>
+![Image sans description.](assets/snover.jpeg)
+</figure>
+
+- Replacement for `Cmd.exe`
+- Originally known as [Monad](https://www.jsnover.com/Docs/MonadManifesto.pdf)
+- Architect: [Jeffrey P. Snover](https://en.wikipedia.org/wiki/Jeffrey_Snover) [Twitter](https://twitter.com/jsnover)
+- First release: 2007
+
+---
+
+### Windows PowerShell
+
+- .NET-Based
+- Broad support
+- Does everything
+
+```powershell
+Add-Type -TypeDefinition @"
+public static class Mathy{
+  public static int Add(int a, int b){
+    return (a + b);
+  }
+}
+"@
+[Mathy]::Add(5,19)
+```
+
+---
+
+### Powershell Core
+
+- First release: 2016
+- Replaces legacy version
+- Open source
+- Cross platform
+  - Windows
+  - Linux
+  - OSX
+  - Docker
+
+---
+
+## Comparisons
+
+---
+
+### [Cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe)
+
+- Legacy Windows shell
+- Text-oriented
+- Coordinates applications
+- Capabilities
+  - **Command line** ⭐ ⭐ ⭐ ☆ ☆
+  - **Automation** ⭐ ☆ ☆ ☆ ☆
+  - **App Dev** ⭐ ☆ ☆ ☆ ☆
+
+---
+
+### [Bash](<https://en.wikipedia.org/wiki/Bash_(Unix_shell)>)
+
+<figure  style='width:30%;margin:1rem; float:right;'>
+![Image sans description.](assets/bash-logo-web.png)
+</figure>
+
+- Standard Linux shell
+- Text-oriented
+- Coordinates applications
+- Capabilities
+  - **Command line** ⭐ ⭐ ⭐ ⭐ ☆
+  - **Automation** ⭐ ⭐ ⭐ ☆ ☆
+  - **App Dev** ⭐ ☆ ☆ ☆ ☆
+
+---
+
+### Python
+
+<figure  style='width:20%;margin:1rem;float:right;'>
+![Image sans description.](assets/python-logo-notext.png)
+</figure>
+
+- Ubiquitous scripting language
+- Object-oriented
+- Lots of libraries
+- Capabilities
+  - **Command line** ⭐ ☆ ☆ ☆ ☆
+  - **Automation** ⭐ ⭐ ⭐ ☆ ☆
+  - **App Dev** ⭐ ⭐ ⭐ ⭐ ⭐
+
+---
+
+### Powershell
+
+<figure  style='width:20%;margin:1rem;float:right;'>
+![Image sans description.](assets/ps_black_64.svg)
+</figure>
+
+- Mostly windows
+- Object-oriented
+- Capabilities
+  - **Command line** ⭐ ⭐ ⭐ ⭐ ⭐
+  - **Automation** ⭐ ⭐ ⭐ ⭐ ☆
+  - **App Dev** ⭐ ⭐ ☆ ☆ ☆
+
+---
+
+## Kudos
+
+---
+
+### Powerful
+
+- Entire .NET platform + ecosystem
+- e.g. Fancy find-and-replace script
+
+```powershell
+
+function fix-slidebreaks($path){
+  (Get-Content $path -Raw) -replace '(?ms)\s^(?=#{1,3}\s)', "---`n`n"
+    | Out-File $path
+}
+
+Get-Item ./src/content/ |
+   Get-ChildItem -Recurse -Filter content.mdx |
+   %{fix-slidebreaks $_}
+
+```
+
+---
+
+### Ergonomic
+
+- Verb-noun makes it easy to read
+  - Unlike `dir`, `cat`, `set`, `grep`
+- Help system
+- Tab completion
+- Great tooling
+  - [Windows terminal](https://github.com/microsoft/terminal)
+  - [VSCode](https://code.visualstudio.com/)
+
+---
+
+### Useful
+
+- Automates boring stuff
+
+```powershell
+
+npm run ssr
+cd dist
+# By default, gihub pages ignores folders prefixed with underscores.
+echo '' >> .nojekyll
+
+# This is so the custom domain setting won't get clobbered
+echo 'bathcat.net' >> CNAME
+
+git init
+git add -A
+git commit -m 'deploy'
+
+git push -f https://github.com/bathcat/bathcat.github.io +master
+```
+
+---
+
+## Complaints
+
+---
+
+### Platforms Aren't the same
+
+- Lots of functionality is Windows-only
+  - [`Get-ComputerInfo`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-computerinfo)
+  - [`Get-Service`](https://learn.microsoft.com/en-us/powershell/module/Microsoft.PowerShell.Management/Get-Service)
+  - WMI/CIM Stuff
+  - Scheduled jobs
+  - Remoting
+- Commands on Windows: **~1600**
+- Commands on Ubuntu: **~350**
+
+---
+
+### Goofy Syntax
+
+- Sigils
+- Enumeration surprises
+- Drive weirdness
+- Comparison Operators
+
+---
+
+### Small Community
+
+- Install base
+- StackOverflow answers
+- Tooling
+
+---
+
+### Package Management
+
+- It's not NPM
+
+---
+
+## Resources
+
+---
+
+### Reading
+
+<figure  style='width:15%;margin:.5rem; float:right;'>
+![Image sans description.](assets/month-of-lunches.png)
+</figure>
+
+<figure  style='width:15%;margin:.5rem;clear:right;float:right;'>
+![Image sans description.](assets/month-of-lunches-scripting.png)
+</figure>
+
+- [AdamTheAutomator.com](https://adamtheautomator.com/tag/powershell/)
+- [Reddit](https://www.reddit.com/r/PowerShell/)
+- [PowerShell Practice and Style](https://poshcode.gitbook.io/powershell-practice-and-style/)
+- [SYSADMIN Channel](https://thesysadminchannel.com/powershell/)
+- [Month of Lunches](https://www.manning.com/books/learn-windows-powershell-in-a-month-of-lunches-second-edition)
+
+---
+
+### Exercises
+
+- [Koans](https://github.com/vexx32/PSKoans)
+- [Project Euler](https://projecteuler.net)
+
+---
+
+### Tools
+
+- [PowerShell](https://github.com/PowerShell/PowerShell)
+- [Pester](https://pester.dev/)
+- [Windows Terminal](https://github.com/Microsoft/Terminal)
+- [VS Code](https://code.visualstudio.com/)
+  - [PowerShell Language Support](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+- [Git](https://git-scm.com/)
+
+---
+
+### Lab: Whirlwind Tour
+
+- Read instructions: $/labs/README.md
+- Walk through the labs and demos, make sure you can run them

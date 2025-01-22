@@ -1,0 +1,44 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { render } from 'astro:content';
+import { BlockQuote } from '../../../components/slides/BlockQuote';
+import Deck from '../../../components/slides/DeckShim.astro';
+import { DeckTitle } from '../../../components/slides/DeckTitle';
+import Slide from '../../../components/slides/SlideShim.astro';
+import { SlideTitle } from '../../../components/slides/SlideTitle';
+import { TopicTitle } from '../../../components/slides/TopicTitle';
+import Page from '../../../layouts/Page.astro';
+import type { GetStaticPaths } from 'astro';
+
+const internalComponents = {
+  'bc-slide': Slide,
+  'bc-deck': Deck,
+  h1: DeckTitle,
+  h2: TopicTitle,
+  h3: SlideTitle,
+  blockquote: BlockQuote,
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const decks = await getCollection('decks');
+  return decks.map(deck => ({
+    params: { collection: deck.id.split('/')[0], slug: deck.id.split('/')[1] },
+    props: deck,
+  }));
+};
+
+type Props = CollectionEntry<'decks'>;
+
+const post = Astro.props;
+const { Content } = await render(post);
+---
+
+<Page title={'title'} description={'description'}>
+  <main class={``}>
+    <div
+      class={`max-w-3xl px-4 text-center m-0 bg-white bg-opacity-80 dark:bg-gray-900 dark:bg-opacity-70 dark:text-gray-300 text-gray-800`}
+    >
+      <Content components={internalComponents} />
+    </div>
+  </main>
+</Page>

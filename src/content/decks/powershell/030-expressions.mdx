@@ -1,0 +1,493 @@
+---
+title: "Expressions"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Expressions
+
+---
+
+### Goals
+
+1. Discuss two ways to invoke a function
+1. List 3 different comparison operators
+1. Name two different loop constructs
+
+---
+
+## Variables
+
+---
+
+### PowerShell the Language
+
+- Dynamically typed (mostly)
+- Imperative (mostly)
+- Inspired by
+  - C#, JavaScript, etc
+  - Python
+  - Shell
+
+---
+
+### [Variables](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_variables)
+
+- Associate names with values
+- Pop into existence on assignment \*
+- Rules:
+  - Prefixed with **`$`**
+  - Only letters, numbers, and underscores
+  - Don't start with a number
+
+```powershell
+$path = 'c:/Windows'
+
+$documents = Get-ChildItem -Recurse |
+               ? Name -like '*.md'
+
+```
+
+---
+
+### Sloppy Variables
+
+- PowerShell defaults to 'sloppy mode'
+- Every variable already exists
+  - Even before assignment
+  - The value is `$null`
+- Stay tuned for `Set-StrictMode`
+
+```powershell
+
+"I like this commercial product: $product. It's great!"
+
+```
+
+---
+
+### Typing
+
+- Delimit with brackets
+- Add safety and clarity
+- Use with
+  - .NET type name
+  - [Accelerators](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_type_accelerators?view=powershell-7.1)
+
+```powershell
+# .NET typing
+[System.IO.DirectoryInfo]$src = Get-Item ./src/
+
+# Accelerator
+[int]$slotsAvailable = 12
+$slotsAvailable = 'none' #Bork!
+```
+
+---
+
+### Variable Cmdlets
+
+- Cmdlets manage variables
+  - e.g. [`Get-Variable`](https://lorem.ipsum), [`Set-Variable`](https://lorem.ipsum), [`New-Variable`](https://lorem.ipsum)
+- Useful for
+  - Finding out what's available
+  - Creating private or constant variables
+
+```powershell
+# Find out what's out there
+Get-Variable
+
+# Make sure it doesn't get clobbered
+New-Variable -Name PI -Value 3.14 -Option Constant
+Write-Host $PI
+```
+
+---
+
+### Why Read-Only?
+
+- Prevent accidental re-assignment
+  - If you can't change it, you can't screw it up
+- Two options:
+  - **`Constant`** never get changed
+  - **`ReadOnly`** can be reassigned with `--Force`
+
+---
+
+## Comments
+
+---
+
+### Line Comments
+
+- Used for annotation
+- Don't affect any behavior
+- Demarcated with **`#`**
+- Use judiciously
+
+```powershell
+ # Below is the id of the user
+ $userID = 12
+```
+
+---
+
+### Block Comments
+
+- Demarcated with **`<#`** / **`#>`**
+- Useful for help system
+
+```powershell
+function Get-SphereVolume($radius){
+  <# Figures out the volume of a sphere with the
+  specified radius.
+  #>
+  $pi = 3.14
+  return 4/3*$pi*[Math]::Pow($radius, 3)
+}
+```
+
+---
+
+### Example
+
+```powershell
+<#
+.SYNOPSIS
+  Gets pi
+.OUTPUTS
+  Pi
+.Description
+  General notes....
+#>
+function Get-Pi {
+  return 3.14
+}
+
+Get-Help Get-Pi
+```
+
+---
+
+## Functions
+
+---
+
+### Calling Functions
+
+- Pass arguments (sometimes)
+- Get something back (sometimes)
+- Syntax
+  - Whitespace-delimited arguments
+  - No parens
+
+```powershell
+$now = Get-Date
+$number = Get-Random -Maximum 10
+```
+
+---
+
+### Calling .NET Functions
+
+- Syntax
+  - Parens
+  - Comma-delimited arguments
+
+```powershell
+$x = [System.Math]::Sqrt(5)
+$y = [System.Math]::Pow(2, 16)
+
+```
+
+---
+
+### Defining Functions
+
+- Define with keyword **`function`**
+- Optional: exit via keyword **`return`**
+- Use the form **Verb**-**Noun**
+
+```powershell
+function Get-Hello{
+  return 'Hello World'
+}
+
+```
+
+---
+
+### About Verbs
+
+- Use only verbs that already exist
+- Verbs come with semantics-- e.g.
+  - `New-*` implies a state-change
+  - `Get-*` should be safe
+
+```powershell
+# Here's the list of approved verbs:
+Get-Verb | Sort-Object -Property Verb
+```
+
+---
+
+### Examples
+
+#### Explicit `return`
+
+```powershell
+function Get-Sum($A,$B){
+    return $A + $B
+}
+
+```
+
+#### Multiple values (implicit)
+
+```powershell
+function Get-Lyrics(){
+    "Got to be good-lookin"
+    "Cause it's so hard to see"
+}
+```
+
+---
+
+## Strings
+
+---
+
+### [Flavors](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_quoting_rules)
+
+- Quotation marks
+  - Single-tick means literal
+  - Double-tick means interpolated
+- Newlines are ok
+
+```powershell
+$word = 'thing'
+$sameWord = "thing"
+
+$lines = '
+I am the very model
+Of a modern major general
+'
+```
+
+---
+
+### Quotes in Strings
+
+- Mix up single ticks with double-ticks
+- Escape by doubling-up
+
+```powershell
+# No escape needed
+$motto = "Don't take stuff."
+$slogan = 'Always "remember" to steal.'
+
+# Ticks in strings
+$advice = 'Don''t forget the milk.'
+$words = "It's impolite to say ""Shut up""."
+```
+
+---
+
+### Interpolated
+
+- Double-tick strings
+- Expands variables, expressions
+
+```powershell
+$givenName = 'joe'
+$surname = 'bloggs'
+Write-Host "Paging $givenName $surname!"
+
+$pi = 3.14
+Write-Host "Pi is: $pi"
+Write-Host "Pi^2 is: $($pi*$pi)"
+
+Write-Host "Notepad is at $((Get-Process notepad).Path)"
+```
+
+---
+
+### [Special Characters](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_special_characters)
+
+- Use the [_grave accent_](https://en.wikipedia.org/wiki/Grave_accent) **`**
+- Newline
+
+```powershell
+Write-Host "Processing...`n`nDone!"
+```
+
+- Tabs
+
+```powershell
+Write-Host "Here are things:"
+Write-Host "`tNinja"
+Write-Host "`tGoat"
+Write-Host "`tTree"
+```
+
+---
+
+## Conditions
+
+---
+
+### Overview
+
+- Syntax:
+  - Condition in parens
+  - Codeblock in braces
+- Keywords: [`if`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_if), [`switch`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_switch)
+
+```powershell
+if ((Get-Date).DayOfWeek -eq 'Sunday'){
+  Write-Host "Tomorrow is trash day."
+}
+```
+
+---
+
+### Adding Branches
+
+```powershell
+$color = '#FFFF00'
+
+if ($color -eq '#FFFF00'){
+  Write-Host 'yellow'
+}
+elseif ($color -eq '#FF0000'){
+  Write-Host 'red'
+}
+else {
+  Write-Host 'unknown'
+}
+```
+
+---
+
+### Equality is Referential
+
+- Equality operator does not compare structure
+
+```powershell
+$a = @{id=1}
+$b = @{id=1}
+$a -eq $b
+```
+
+- Goofy for collections
+
+```powershell
+$xs = 1,2,3
+$ys = 1,2,3
+[bool]$areSame = $xs -eq $ys
+```
+
+---
+
+### [Comparison Operators](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comparison_operators)
+
+- Least intuitive part of powershell
+- Everything has a dash
+- Examples
+  - Equals: `-eq`
+  - Greater than: `-gt`
+  - Less than: `-lt`
+
+---
+
+### Selected Operators
+
+| Operation             | In C#   | In Powershell |
+| --------------------- | ------- | ------------- |
+| Equals                | **==**  | `-eq`         |
+| Not equals            | **!=**  | `-ne`         |
+| Greater than          | **>**   | `-gt`         |
+| Greater than or equal | **>=**  | `-ge`         |
+| Less than             | **\<**  | `-lt`         |
+| Less than or equal    | **\<=** | `-le`         |
+
+---
+
+## Iteration
+
+---
+
+### Loop Flavors
+
+1. [`for`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_for)
+1. [`foreach`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach)
+1. [`while`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_while)
+1. [`do..while` / `do..until`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_do)
+
+---
+
+### [`foreach`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach)
+
+```powershell
+$names='Rob','Mary','David','Jenny','Chris','Imogen'
+foreach ($name in $names){
+    "Name of: " + $name
+}
+```
+
+---
+
+### [`for`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_for)
+
+- Works just like C family
+- Doesn't feel very much like PowerShell
+
+```powershell
+# C-flavored
+for ($i = 0; $i -lt 10; $i++){
+    "Digit: " + $i
+}
+# Idiomatic pwsh
+0..9 | ForEach-Object {"Digit: " + $_}
+```
+
+---
+
+### [`while`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_while)
+
+- Executes as long as a condition is true
+
+```powershell
+$i = 0
+while ($i -lt 3){
+  Write-Host $i
+  $i = $i + 1
+}
+```
+
+---
+
+### Kicking Out
+
+- Quit function with [`return`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_return)
+- Quit loop with [`break`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_break)
+
+```powershell
+$i = 0
+while ($true){
+  Write-Host $i
+  $i++
+  if($i -gt 3){
+    break
+  }
+}
+Write-Host 'Done'
+```
+
+---
+
+### Lab: FizzBuzz
+
+- Read instructions: $/labs/fizz-buzz/README.md
+- Build the applications starting with 'startingpoint'

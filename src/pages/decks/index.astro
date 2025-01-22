@@ -1,0 +1,27 @@
+---
+import Info from '../../layouts/Info.astro';
+import { Divider } from '../../components/Divider';
+import '../../styles/slides.scss';
+import { getDeckCollections } from '../../content-deck-collections';
+import { DeckCollectionLink } from '../../components/DeckCollectionLink';
+
+const decks = await getDeckCollections();
+---
+
+<Info title={'Decks'} description={'Slide decks'} class=''>
+  <p>
+    These are slide decks for various workshops and talks I've given. Expect
+    more to appear over the next couple weeks.  If you're
+    looking for a specific deck and it's not here yet, feel free to nag me. 
+  </p>
+  <p>
+    After playing with <a href='https://revealjs.com/'>Reveal.js</a>, 
+    <a href="https://github.com/FormidableLabs/spectacle">Spectacle</a>, 
+    and <a href="https://sli.dev/">Sli.dev</a>, I've settled on just rolling my 
+    own. It's still got a few warts, so be patient about that too.
+  </p>
+  <Divider />
+  <div class='clear-both flex flex-col'>
+    {decks.map(info => <DeckCollectionLink info={info} />)}
+  </div>
+</Info>

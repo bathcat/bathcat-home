@@ -1,0 +1,280 @@
+---
+title: "Modules"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Modules
+
+---
+
+### Goals
+
+1. Explain the benefits of PowerShell modules
+1. Explain the module path
+1. List the 2 uses of keyword `using`
+
+---
+
+## Scripts
+
+---
+
+### Overview
+
+- Rules
+  - Plain text
+  - Extension '.ps1'
+  - 1 or more PowerShell commands
+- Run via
+  - Terminal
+  - Some other script
+
+---
+
+### Example
+
+#### Here's MyScript.ps1
+
+```powershell
+Write-Output "I do nothing"
+
+function Get-Self($Self){
+  return $Self
+}
+```
+
+#### Invoke via Terminal
+
+```
+$ ./MyScript.ps1
+```
+
+#### Invoke via script
+
+```PowerShell
+# Run directly
+./MyScript.ps1
+```
+
+---
+
+### Script Parameters
+
+#### Contents of `Get-Self.ps1`
+
+```powershell
+Param($Self)
+return $Self
+```
+
+#### Invoke via Terminal
+
+```
+$ ./Get-Self.ps1 -Self 'There is no spoon.'
+```
+
+---
+
+### Dot-Sourcing
+
+- Imports _everything_ into the current session
+- Simple, old-school
+- Only works for '.ps1' extension
+- Might clobber variables, functions, aliases
+
+```powershell
+# Initial dot brings everything into this namespace
+. ./build-color.ps1
+
+```
+
+---
+
+### Ignoring Output
+
+- Avoid pipeline pollution with [`Out-Null`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/out-null)
+
+```powershell
+function Start-Enfarculation{
+    Write-Host 'Commencing Enfarculation Procedure'
+    # Dot-source and ignore output
+    . ./Get-Greeting.ps1 | Out-Null
+    Get-Greeting
+    Write-Host 'Initialization Complete...'
+}
+```
+
+---
+
+### Benefits (often) Outweighed
+
+- Advantages
+  - Do it anywhere
+  - Works with variables
+- Costs
+  - No way to select what's being imported
+  - Side effects
+
+---
+
+## Simple Modules
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules)
+
+- A module is a package of:
+  - Cmdlets
+  - Functions
+  - Variables
+  - Etc
+- Turn a script into a module: Change the extension to **psm1**
+- Modules can't be dot-sourced
+
+---
+
+### [Auto-Loading](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules?view=powershell-7.1#module-auto-loading)
+
+> PowerShell imports modules automatically the first time that you run any
+> command in an installed module. You can now use the commands in a module
+> without any set-up or profile configuration, so there's no need to manage
+> modules after you install them on your computer.
+
+- Installation path `$env:PSModulePath`
+- Disable with `$PSModuleAutoloadingPreference = 'None'`
+
+---
+
+### [`Export-ModuleMember`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/export-modulemember?view=powershell-7)
+
+- By default, everything in your module is available to consumers
+- **Best Practice**: Explicitly export the public interface
+
+```powershell
+# Get-Self.psm1
+
+$secret = 'i like bunnies'
+
+function Get-Self{
+  #...
+}
+
+Export-ModuleMember -Function Get-Self
+```
+
+---
+
+### Using [`Import-Module`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module)
+
+- Adds a module to the current session
+- By default imports all public members
+  - Aliases
+  - Functions
+  - Variables
+- Lets you import only the things you need
+
+---
+
+### Examples
+
+#### Import Everything
+
+```powershell
+Import-Module $PSScriptRoot/Admin.psm1
+```
+
+#### Import `Get-Users` Only
+
+```powershell
+Import-Module $PSScriptRoot/Admin.psm1 -Function Get-Users
+$users = Get-Users
+```
+
+#### Prefix to Avoid Collisions
+
+```powershell
+Import-Module $PSScriptRoot/Admin.psm1 `
+  -Function Get-Users `
+  -Prefix Windows
+$users = Get-WindowsUsers
+```
+
+---
+
+### Using [`using namespace`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_using)
+
+- Lets you to specify which namespaces are used in the session
+- Good for 'importing'
+  - .NET namespaces
+  - Powershell modules
+- Rules:
+  - Must be at the top of the file
+  - No variables allowed
+
+---
+
+### Motivation
+
+```powershell
+$changeTypes = [System.IO.WatcherChangeTypes]::Created, [System.IO.WatcherChangeTypes]::Deleted
+$watcher = [System.IO.FileSystemWatcher]::new('c:/temp/');
+
+while($true){
+  $result = $watcher.WaitForChanged($changeTypes, 5000)
+  if(-not $result.TimedOut){
+    "Got a change: $($result.ChangeType), $($result.Name)"
+  }
+}
+```
+
+---
+
+### Refactored
+
+```powershell
+using namespace System.IO
+
+[WatcherChangeTypes]$changeTypes = 'Created', 'Deleted'
+[FileSystemWatcher]$watcher = [FileSystemWatcher]::new('c:/temp/');
+
+while($true){
+  $result = $watcher.WaitForChanged($changeTypes, 5000)
+  if(-not $result.TimedOut){
+    "Got a change: $($result.ChangeType), $($result.Name)"
+  }
+}
+```
+
+---
+
+## Fancy Modules
+
+---
+
+### The Manifest
+
+- Manifests aren't required
+- BUT they're good for
+  - Metadata
+  - Packaging
+  - Sharing - e.g. Powershell Gallery
+- Generate with [New-ModuleManifest](https://docs.microsoft.com/en-us/powershell/module/Microsoft.PowerShell.Core/New-ModuleManifest)
+
+---
+
+### Example
+
+```powershell
+@{
+  RootModule = 'SampleModule.psm1'
+  ModuleVersion = '1.0.0'
+  GUID = '3ff4d4b6-ade9-46f3-a4f2-2ad6f5508388'
+  Author = '<name>'
+  CompanyName = 'Unknown'
+  Copyright = '(c) 2021 <name>.'
+  Description = 'Some description.  This is required by the PowerShell Gallery'
+  FunctionsToExport = @('New-File','Import-FileNoWildcard','Import-FileWildcard')
+}
+```

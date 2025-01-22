@@ -5,7 +5,6 @@
 //
 //
 
-
 export const ChartLegend = () => (
   <div className='flex gap-5 place-content-center text-xl font-semibold'>
     <div>

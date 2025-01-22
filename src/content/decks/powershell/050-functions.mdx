@@ -1,0 +1,362 @@
+---
+title: "Functions"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Functions
+
+---
+
+### Goals
+
+1. List 2 flavors of function
+1. Explain the advantages of strong typing
+1. Define an 'advanced' function
+
+---
+
+## Function Variations
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions)
+
+- Named list of PowerShell statements
+- Invoked like a cmdlet
+- Variations
+  - Plain
+  - Advanced
+  - Filter
+
+---
+
+### Variations
+
+#### This is ok
+
+```powershell
+function Get-Identity($Self){
+  return $Self
+}
+```
+
+#### This is better
+
+```powershell
+function Get-Identity{
+  param{
+    $Self
+  }
+  return $Self
+}
+```
+
+---
+
+### Reasons to Prefer
+
+- Same syntax for
+  - Scripts
+  - Codeblocks
+  - 'Advanced Functions'
+
+---
+
+### Return Values
+
+- Explicit via
+  - Keyword [`return`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_return)
+  - Cmdlet [`Write-Output`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/write-output)
+- Implicit via... anything else
+
+---
+
+### Example
+
+#### What's the output?
+
+```powershell
+function Select-Sum($A, $B){
+  $result = $A + $B
+  "Result is: $result"
+  return $result
+}
+$sum = Select-Sum 11 5
+$sum.GetType()
+```
+
+---
+
+### Refactored
+
+```powershell
+function Select-Sum($A, $B){
+  $result = $A + $B
+  Write-Information "Result is: $result"
+  return $result
+}
+# Notice: the debug preference
+$sum = Select-Sum 11 5 -Information Continue
+$sum.GetType()
+```
+
+---
+
+### Alternative [Preference Variables](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables)
+
+- Examples:
+  - `$InformationPreference`
+  - `$DebugPreference`
+  - `$VerbosePreference`
+- Options
+  - `SilentlyContinue`, `Continue`, `Stop`, `Ignore`...
+
+---
+
+### Example
+
+```powershell
+function Select-Sum($A, $B){
+  # ...
+}
+
+$InformationPreference = Continue
+$sum = Select-Sum 11 5
+$sum.GetType()
+```
+
+---
+
+## Adding Types
+
+---
+
+### Motivation
+
+- For developers, not many guardrails
+- For consumers, it's hard to tell what this is doing
+  - What it returns
+  - What it expects
+
+```powershell
+function Select-Sum($A,$B){
+  $result = $A + $B
+  return $result
+}
+$sum = Select-Sum 11 'chicken' 44
+```
+
+---
+
+### Refactored
+
+```powershell
+function Select-Sum{
+  [OutputType([int])]
+  Param(
+    [int]$A,
+    [int]$B
+  )
+  $result = $A + $B
+  Write-Information "Result is: $result"
+  return $result
+}
+```
+
+---
+
+### About [`OutputType`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_outputtypeattribute)
+
+- Metadata only
+- Not enforced
+- **BUT** still a good idea
+
+---
+
+### Example
+
+```powershell
+function Get-Pi{
+  [OutputType([float])]
+  Param()
+  return "Apple"
+}
+"Expected type: "
+(Get-Command Get-Pi).OutputType.Name
+
+"`nActual type: "
+(Get-Pi).GetType().Name
+```
+
+---
+
+## Script Blocks
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_script_blocks)
+
+- Lorem
+- Ipsum
+
+---
+
+## 'Advanced' Functions
+
+---
+
+### [Defined](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced)
+
+> Advanced functions allow you create cmdlets that are written
+> as a PowerShell function. Advanced functions make it easier
+> to create cmdlets without having to write and compile a binary cmdlet.
+
+- **Motivation** having a function that works just like built-in cmdlets
+  - `ShouldProcess`
+  - `Whatif`
+
+---
+
+### [Overview](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced)
+
+#### Not Advanced
+
+```powershell
+function Get-Self{
+  Param($Self)
+  return $Self
+}
+```
+
+#### Totally Advanced
+
+```powershell
+function Get-Self{
+  [CmdletBinding()]
+  Param($Self)
+  return $Self
+}
+```
+
+---
+
+### Ex: `SupportsShouldProcess`
+
+```powershell
+function Remove-File {
+  [CmdletBinding(
+    SupportsShouldProcess,
+    ConfirmImpact = 'High'
+  )]
+  param(
+     [Parameter(Mandatory)]
+     [string]$path
+  )
+  if ($PSCmdlet.ShouldProcess($path)) {
+    Remove-Item $path
+  }
+}
+
+```
+
+---
+
+## Validation
+
+---
+
+### Overview
+
+- Powershell comes with attributes for checking parameters
+- Not just metadata: actually enforced at runtime
+- Most useful:
+  - [ValidateCount](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_parameters?view=powershell-7.1#validatecount-validation-attribute)
+  - [ValidateRange](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_parameters?view=powershell-7.1#validaterange-validation-attribute)
+  - [ValidateScript](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_parameters?view=powershell-7.3#validatescript-validation-attribute)
+  - [ValidateSet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_parameters?view=powershell-7.3#validateset-attribute)
+
+---
+
+### Example
+
+```powershell
+function Write-Update{
+  param(
+    [Parameter(Mandatory)]
+    [ValidateLength(1, 100)]
+    [string] $Message,
+
+    [Parameter(Mandatory)]
+    [ValidateSet('Low', 'Medium', 'High')]
+    [string] $Severity,
+
+    [Parameter(Mandatory)]
+    [ValidateScript( { Test-Path $_ } )]
+    [string] $Path
+  )
+  Write-Host "$Severity - $Message - $Path"
+}
+```
+
+---
+
+## Begin, Process, End
+
+---
+
+### Motivation
+
+- Normally a function is **stateless**
+- Working on a pipeline can require keeping state around
+
+```powershell
+function Select-Sum([int[]]$Xs) {
+  $sum = 0
+  foreach($x in $Xs){$sum += $x}
+  return $sum
+}
+## Wrong answers
+$s1 = Get-Process | % WorkingSet | Select-Sum
+$s2 = Get-Process | % WorkingSet | %{ Select-Sum $_ }
+
+## Slightly ugly
+$sets = Get-Process | % WorkingSet
+$s3 = Select-Sum $sets
+```
+
+---
+
+### [Piping into Functions](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions?view=powershell-7.1#piping-objects-to-functions)
+
+- Optionally, a function can have 3 blocks
+  - **Begin** runs before the first thing piped in
+  - **Process** for each item
+  - **End** after the last item
+
+```powershell
+function Save-Users{
+  begin { Write-Host "Opening DB connection"  }
+
+  process { Write-Host "Saving $_" }
+
+  end{ Write-Host 'Closing connection' }
+}
+1..5 | Save-Users
+
+```
+
+---
+
+### `Select-Sum` Refactored
+
+```powershell
+function Select-Sum {
+  begin { $sum = 0 }
+  process { $sum += $_ }
+  end {return $sum}
+}
+
+Get-Process | % WorkingSet | Select-Sum
+```

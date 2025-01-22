@@ -1,0 +1,22 @@
+---
+// Injects Google Analytics.
+// Uses Partytown to run the script in a Web Worker.
+---
+
+<!-- Google tag (gtag.js)-->
+<script
+  is:inline
+  type='text/partytown'
+  src='https://www.googletagmanager.com/gtag/js?id=G-GRBB86L642'></script>
+
+<script>
+  declare const window: any;
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag(chunks: Array<any>) {
+    window.dataLayer.push(chunks);
+  }
+  gtag(['js', new Date()]);
+
+  gtag(['config', 'G-GRBB86L642']);
+</script>
