@@ -11,8 +11,8 @@ export const BreadCrumbSpacer = () => {
     >
       <path
         stroke='currentColor'
-        stroke-linecap='round'
-        stroke-linejoin='round'
+        strokeLinecap='round'
+        strokeLinejoin='round'
         strokeWidth='2'
         d='m9 5 7 7-7 7'
       />
