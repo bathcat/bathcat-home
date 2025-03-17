@@ -1,0 +1,140 @@
+---
+title: "Async"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+# Async
+
+---
+
+### Goals
+
+1. Lorem
+2. Ipsum
+3. Sic
+
+---
+
+## Asynchrony
+
+---
+
+### Parallelism v Asynchrony
+
+- Parallelism spreads work across multiple CPUs
+  - But thread might be blocked by IO operations
+- Asynch is non-blocking
+
+---
+
+### [Async Patterns](https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/)
+
+- Old-School
+  - Asynchronous Programming Model aka begin/end
+  - Callbacks
+  - Event-based
+- Task-based - aka promises
+
+---
+
+### Task-Based Parallelism
+
+- A Task represents the eventual result of an async operation
+  1. Completion, optional return value
+  2. Error
+- Similar to a `Promise` in other languages
+
+---
+
+### Example: Food Hall, Blocking
+
+```csharp
+static void Main(string[] args)
+{
+    Coffee coffee = PourCoffee();
+    Console.WriteLine("coffee is ready");
+
+    Beer[] beers= PourBeer(2);
+    Console.WriteLine("Beers poured!");
+
+    Burrito[] burritos = MakeBurritos(2);
+    Console.WriteLine("Burritos ready");
+
+    Burger burger = MakeBurger();
+    ApplyCondiments(burger);
+
+    Console.WriteLine("Hipster dinner served!");
+}
+```
+
+---
+
+### Example: Food Hall, Async
+
+```csharp
+static async Task void Main(string[] args)
+{
+    Coffee coffee = PourCoffee();
+    Console.WriteLine("coffee is ready");
+
+    Beer[] beers= await PourBeer(2);
+    Console.WriteLine("Beers poured!");
+
+    Burrito[] burritos = await MakeBurritos(2);
+    Console.WriteLine("Burritos ready");
+
+    Burger burger = await MakeBurger();
+    ApplyCondiments(burger);
+
+    Console.WriteLine("Hipster dinner served!");
+}
+```
+
+---
+
+### Things to Notice
+
+- Everything still happens sequentially
+- Keyword `async` on the method
+- `Task` returned
+- Keyword `await` is magical transparent callback!
+
+---
+
+### Example: Food Hall, Parallel
+
+```csharp
+static async Task void Main(string[] args)
+{
+    Coffee coffee = PourCoffee();
+    Console.WriteLine("coffee is ready");
+
+    Task<Beer[]> beersTask= PourBeer(2);
+    Console.WriteLine("Beers poured!");
+
+    Task<Burrito[]> burritosTask = MakeBurritos(2);
+    Console.WriteLine("Burritos ready");
+
+    Burger burger = await MakeBurger();
+    ApplyCondiments(burger);
+
+    Beer[] beers = await beersTask;
+    Burrito[] burritos = await burritosTask;
+
+    Console.WriteLine("Hipster dinner served!");
+}
+```
+
+---
+
+### What's the Point?
+
+- Free up threads to do useful work
+- Used for IO-intensive things:
+  - Network
+  - Disc
+  - Databases
+- **Not** for CPU-intensive operations
+
+

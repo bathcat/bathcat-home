@@ -5,11 +5,12 @@ import type { GetStaticPaths } from 'astro';
 import { DeckLink } from '../../components/DeckLink';
 import { getLiveDecks } from '../../content-decks';
 import Info from '../../layouts/Info.astro';
-import {  TabGroup } from '../../components/tabs/TabGroup';
+import { TabGroup } from '../../components/tabs/TabGroup';
 import { TabContent } from '../../components/tabs/TabContent';
 
 export const getStaticPaths = (async () => {
   const deckCollections = await getCollection('deckCollections');
+  console.log(`Deck collections: ${deckCollections.length}`);
   return deckCollections.map(deckCollection => ({
     params: { collection: deckCollection.id },
     props: deckCollection,

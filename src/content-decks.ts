@@ -32,6 +32,7 @@ const toDeckInfo = (deck: DeckCollectionItem): DeckInfo => ({
 
 export const getLiveDecks = async (collection: string) => {
   const rawDecks = (await getCollection('decks')) as DeckCollectionItem[];
+  console.log(`Deck count: ${rawDecks.length}`);
   return rawDecks
     .filter(d => d.filePath.includes(collection))
     .map(d => toDeckInfo(d))
