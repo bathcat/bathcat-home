@@ -262,7 +262,7 @@ svg[aria-roledescription='xychart'] {
 
   div.expressive-code .ec-line {
     @apply text-left;
-    font-size: 4vmin;
+    font-size: 3vmin;
   }
 
   ul,
@@ -276,12 +276,24 @@ svg[aria-roledescription='xychart'] {
   }
 
   div.expressive-code {
-    @apply max-w-4xl;
+    @apply max-w-7xl;
     @apply pl-2;
+  }
+
+  div.expressive-code > code {
+    @apply text-sm;
   }
 
   .bc-slide-title {
     font-size: 8vmin;
+  }
+
+  table {
+    //TODO: Put this stuff in a layer.
+    @apply min-w-full;
+    font-size: 90%;
+    border-spacing: 1.5rem 0;
+    border-collapse: separate;
   }
 
   h4 {
@@ -352,10 +364,6 @@ svg[aria-roledescription='xychart'] {
   }
 }
 
-
-
-
-
 .bc-slide > .bc-slide-title,
 .bc-slide > astro-slot > .bc-slide-title {
   /* title styles */
@@ -366,11 +374,6 @@ svg[aria-roledescription='xychart'] {
 .bc-slide > astro-slot > *:not(.bc-slide-title) {
   @apply m-4;
 }
-
-
-
-
-
 
 // Print
 //

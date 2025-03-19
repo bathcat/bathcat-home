@@ -29,15 +29,13 @@ flavor: 'Deck'
 
 ---
 
-### Hello World
+### Shortest Program Ever!
 
 - **Type** `Console`
 - **Operator** This thing: `.`, pronounced 'dot'. Invokes a method.
 - **Method** `WriteLine` (It's static.)
 - **Argument** `"Hello, World!"` (It's a string.)
 - **Line terminator** Mandatory semicolon. (This thing: `;`.)
-
-#### Sortest Program Ever!
 
 ```csharp
 Console.WriteLine("Hello, World!");
@@ -85,21 +83,28 @@ Console.WriteLine(message);
 
 ---
 
-### Sizing
+### Ints
 
-| Type      | Description                                    | Range                                           |
-| :-------- | :--------------------------------------------- | :---------------------------------------------- |
-| `sbyte`   | Signed 8-bit integer                           | `-128` to `127`                                 |
-| `byte`    | Unsigned 8-bit integer                         | `0` to `255`                                    |
-| `short`   | Signed 16-bit integer                          | `-32768` to `32767`                             |
-| `ushort`  | Unsigned 16-bit integer                        | `0` to `65535`                                  |
-| `int`     | Signed 32-bit integer                          | `-2147483648` to `2147483647`                   |
-| `uint`    | Unsigned 32-bit integer                        | `0` to `4294967295`                             |
-| `long`    | Signed 64-bit integer                          | `-9223372036854775808` to `9223372036854775807` |
-| `ulong`   | Unsigned 64-bit integer                        | `0` to `18446744073709551615`                   |
-| `float`   | Floating-point number, 32 bit                  | Approximately ±1.5e-45 to ±3.4e+38              |
-| `double`  | Double-precision, 64 bit floating-point number | Approximately ±5.0e-324 to ±1.8e+308            |
-| `decimal` | Decimal number                                 | Approximately ±1.0e-28 to ±7.9e+28              |
+| Type     | Signed                             | Bits | Range                                            |
+| :------- | :--------------------------------- | :--- | :----------------------------------------------- |
+| `sbyte`  | <span style="color:green">✓</span> | 8    | `-128` to `127`                                  |
+| `byte`   | <span style="color:red">✗</span>   | 8    | `0` to `255`                                     |
+| `short`  | <span style="color:green">✓</span> | 16   | `-32768` to `32767`                              |
+| `ushort` | <span style="color:red">✗</span>   | 16   | `0` to `65535`                                   |
+| `int`    | <span style="color:green">✓</span> | 32   | `-2147483648` to `2147483647`                    |
+| `uint`   | <span style="color:red">✗</span>   | 32   | 0 to 4.3 × 10<sup>9</sup>                        |
+| `long`   | <span style="color:green">✓</span> | 64   | -9.2 × 10 <sup>18</sup> to 9.2 × 10<sup>18</sup> |
+| `ulong`  | <span style="color:red">✗</span>   | 64   | 0 to 1.8 × 10<sup>19</sup>                       |
+
+---
+
+### Everything else
+
+| Type      | Signed                             | Bits | Range                  |
+| :-------- | :--------------------------------- | :--- | :--------------------- |
+| `float`   | <span style="color:green">✓</span> | 32   | ±1.5e-45 to ±3.4e+38   |
+| `double`  | <span style="color:green">✓</span> | 64   | ±5.0e-324 to ±1.8e+308 |
+| `decimal` | <span style="color:green">✓</span> | 128  | ±1.0e-28 to ±7.9e+28   |
 
 ---
 
@@ -123,10 +128,10 @@ char middleInitial = 'J';
 
 ### [System.String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-9.0)
 
-- Natively "represents text as a sequence of UTF-16 code units."
-- Immutable -- i.e. can't be changed after creation
-- Reference type, _usually_ with value type semantics
-- Implemented with the [flyweight pattern](https://en.wikipedia.org/wiki/Flyweight_pattern)
+- Sequence of UTF-16 code units.
+- **Immutable** -- i.e. can't be changed after creation
+- **Reference type**, _usually_ with value type semantics
+- [Flyweight pattern](https://en.wikipedia.org/wiki/Flyweight_pattern)
 - **Best Practice:** Avoid too many concatentations (like more than 1000)
 
 ---
@@ -186,6 +191,10 @@ Console.WriteLine(message);
 - **Remember** strings are immutable
 - Concatenation doesn't mutate; it reallocates
 - Use [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-9.0) if you have to do a lot of concatenations
+
+---
+
+### Example
 
 ```csharp
 
@@ -264,7 +273,8 @@ public class Login{
 ---
 
 ### Overview
-* Aka 'data members'
+
+- Aka 'data members'
 
 ---
 
@@ -274,7 +284,10 @@ public class Login{
 
 ### Motivating Example (I)
 
-```csharp
+- Classes should protect invariants
+- Public fields let anyone create invalid state
+
+```csharp title='Person.cs'
 class Person{
   public int age;
 }
@@ -288,7 +301,7 @@ p.age = -30;
 
 ### Motivating Example (II)
 
-```csharp
+```csharp title="Person.cs"
 class Person{
   private int age;
 
@@ -320,7 +333,7 @@ p.SetAge(-30);
 
 ### Example, Old School I
 
-```csharp
+````csharp
 class Person{
   private int age;
 
@@ -356,7 +369,7 @@ class Person{
 // Elsewhere
 var p = new Person();
 p.SetAge(-30); // Throws!
-```
+````
 
 ---
 
@@ -390,10 +403,10 @@ class Person{
 
 ### Pros and Cons
 
-- Pros
+* Pros
   - Allows changes without breaking binary compatibily
   - Easy to consume
-- Cons
+* Cons
   - Obscures intention
   - Potential for abuse
   - Can't be passed as a variable
