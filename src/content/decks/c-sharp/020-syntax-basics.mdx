@@ -4,6 +4,7 @@ description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dap
 status: 'Live'
 flavor: 'Deck'
 ---
+
 # Syntax Basics
 
 ---
@@ -20,9 +21,382 @@ flavor: 'Deck'
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### 30,000 Feet
 
+- **Variables** Declared using the `type name` syntax. e.g. `int count = 4;`
+- **Control Flow** Standard stuff: `if`/`then`/`else`, `switch`, `for`, `while`
+- **Classes and Objects** : Classes are defined using the...
 
+---
+
+### Hello World
+
+- **Type** `Console`
+- **Operator** This thing: `.`, pronounced 'dot'. Invokes a method.
+- **Method** `WriteLine` (It's static.)
+- **Argument** `"Hello, World!"` (It's a string.)
+- **Line terminator** Mandatory semicolon. (This thing: `;`.)
+
+#### Sortest Program Ever!
+
+```csharp
+Console.WriteLine("Hello, World!");
+```
+
+---
+
+### Introducing Variables
+
+- Variable is created and initialized on one line.
+- Reference is passed to the method.
+
+#### **Second** Sortest Program Ever!
+
+```csharp
+string message = "Hello, World!";
+Console.WriteLine(message);
+```
+
+---
+
+## Primitives
+
+---
+
+### Overview
+
+- Built into the language
+- Have a language keyword
+- e.g.
+  - `int` is a language keyword
+  - `System.Int32` is the built-in type
+
+---
+
+### Catalog
+
+- **Boolean**
+  - Keyword: `bool`
+- **Integrals**
+  - **Signed** `sbyte`, `ushort`, `int`, `long`
+  - **Unsigned** `byte`, `ushort`, `uint`, `ulong`
+- **Floating Point**
+  - `float`, `double`, `decimal` (sort of)
+
+---
+
+### Sizing
+
+| Type      | Description                                    | Range                                           |
+| :-------- | :--------------------------------------------- | :---------------------------------------------- |
+| `sbyte`   | Signed 8-bit integer                           | `-128` to `127`                                 |
+| `byte`    | Unsigned 8-bit integer                         | `0` to `255`                                    |
+| `short`   | Signed 16-bit integer                          | `-32768` to `32767`                             |
+| `ushort`  | Unsigned 16-bit integer                        | `0` to `65535`                                  |
+| `int`     | Signed 32-bit integer                          | `-2147483648` to `2147483647`                   |
+| `uint`    | Unsigned 32-bit integer                        | `0` to `4294967295`                             |
+| `long`    | Signed 64-bit integer                          | `-9223372036854775808` to `9223372036854775807` |
+| `ulong`   | Unsigned 64-bit integer                        | `0` to `18446744073709551615`                   |
+| `float`   | Floating-point number, 32 bit                  | Approximately ±1.5e-45 to ±3.4e+38              |
+| `double`  | Double-precision, 64 bit floating-point number | Approximately ±5.0e-324 to ±1.8e+308            |
+| `decimal` | Decimal number                                 | Approximately ±1.0e-28 to ±7.9e+28              |
+
+---
+
+### [Char](https://learn.microsoft.com/en-us/dotnet/api/system.char?view=net-9.0)
+
+- Keyword: `char`
+- UTF-16
+- Value type
+- Delimit with single ticks-- **`'`**
+
+```csharp
+char middleInitial = 'J';
+
+```
+
+---
+
+## Strings
+
+---
+
+### [System.String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-9.0)
+
+- Natively "represents text as a sequence of UTF-16 code units."
+- Immutable -- i.e. can't be changed after creation
+- Reference type, _usually_ with value type semantics
+- Implemented with the [flyweight pattern](https://en.wikipedia.org/wiki/Flyweight_pattern)
+- **Best Practice:** Avoid too many concatentations (like more than 1000)
+
+---
+
+### Creating Strings
+
+- Delimit with `"`
+- Concat with `+`
+
+```csharp
+string greeting = "Hello";
+char[] targetChars = new char[] { 'W', 'o', 'r', 'l', 'd' };
+string target = new string(targetChars);
+
+string message = greeting + ", " + target + "!";
+Console.WriteLine(message);
+
+```
+
+---
+
+### Strings are Collections
+
+- They're iterable
+- They're indexable-- `[]`
+  - Zero-based
+
+```csharp
+string message = "Respect";
+
+foreach(char c in message)
+{
+    Console.WriteLine(c);
+}
+Console.WriteLine("Find out what it means to me!");
+```
+
+---
+
+### Quiz: What's the output?
+
+```csharp
+void Exclaim(string message){
+    message += "!";
+}
+
+string message = "Hello, World";
+Exclaim(message);
+Console.WriteLine(message);
+
+```
+
+---
+
+### Concatentations
+
+- **Remember** strings are immutable
+- Concatenation doesn't mutate; it reallocates
+- Use [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-9.0) if you have to do a lot of concatenations
+
+```csharp
+
+string message = "Hello";
+char[] targetChars = new char[] { 'W', 'o', 'r', 'l', 'd' };
+
+message += ", ";
+for (int i = 0; i < targetChars.Length; i++)
+{
+    message += targetChars[i];
+}
+
+message += "!";
+
+Console.WriteLine(message);
+
+```
+
+---
+
+## Enumerations
+
+---
+
+### [Overview](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum)
+
+- Alternative to magic strings
+- Maps a lable to an undelying integral value
+- Keyword: `enum`
+
+---
+
+### Motivating Examples
+
+- Booleans aren't extensible
+
+```csharp
+public class Login{
+    string username = "";
+    bool isActive = false; // TODO: Support Paused / Suspended
+}
+
+```
+
+- Magic constants are easy to forget, easy to mess up
+
+```csharp
+public class Login{
+    string username = "";
+    int statusCode = 22; //What's this?
+}
+```
+
+````
+
+---
+
+#### Example
+
+```csharp
+enum Status{
+  Active,
+  Paused,
+  Suspended
+}
+public class Login{
+    string username = "";
+    Status MyStatus = Status.Active;
+}
+````
+
+---
+
+## Fields
+
+---
+
+### Overview
+* Aka 'data members'
+
+---
+
+## Properties
+
+---
+
+### Motivating Example (I)
+
+```csharp
+class Person{
+  public int age;
+}
+
+// Elsewhere
+var p = new Person();
+p.age = -30;
+```
+
+---
+
+### Motivating Example (II)
+
+```csharp
+class Person{
+  private int age;
+
+  public int GetAge(){
+    return age;
+  }
+  public void SetAge(int value){
+    if(value <= 0 || value > 150){
+      throw new ArgumentException("Bogus age");
+    }
+    this.age = value;
+  }
+}
+
+// Elsewhere
+var p = new Person();
+p.SetAge(-30);
+```
+
+---
+
+### What's a [Property](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/using-properties)?
+
+> Properties combine aspects of both fields and methods. To the user of an object, a property appears to
+> be a field; accessing the property requires the same syntax. To the implementer of a class, a property
+> is one or two code blocks, representing a get accessor and/or a set or init accessor.
+
+---
+
+### Example, Old School I
+
+```csharp
+class Person{
+  private int age;
+
+  public int Age{
+    get { return age;}
+    set {this.age = value;} //Notice `value`
+  }
+}
+
+// Elsewhere
+var p = new Person();
+p.SetAge(-30); // Still ok!
+
+---
+
+### Example, Old School II
+
+```csharp
+class Person{
+  private int age;
+
+  public int Age{
+    get { return age;}
+    set {
+      if(value <= 0 || value > 150){
+        throw new ArgumentException("Bogus age");
+      }
+      this.age = value;
+    }
+  }
+}
+
+// Elsewhere
+var p = new Person();
+p.SetAge(-30); // Throws!
+```
+
+---
+
+### Example, [Auto-Implemented](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties)
+
+```csharp
+class Person{
+  public int Age{
+    get;
+    set;
+  }
+}
+
+```
+
+---
+
+### [Accessability](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/restricting-accessor-accessibility)
+
+```csharp
+class Person{
+  public int Age{
+    get;
+    private set;
+  }
+}
+
+```
+
+---
+
+### Pros and Cons
+
+- Pros
+  - Allows changes without breaking binary compatibily
+  - Easy to consume
+- Cons
+  - Obscures intention
+  - Potential for abuse
+  - Can't be passed as a variable
+  - Encourages runtime validation instead of compile time
+
+---
