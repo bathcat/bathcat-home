@@ -1,6 +1,6 @@
 ---
 title: "Unmanaged Resources"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+description: "Dealing non-managed resources, like file handles, network and database connections means understanding and implementing IDisposable."
 status: 'Live'
 flavor: 'Deck'
 ---
@@ -16,12 +16,299 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+
+
+## Managed Resources
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### What's a 'Managed Resource'?
+* Managed code means [garbage collection](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals)
+
+---
+
+### Garbage Collection Basics
+* Automatic memory management in .NET framework
+* **Non-deterministic** - you cannot predict exactly when collection occurs
+* Frees developers from manual memory management
+* Prevents common memory issues like leaks and dangling pointers
+* [Fundamentals of garbage collection](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals)
+
+---
+
+### Reference vs. Value Types
+* **Reference types** (classes, interfaces) stored on **managed heap**
+  - Subject to garbage collection
+  - Only reference stored on stack, actual data on heap
+* **Value types** (structs, primitives) stored on **stack**
+  - Not subject to garbage collection
+  - Automatically cleaned up when stack frame pops
+* [Types and memory management](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#workstation-and-server-garbage-collection)
+
+---
+
+### Generational GC
+* Objects organized into **three generations**: 0, 1, and 2
+* Gen 0: Newly allocated objects
+* Gen 1: Objects that survived a Gen 0 collection
+* Gen 2: Long-lived objects that survived a Gen 1 collection
+* [Generations overview](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#generations)
+
+---
+
+### GC Process
+* **Marking phase**: Identifies live (reachable) objects
+* **Compacting phase**: Rearranges memory to eliminate gaps
+* **You almost never need to call GC.Collect() manually**
+* Let the runtime optimize collection timing
+* [GC Process](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#the-managed-heap)
+
+---
+
+### Avoiding Memory Leaks
+* Unsubscribe from events when no longer needed
+* Be cautious with static fields - they live for the application lifetime
+* Consider `WeakReference` for caches
+* [Memory Management Best Practices](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/memory-management-and-gc)
+
+---
+
+
+## Unmanaged Resources
+
+---
+
+### What Are Unmanaged Resources?
+* Resources not managed by the .NET runtime
+* Require **explicit release** as they consume system resources
+* Non-deterministic GC is **insufficient** for these resources
+  - Critical resources might remain open too long
+  - Can lead to resource exhaustion (file handle limits, connection pools)
+
+---
+
+### Common Examples
+* [DbContext](https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.dbcontext) - Entity Framework database contexts
+* [HttpClient](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) - HTTP communication
+* [FileStream](https://learn.microsoft.com/en-us/dotnet/api/system.io.filestream) - File handles and operations
+* [SqlConnection](https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection) - SQL Server database connections
+* [Socket](https://learn.microsoft.com/en-us/dotnet/api/system.net.sockets.socket) - Network communication endpoints
+
+---
+
+### Pattern [IDisposable](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose)
+* Interface for **explicit resource cleanup**
+* Provides deterministic release of unmanaged resources
+* Implemented by types holding scarce or expensive resources
+* Call `Dispose()` method when done with the resource
+* Enables the ["using" statement](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using) for automatic cleanup
+
+---
+
+### Explicit Disposal Example
+
+```csharp title='ExplicitDisposal.cs'
+// Note to self: Don't do this!
+byte[] GetFirstTenBytes(string file){
+  FileStream fs = new FileStream(file, FileMode.Open);
+    
+  byte[] data = new byte[10];
+  fs.Read(data, 0, data.Length);    
+  fs.Dispose(); // Make sure to clean up!
+
+  return data;
+}
+```
+
+---
+
+### Remember Exceptions
+* When an exception is throw, execution stops
+* So the rest of the function doesn't run
+* Does the stream _ever_ get closed?
+
+---
+
+### Finalizers
+* Last-resort cleanup is the [finalizer](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/finalizers)
+  - Looks like a C++ destructor
+* Syntax: `~ClassName() { /* cleanup code */ }`
+* **Non-deterministic** 
+  - Called by GC before object reclamation
+  - Usually runs in response to memory pressure
+* Significant [performance implications](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#finalizers)
+
+---
+
+### Improved ExplicitDisposal (I)
+
+```csharp title='ExplicitDisposal.cs'
+byte[] GetFirstTenBytes(string file){
+  byte[] data = new byte[10];
+  FileStream fs;
+  try{
+    fs = new FileStream(file, FileMode.Open);
+    fs.Read(data, 0, data.Length);
+  }
+  finally{
+    if(fs != null)
+      fs.Dispose();
+  }
+  return data;
+}
+```
+
+---
+
+### The `using` Statement
+* Keyword: [`using`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using)
+* Automatically disposes `IDisposable` objects even if exceptions occur
+* Shorter, cleaner syntax than `try`/`finally` blocks
+* Creates a limited scope for the resource (optionally)
+
+---
+
+### Improved ExplicitDisposal (II)
+
+```csharp title='UsingExample.cs'
+byte[] GetFirstTenBytes(string file){
+  byte[] data = new byte[10];
+  
+  using (FileStream fs = new FileStream(file, FileMode.Open))
+  {
+    fs.Read(data, 0, data.Length);
+  } // fs.Dispose() automatically called here
+  
+  return data;
+}
+
+```
+
+---
+
+### Improved ExplicitDisposal (III)
+
+```csharp
+// C# 8.0+ simplified syntax
+byte[] GetFirstTenBytesModern(string file){
+  byte[] data = new byte[10];
+  
+  using var fs = new FileStream(file, FileMode.Open);
+  fs.Read(data, 0, data.Length);
+  // fs.Dispose() called at end of method
+  
+  return data;
+}
+```
+
+---
+
+### Rules
+* If ___you___ instantiate an `IDisposable` ___you___ need to dispose of it
+* Most C#/.NET performance issues come from not calling dispose
+* The `using` keyword is the best bet
+
+---
+
+
+## Custom IDisposable
+
+---
+
+### Overview
+* [Implement `IDisposable` when your class:](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose)
+  - Directly owns unmanaged resources (COM objects, file handles, etc.)
+  - Contains fields that are `IDisposable`
+* Examples:
+  - Custom database wrapper: `MyDbWrapper : IDisposable`
+  - Resource manager: `ResourcePool : IDisposable`
+  - Custom stream implementation: `EncryptedFileStream : Stream, IDisposable`
+* Provides deterministic cleanup for your users
+* Required for classes that can be used with `using` statements
+
+---
+
+### Dispose Pattern Recipe
+* Implement both `Dispose()` and `Dispose(bool)` methods
+* Use `protected virtual` for `Dispose(bool)` to allow inheritance
+* Call `Dispose(true)` from `Dispose()` and finalizer
+* Set fields to `null` after cleanup
+* Set `disposed` flag to prevent multiple disposals
+* [Implementing the Dispose Pattern](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose#implement-the-dispose-pattern)
+* [Best Practices for Dispose](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose#implement-the-dispose-pattern-for-a-derived-class)
+
+---
+
+### Example (Part 1): Creation
+
+```csharp title='ComAdapter.cs'
+public class ComAdapter : IDisposable {
+    private IntPtr _comHandle;
+    private bool _disposed;
+    private readonly object _lock = new object();
+
+    public ComAdapter() {
+        // Simulate COM object creation
+        _comHandle = Marshal.AllocHGlobal(1024);
+    }
+}
+```
+
+---
+
+### Example (Part 2): Dispose()
+
+```csharp title='ComAdapter.cs'
+    /// <remarks>
+    /// Called by the user explicly-- or with a `using` block
+    /// </remarks>
+    public void Dispose() {
+        // Delegate to Dipose(bool)
+        Dispose(true);
+
+        // Avoid running this twice
+        GC.SuppressFinalize(this);
+    }
+```
+
+---
+
+### Example (Part 3) Dispose(bool)
+
+```csharp title='ComAdapter.cs'
+    protected virtual void Dispose(bool disposing) {
+        if (_disposed) return;
+        lock (_lock) {
+            if (_disposed) return;
+            if (_comHandle != IntPtr.Zero) {
+                Marshal.FreeHGlobal(_comHandle);
+                _comHandle = IntPtr.Zero;                
+            }
+            if (disposing) {
+                // Add managed resource cleanup here
+            }
+            _disposed = true;
+        }
+    }
+
+
+}
+```
+
+---
+
+### Example (Part 4) Finalize(bool)
+```csharp
+/// <summary>
+/// Finalizer - logs potential resource leaks
+/// </summary>
+~ComAdapter() {
+    // Safe to call from finalizer - uses native Windows API
+    Debug.WriteLine("WARNING: ComAdapter finalizer called."+
+      " Resource haven't been properly disposed."
+    );
+    
+    Dispose(false);
+}
+```
 
