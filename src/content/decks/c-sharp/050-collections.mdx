@@ -4,6 +4,7 @@ description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dap
 status: 'Live'
 flavor: 'Deck'
 ---
+
 # Collections
 
 ---
@@ -16,12 +17,254 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+## Generics
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### Overview
+* Generics create type-safe, reusable components
+* Introduced in C# 2.0
+* Use type parameters instead of specific types
+* Prevents boxing/unboxing of value types
+* Provides compile-time type checking
+
+---
+
+### Declaring Generic Types
+
+```csharp
+// Generic class with type parameter T
+public class Box<T>{
+    public T Content { get; set; }
+}
+
+// Usage
+var intBox = new Box<int>();
+var stringBox = new Box<string>();
+```
+
+---
+
+### Generic Methods
+
+```csharp
+// Generic method
+public T First<T>(List<T> items){
+    return items[0];
+}
+
+// Usage
+int number = First<int>(numberList);
+string name = First(nameList); // Type inference
+```
+
+---
+
+### Constraints
+
+```csharp
+// Type constraint
+public class Calculator<T> where T : struct{
+    // Only value types allowed
+}
+
+// Interface constraint
+public T Create<T>() where T : IComparable, new(){
+    return new T();
+}
+```
+
+---
+
+### Benefits of Generics
+
+* Enables type-safe data structures
+* Eliminates casting and type errors
+* Improves performance by avoiding boxing
+* Reduces code duplication
+* Enables stronger APIs and frameworks
+
+---
+
+## Enumerable
+
+---
+
+### Overview
+* Foundation of C# collection iteration
+* Central to LINQ operations
+* Represents a sequence of elements
+* Returns an iterator (IEnumerator)
+* Enables foreach statement on collections
+
+---
+
+### Pattern: [Iterator](https://en.wikipedia.org/wiki/Iterator_pattern) 
+* Provides sequential access to elements
+* Hides collection's internal structure
+* Separates traversal from collection implementation
+* Enables multiple traversals simultaneously
+* Core pattern in .NET Framework design
+
+---
+
+### Interface Definition
+
+```csharp
+// The IEnumerable generic interface
+public interface IEnumerable<out T> : IEnumerable{
+    IEnumerator<T> GetEnumerator();
+}
+
+// The non-generic version
+public interface IEnumerable{
+    IEnumerator GetEnumerator();
+}
+```
+
+---
+
+### Using IEnumerable
+
+```csharp
+// Built-in collections implement IEnumerable
+List<int> numbers = new List<int> { 1, 2, 3 };
+
+// Using foreach (requires IEnumerable)
+foreach (int num in numbers){
+    Console.WriteLine(num);
+}
+
+// Manual iteration
+IEnumerator<int> enumerator = numbers.GetEnumerator();
+while (enumerator.MoveNext()){
+    Console.WriteLine(enumerator.Current);
+}
+```
+
+---
+
+### LINQ with IEnumerable
+
+```csharp
+IEnumerable<int> numbers = Enumerable.Range(1, 10);
+
+// Query syntax
+var query = from n in numbers
+            where n % 2 == 0
+            select n * n;
+
+// Method syntax
+var method = numbers.Where(n => n % 2 == 0)
+                    .Select(n => n * n);
+```
+
+---
+
+### Implementing IEnumerable
+
+```csharp
+public class MyCollection<T> : IEnumerable<T>{
+    private List<T> items = new List<T>();
+    
+    public IEnumerator<T> GetEnumerator(){
+        return items.GetEnumerator();
+    }
+    
+    IEnumerator IEnumerable.GetEnumerator(){
+        return GetEnumerator();
+    }
+}
+```
+
+---
+
+### Extension Methods Defined
+* Static methods that extend existing types
+* Introduced in C# 3.0
+* Declared with "this" parameter modifier
+* [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/) is built on extension methods
+* Extend types without modifying original source code
+
+---
+
+### Extension Methods Example
+
+```csharp
+// Extension method for any IEnumerable<T>
+public static class EnumerableExtensions{
+    public static T ForEach<T>(this IEnumerable<T> source, Action<T> action){
+        foreach (T item in source){
+            action(item);
+        }
+    }
+}
+
+// Usage
+List<int> numbers = new List<int> { 1, 2, 3 };
+numbers.ForEach(n => Console.WriteLine(n));
+```
+
+---
+
+### Greatest Hits
+* [Select](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select) - Projects each element to new form
+* [Where](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.where) - Filters collection based on predicate
+* [OrderBy](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.orderby) - Sorts elements by specified key
+* [FirstOrDefault](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.firstordefault) - Returns first element or default
+* [GroupBy](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.groupby) - Groups elements by specified key
+* [Aggregate](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.aggregate) - Applies accumulator function over sequence
+
+---
+
+### Query Syntax vs Method Syntax
+
+```csharp
+// Query syntax - SQL-like
+var queryJoin = from c in customers
+               join o in orders on c.ID equals o.CustomerID
+               select new { c.Name, o.OrderDate };
+
+// Method syntax - Fluent API style
+var methodChain = customers
+    .Where(c => c.IsActive)
+    .Select(c => c.Name);
+```
+
+---
+
+### Query Syntax vs Method Syntax
+* Most developers prefer [method syntax](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/query-syntax-and-method-syntax-in-linq)
+* Query syntax is more readable for [complex joins](https://learn.microsoft.com/en-us/dotnet/csharp/linq/join-operations)
+* Both compile to the same IL code
+* Can mix styles in the same query
+* Method syntax exposes more operations
+
+---
+
+### LINQ and Deferred Execution
+
+```csharp
+// Define query - nothing executes yet
+var query = numbers
+    .Where(n => { Console.WriteLine($"Filtering {n}"); return n > 5; })
+    .Select(n => { Console.WriteLine($"Mapping {n}"); return n * 2; });
+
+// Only executes when data is needed
+Console.WriteLine("About to execute query");
+foreach (var item in query) // Execution happens here
+{
+    Console.WriteLine($"Result: {item}");
+}
+```
+
+* LINQ uses [deferred execution](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example)
+* Operations chain like a [monad](https://en.wikipedia.org/wiki/Monad_(functional_programming))
+* Query builds an expression pipeline
+* Execution only happens when enumerated
+* Allows efficient processing of large datasets
+
+---
+
+
 
