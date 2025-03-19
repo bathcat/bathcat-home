@@ -20,6 +20,7 @@ This rule applies to MDX files with `flavor: 'Deck'` in the frontmatter.
 2. **Code Samples**:
 
    - If a code sample exceeds 5 lines, the slide should not contain bullet points
+   - Limit code samples to no more than 15 lines per slide
    - Code samples should include language identifier (e.g., ```csharp)
    - Include a title attribute for the code block (e.g., ```csharp title='ClassName.cs')
    - Code must be properly indented and formatted

@@ -21,9 +21,237 @@ flavor: 'Deck'
 ---
 
 ### Lorem Ipsum
-* Lorem ipsum
 
-<figure class='bc-framed-image' style='width:25%;height:auto;'>
+
+<figure class='bc-framed-image pl-4' style='width:25%;height:auto;'>
 ![Image sans description.](assets/portrait.joel-spolsky.jpg)
 <figcaption>By Katie Chan - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=160622475</figcaption>
 </figure>
+
+* Not every one likes them. 
+* Joel Spolsky [says](https://www.joelonsoftware.com/2003/10/13/13/):
+
+> A better alternative is to have your functions return error values when things
+> go wrong, and to deal with these explicitly, no matter how verbose it might be.
+> It is true that what should be a simple 3 line program often blossoms to 48 lines 
+> when you put in good error checking, but that's life.
+
+---
+
+### Exceptions in C#
+* All exceptions inherit from [System.Exception](https://learn.microsoft.com/en-us/dotnet/api/system.exception)
+* Exception objects contain details about the error
+* Framework provides [many built-in exceptions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-use-the-try-catch-block-to-catch-exceptions)
+
+---
+
+
+### Keywords 
+* **Keyword `try`** for code that might throw an exception
+* **Keyword `catch`** for code to execute if an exception occurs
+* **Keyword `finally`** for code that executes no matter what
+
+
+---
+
+## Syntax: Throwing
+
+---
+
+### Overview
+* Throw exceptions when
+  - There's a problem
+  - There's nothing you can do about it
+* Keyword: [`throw`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-throw-statement)
+* Guidelines
+  - Don't be shy
+  - Don't use for expected problems
+  - Prefer the type system
+
+---
+
+### Example 1: Out of Range
+* The `throw` statement immediately stops execution
+* Supply meaningful error messages and parameter names
+
+```csharp title='Math.cs'
+public float Divide(int numerator, int denominator) {
+  if (denominator == 0) {
+      throw new ArgumentException("Denominator can't be 0.");
+  }
+  return numerator / denominator;    
+}
+```
+
+---
+
+### Example 2: Null
+
+```csharp
+public class ApiAdapter : IChatCompletionAdapter{
+   private readonly ILogger<ApiAdapter> logger;
+   private readonly IClientFactory clientFactory;
+
+   public ApiAdapter(IClientFactory factory, ILogger<ApiAdapter> logger){
+      if (factory == null)
+         throw new ArgumentNullException(nameof(factory));
+
+      if (logger == null)
+         throw new ArgumentNullException(nameof(logger));
+
+      //...
+   }
+
+```
+
+---
+
+### Example: 
+
+```csharp title='ExceptionBasics.cs'
+public class Person {
+    
+    public string GivenName{
+      get;
+      set{
+        if(string.IsNullOrWhiteSpace(value)){
+          throw new ArgumentException("Name can't be empty.");
+        }
+        field = value;
+      }
+    }
+}
+```
+
+---
+
+### Commonly-Thrown Exceptions
+* [ArgumentNull](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) - To avoid null references later on
+* [ArgumentOutOfRange](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) - When an argument is outside the valid range of values
+* [NotImplemented](https://learn.microsoft.com/en-us/dotnet/api/system.notimplementedexception) - Often used to stub-out an implementation that's not done yet
+* [InvalidOperation](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) - When a method call is invalid in the object's current state
+* [FormatException](https://learn.microsoft.com/en-us/dotnet/api/system.formatexception) - When the format of an argument doesn't meet the parameter specifications
+
+---
+
+### Custom Exceptions
+
+```csharp title='CustomExceptions.cs'
+// Define a custom exception class
+public class OrderException : Exception {
+    public int OrderId { get; }
+    
+    public OrderException(int orderId, string message) 
+        : base(message) {
+        OrderId = orderId;
+    }
+}
+
+```
+
+---
+
+### Throwing Custom Exceptions
+
+```csharp
+
+/// <remarks>Processes an order.</remarks>
+/// <exception>
+/// Throws an OrderException for cancelled orders.
+/// </exception>
+public void ProcessOrder(Order order) {
+    if (order.Status == OrderStatus.Cancelled) {
+        throw new OrderException(order.Id, "Cannot process cancelled orders");
+    }
+    // Etc.
+}
+```
+
+---
+
+### Exception Best Practices
+
+* Only throw for [exceptional conditions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions), not normal flow
+* Choose the [most specific exception type](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-user-defined-exceptions)
+* Include detailed information to help diagnose the problem
+* Re-throw with `throw;` to preserve the stack trace
+* Document exceptions in XML comments with [`<exception>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#exception) tags
+* Custom exceptions should have serializable constructors
+
+---
+
+
+
+
+## Syntax: Catching
+
+---
+
+### Overview
+* Catch exceptions to handle errors gracefully
+* Use the `try`, `catch`, and `finally` blocks
+* Framework provides [many built-in exceptions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-use-the-try-catch-block-to-catch-exceptions)
+
+---
+
+### Catch Scenarios
+1. When you can do something to remedy the situation
+1. When you have no remedy, but you want to log or something
+1. As a final backstop in your `Main` method.
+
+---
+
+
+
+
+
+### Catching Custom Exceptions
+
+```csharp title='CustomExceptions.cs'
+// Define a custom exception class
+public class OrderException : Exception {
+    public int OrderId { get; }
+    
+    public OrderException(int orderId, string message) 
+        : base(message) {
+        OrderId = orderId;
+    }
+    
+    public OrderException(int orderId, string message, Exception inner) 
+        : base(message, inner) {
+        OrderId = orderId;
+    }
+}
+
+// Throwing the custom exception
+public void ProcessOrder(Order order) {
+    if (order.Status == OrderStatus.Cancelled) {
+        throw new OrderException(order.Id, "Cannot process cancelled orders");
+    }
+}
+```
+
+---
+
+### Exception Handling Best Practices
+
+* Handle exceptions at the appropriate level in the call stack
+* Use specific exceptions for specific errors
+* Avoid catching broad exceptions unless absolutely necessary
+* Use `finally` to clean up resources
+* Document exceptions in XML comments with `<exception>` tags
+
+---
+
+## Syntax: Finally
+
+
+
+---
+
+### Exception Handling Best Practices
+
+* Use `finally` to clean up resources
+* Avoid using `finally` for control flow
+* Document exceptions in XML comments with `<exception>` tags
+
