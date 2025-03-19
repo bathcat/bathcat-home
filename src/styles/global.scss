@@ -352,6 +352,26 @@ svg[aria-roledescription='xychart'] {
   }
 }
 
+
+
+
+
+.bc-slide > .bc-slide-title,
+.bc-slide > astro-slot > .bc-slide-title {
+  /* title styles */
+  @apply p-4;
+}
+
+/* Target content - everything after the title */
+.bc-slide > astro-slot > *:not(.bc-slide-title) {
+  @apply m-4;
+}
+
+
+
+
+
+
 // Print
 //
 // The goal here is to avoid a page break after the final slide.
