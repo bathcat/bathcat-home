@@ -137,4 +137,131 @@ static async Task void Main(string[] args)
   - Databases
 - **Not** for CPU-intensive operations
 
+---
 
+### Red v Blue
+#### Seminal article: [What Color is Your Function?](https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/)
+1. Every function has a color
+2. The way you call the function depends on its color
+3. You can only call a red function from within another red function
+4. Red functions are more painful to call
+5. Some core library functions are red
+
+---
+
+### The Case of Node.js
+* **Question:** How is it that JavaScript is slow, but [Node.js](https://nodejs.org/en/) is fast
+* **Answer:** Non-blocking I/O!
+* Background:
+  - JavaScript is single-threaded
+  - Node.js uses an event-driven, non-blocking I/O model
+* Successful because:
+  - IO takes up most of the time
+  - Blocked threads are expensive
+
+---
+
+
+## Tasks
+
+---
+
+### Overview
+* [Task](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task) represents an asynchronous operation
+  - Also known as a Promise or Future
+  - Can succeed or fail
+  - Can return a value or void
+* Tasks are composable
+  - Can chain operations
+  - Can run in parallel
+  - Can be `await`ed
+* Tasks are cancellable
+  - Support cancellation tokens
+  - Can be timed out
+
+---
+
+### Blocking
+
+```csharp
+public class Program{
+    private static void Block(int timeoutInMS)
+        => Thread.Sleep(timeoutInMS);
+
+    public static void Main(string[] args){
+        Console.WriteLine($"Waiting for {5000}ms...");
+        Block(5000);
+        Console.WriteLine("Done");
+    }
+}
+```
+
+---
+
+### Non-Blocking
+
+```csharp
+public class Program{
+  private static Task Delay(int timeoutInMS) // <-- Task
+      => Task.Delay(timeoutInMS); // <-- Task.Delay (non-blocking)
+
+  public static async Task Main(){// <-- `async` + Task  
+       Console.WriteLine($"Waiting for {5000}ms...");
+       await Delay(5000);  //  <-- `await`
+       Console.WriteLine("Done");
+  }
+}
+```
+
+---
+
+### Recipe
+#### To make a method non-blocking
+* **Required**
+  - Return a `Task` instead of `void`
+  - OR return a `Task<T>` instead of `T`
+* **Optional**
+  - Use `async` to if you need to await something
+  - Use `await` to await
+
+---
+
+### Example: `IsUp` Blocking
+
+```csharp
+public static bool IsUp(string url){
+    using var client = new WebClient();
+    try{
+        var s = client.DownloadString(url);
+        return !String.IsNullOrWhiteSpace(s);
+    }
+    catch (WebException) {return false;}    
+}
+public static void Run(string[] args){
+    Console.WriteLine("Is Google Up?");
+    var isUp = IsUp("https://www.google.com");
+    Console.WriteLine(isUp ? "Yes" : "No");
+}
+
+```
+
+---
+
+### Example: `IsUp` Non-Blocking
+
+```csharp
+public static async Task<bool> IsUpAsync(string url){
+    using var client = new WebClient();
+    try{
+        var s = await client.DownloadStringTaskAsync(url);
+        return !String.IsNullOrWhiteSpace(s);
+    }
+    catch (WebException){return false;}    
+}
+
+public static async Task RunAsync(string[] args){
+    Console.WriteLine("Is Google Up?");
+    var isUp = await IsUpAsync("https://www.google.com");
+    Console.WriteLine(isUp ? "Yes" : "No");
+}
+```
