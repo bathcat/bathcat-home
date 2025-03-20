@@ -20,8 +20,81 @@ flavor: 'Deck'
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### What's Reflection?
+* [Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection) provides *runtime* type information
+* Used for:
+  - Inspecting types and members at runtime
+  - Creating instances dynamically
+  - Accessing private members
 
+---
+
+### Use Cases
+* For libraries / frameworks
+  - Serialization
+  - `DbContext`
+  - Dependency Injection
+  - Unit Testing
+
+* For applications
+  - Interact with legacy code
+  - Overcome library shortcomings
+
+---
+
+### Advantages & Disadvantages
+
+* Advantages
+  - Flexible
+  - Extensible
+  - Can work with non-public members
+
+* Disadvantages
+  - Slower than direct access
+  - Less type safety
+  - More complex code
+  - **Not available for AOT compilation**
+
+---
+
+
+### Motivation: Dumb Legacy Code
+```csharp
+public class LegacyCalculator{
+    private DateTime maxDate = new DateTime(2012, 12, 31);
+    
+    public int DaysUntilChristmas(DateTime dateTime){
+        if(dateTime > maxDate)
+            throw new ArgumentOutOfRangeException(
+              "The world is already over by then, stupid."
+            );
+
+        var christmas = new DateTime(dateTime.Year, 12, 25);
+        if (dateTime > christmas) {
+            christmas = christmas.AddYears(1);
+        }
+        return (int)(christmas - dateTime).TotalDays;
+    }
+}
+```
+
+---
+
+### Example: Legacy Monkey Patch
+```csharp
+public static void Patch(LegacyCalculator calc){
+    var field = typeof(LegacyCalculator).GetField(
+        "maxDate", 
+        BindingFlags.NonPublic | BindingFlags.Instance
+    );
+    field!.SetValue(calc, DateTime.MaxValue);
+}
+
+public static void Main(string[] args){
+    var calc = new LegacyCalculator();
+    Patcher.Patch(calc);
+    var days = calc.DaysUntilChristmas(DateTime.Now);
+
+    Console.WriteLine($"Only {days} days until Christmas!");
+}
+```

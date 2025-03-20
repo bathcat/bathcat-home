@@ -413,3 +413,71 @@ class Person{
   - Encourages runtime validation instead of compile time
 
 ---
+
+
+
+
+## Comments
+
+---
+
+### Overview
+* Explain 'why' behind the code in more complex functions
+* Guidelines:
+  - Prefer sensible names over comments
+  - Don't comment stupid stuff
+  - Remove dead code; don't comment it out
+
+
+---
+
+### Block Comments
+* Used for multi-line comments
+* Exactly like JavaScript / TypeScript / C++ / Java
+```csharp
+/*
+ I'm commented out
+*/
+
+```
+
+---
+
+### Inline Comments
+* Used for single-line comments
+* Exactly like JavaScript / TypeScript / C++ / Java
+* Tip: Use **Ctrl + /** to toggle comments
+
+```csharp
+//
+//  I'm commented out
+//
+```
+
+---
+
+### XML Comments
+* Used for documenting APIs
+* Three slashes: `///`
+* Used by tooling
+  - Intellisense
+  - Documentation generators
+
+```csharp
+/// <summary>
+/// Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+/// </summary>
+/// <remarks>
+/// Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+/// </remarks>
+public class Person{ /* etc...*/}
+```
+---
+
+### Popular Elements
+* [`<summary>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags) - Brief description
+* [`<param>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#param) - Describes a method parameter
+* [`<returns>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#returns) - Describes the return value
+* [`<exception>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#exception) - Exceptions a method may throw
+* [`<remarks>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#remarks) - Additional information
+* [`<example>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#example) - Code examples for a type
