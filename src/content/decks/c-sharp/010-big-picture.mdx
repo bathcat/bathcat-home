@@ -40,9 +40,6 @@ flavor: 'Deck'
 
 ## Comparisons
 
----
-
-## Comparisons
 
 ---
 
@@ -87,4 +84,68 @@ flavor: 'Deck'
   - **Performance** ⭐ ⭐ ⭐ ☆ ☆
   - **Expressiveness** ⭐ ☆ ☆ ☆ ☆
   - **Ecosystem** ⭐ ☆ ☆ ☆ ☆
+
+---
+
+## History
+
+---
+
+### Motivations Behind .NET
+* Unify disparate Windows programming models
+* Create platform-independent [runtime environment](https://learn.microsoft.com/en-us/dotnet/standard/clr)
+* Simplify enterprise application development
+* Provide garbage collection and memory safety
+* Support multiple programming languages on same platform
+* Enable component-based development
+* Respond to Java's cross-platform success
+
+---
+
+### Motivations Behind C#
+* Combine C++ power with Visual Basic productivity
+* Create a [truly object-oriented language](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/) from the ground up
+* Avoid C++'s complexity and unsafe memory management
+* Provide a language optimized for the CLR
+* Offer modern features like garbage collection and type safety
+* Enable rapid application development with elegant syntax
+* Balance performance needs with developer productivity
+
+---
+
+### What's the CLR?
+* [Common Language Runtime](https://learn.microsoft.com/en-us/dotnet/standard/clr) - virtual execution environment
+* Code compiles to IL (Intermediate Language), not native binary
+* Key advantages over direct binary compilation:
+  - Platform independence (write once, run anywhere)
+  - Language interoperability (C#, VB, F# work together)
+  - Automatic memory management (garbage collection)
+  - Enhanced security (type safety, code verification)
+* Just-in-time (JIT) compilation optimizes for specific hardware
+* Managed execution environment handles memory and exceptions
+* Runtime services like reflection and dynamic loading
+
+---
+
+### Modern C#
+* Evolved from purely OOP to [multi-paradigm](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/)
+* Added significant functional programming features:
+  - Pattern matching
+  - [Expression-bodied members](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/expression-bodied-members)
+  - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) for immutable data
+  - [Local functions](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions)
+* Modern features focus on developer productivity:
+  - [Null reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) and [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
+
+
+---
+
+### Ahead-of-Time (AoT) Compilation
+* [Compiles IL to native code](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/) at build time
+* Perfect for containerized applications:
+  - Faster startup for short-lived instances
+  - Smaller deployment size
+* Key tradeoff: startup speed vs flexibility
+* Limitations: restricted reflection and dynamic code
 

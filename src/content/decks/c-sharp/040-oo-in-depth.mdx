@@ -187,4 +187,165 @@ public void Enfarculator__Should_Enfarculate_Properly() {
 ---
 
 
-## 
+## Default Implementations
+
+---
+
+### Overview
+* [Default implementations](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/default-interface-methods) allow **interfaces can now include actual method code**
+* **Trade-off**: Pragmatism vs conceptual purity
+* [**Use case**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/default-interface-methods#motivation)
+  - Backwards compatibility
+  - [Traits](https://en.wikipedia.org/wiki/Trait_(computer_programming))
+* **Criticisms** 
+  - Blurs distinction between interfaces and abstract classes
+  - Weakens interfaces as pure contracts
+
+---
+
+### Example: Notification Service (Original)
+
+```csharp title="INotificationSender.cs"
+public interface INotificationSender{
+    void SendNotification(string message);
+}
+```
+
+```csharp title="EmailNotificationSender.cs"
+public class EmailNotificationSender : INotificationSender{
+  public void SendNotification(string message) => //Send email
+}
+```
+
+---
+
+### Example: Add Dry Run (With Priority)
+
+```csharp title="INotificationSender.cs"
+public interface INotificationSender{
+    void SendNotification(string message);
+    void SendNotification(string message, bool dryRun){
+      if(!dryRun)
+        SendNotification(message);
+    }
+}
+```
+
+```csharp title="SmsNotificationSender.cs"
+public class SmsNotificationSender : INotificationSender{
+    public void SendNotification(string message) => // Send SMS ; 
+    public void SendNotification(string message, bool dryRun){
+      if(!dryRun) SendNotification(message);
+      else Console.WriteLine($"SMS (dry run): {message}");
+    }
+}
+```
+
+---
+
+## Explicit Implementations
+
+---
+
+### Overview
+* [Explicit implementation](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/interfaces/explicit-interface-implementation) uses `InterfaceName.MethodName` syntax
+* Motivation:
+  - Resolve method name conflicts between multiple interfaces
+  - Get more help from the compiler
+  - Hide implementation details from normal class usage
+* Mechanics:
+  - Can only be accessed through interface reference
+
+---
+
+### Example: IGun / ICamera
+
+```csharp title="IGun.cs"
+public interface IGun{
+  void Shoot();
+}
+```
+
+```csharp title="ICamera.cs"
+public interface ICamera{
+  void Shoot();
+}
+```
+
+---
+
+### Example: Implementing IGun and ICamera
+
+```csharp title="Camera.cs"
+public class GunWithCamera : IGun, ICamera{
+  void ICamera.Shoot() => Console.WriteLine("Shooting with camera");
+  void IGun.Shoot() => Console.WriteLine("Shooting with gun");
+}
+
+void Main(){
+  var thing = new GunWithCamera();
+  thing.Shoot(); // Compile Error
+
+  ((IGun)thing).Shoot(); // OK
+  ((ICamera)thing).Shoot(); // OK
+}
+
+```
+
+---
+
+
+## Patterns
+
+---
+
+### Schools of Thought
+* **Over-engineers** think:
+  - Every class should implement an equivalent interface
+  - Every client should use an interface reference
+* What's undebatable:
+  - **Testing** is easier with interfaces
+  - **Code is more flexible** when it's loosely coupled
+
+---
+
+### Testing
+
+```csharp
+public class SnakesController : Controller
+{
+    private readonly IRepository<Snake, Guid> repo;
+    private readonly ILogger<SnakesController> logger;
+
+    public SnakesController(IRepository<Snake, Guid> repo, ILogger<SnakesController> logger){
+        this.repo = repo;
+        this.logger = logger;
+    }
+
+    public IEnumerable<Snake> Get(){
+        // Etc.
+    }
+}
+
+```
+
+---
+
+### Mocking Interfaces (with Moq) I
+
+```csharp
+[TestMethod()]
+public void Get__Should_Return_Snakes() {
+    var mockRepo = new Mock<IRepository<Snake, Guid>>();
+    var testSnakes = new List<Snake> { 
+        new Snake { Id = Guid.NewGuid(), Name = "Python" },
+        new Snake { Id = Guid.NewGuid(), Name = "Cobra" }
+    };
+    mockRepo.Setup(repo => repo.GetAll()).Returns(testSnakes);    
+    var controller = new SnakesController(mockRepo.Object, nullLogger);
+    // Act
+    var result = controller.Get();
+    // Assert
+    Assert.AreEqual(2, result.Count());
+}
+```
