@@ -1,6 +1,6 @@
 ---
-title: "Objects in Depth"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+title: "Interfaces"
+description: "Limitations of classical OO, motivations for interfaces, and how to use them."
 status: 'Live'
 flavor: 'Deck'
 ---
@@ -16,13 +16,175 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+
+
+
+## Basics
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### Problems with classical OO
+* [**Tight coupling**](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles#dependency-inversion) between implementations makes code hard to change
+  - Slogan: 'new is glue'
+* [**Inheritance hierarchies**](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/inheritance) 
+  - Can add artificial complexity
+  - Are difficult to reason about
+* **Multiple inheritance**
+  - Is not supported in C#
+  - Is kind of bogus anyway
+* **Shared mutable state** makes reasoning about [concurrency difficult](https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/potential-pitfalls-in-data-and-task-parallelism)
+
+---
 
 
+### Problems with Pure Functions
+* Object-oriented programming is supposed to overcome the problems of pure functions
+* But pure functions are still useful
+  - Reason about
+  - Test
+  - Maintain
+* Limitations are about
+  - State
+  - Side effects
+  - Grouping - i.e. a capability requires a group of related functions
+
+---
+
+### Introducing the Interface
+* [Interfaces](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/interface) define contracts without implementation details
+* Declared with `interface` keyword
+* Can inherit from multiple interfaces
+* Classes implement interfaces with `:` notation
+* Enables [dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) and loose coupling
+* Supports [default implementations](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/default-interface-methods) since C# 8.0
+* Great for testability and code maintainability
+
+---
+
+### Example: Throwaway
+
+```csharp
+interface IThrowaway{
+  void DoSomething();
+  string Name { get; }
+}
+```
+
+#### Things to Notice
+* No access modifiers
+* No implementation
+
+---
+
+### Implementing the Interface
+
+```csharp title="ConsoleThrowaway.cs"
+class ConsoleThrowaway : IThrowaway{  
+  public void DoSomething() => Console.WriteLine("Doing something");
+  public string Name => "Throwaway";
+}
+```
+
+```csharp title="FileThrowaway.cs"
+class FileThrowaway : IThrowaway{
+  public void DoSomething() => File.WriteAllText("throwaway.txt", "Doing something");
+  public string Name => "Throwaway";
+}
+```
+
+---
+
+### Consuming the Interface
+
+```csharp
+void Consume(IThrowaway throwaway){
+  throwaway.DoSomething();
+  Console.WriteLine(throwaway.Name);
+}
+```
+
+#### Things to Notice
+* `Consume` doesn't care about the implementation
+* `Consume` can be tested with different implementations
+* `Consume` is loosely coupled
+
+---
+
+### Takeaways
+* An interface represents:
+  - A **contract** enforced by the compiler
+  - A **capability** that can be used interchangeably
+  - A **group of related functions**
+
+---
+
+
+## Real Life Example
+
+---
+
+### In .NET
+* [IDisposable](https://learn.microsoft.com/en-us/dotnet/api/system.idisposable) - Provides deterministic resource cleanup
+* [IComparable](https://learn.microsoft.com/en-us/dotnet/api/system.icomparable) - Defines sorting order for objects
+* [IEnumerable](https://learn.microsoft.com/en-us/dotnet/api/system.collections.ienumerable) - Enables iteration with foreach
+* [ILogger](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger) - Core logging abstraction
+* [IEquatable](https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1) - Defines value equality
+
+---
+
+### Example #2: Enfarculator
+```csharp title="Enfarculator.cs"
+class Enfarculator{
+  private readonly ILogger<Enfarculator>  logger;
+
+  public Enfarculator(ILogger<Enfarculator> logger) 
+    => this.logger = logger;
+
+  public void Enfarculate(){
+    logger.Log("Commencing enfarculation...");
+    // Do actual enfarculation
+    logger.Log("Enfarculation complete");
+  }
+}
+```
+
+---
+
+### Enfarculator Factory
+* In production code, we'll use a real logger
+
+```csharp
+class EnfarculatorFactory{
+  public static Enfarculator Create() 
+    => new Enfarculator(new EventLogLogger<Enfarculator>());
+}
+``` 
+
+---
+
+### Enfarculator Unit Tests
+* We want to test the `Enfarculator` class
+* We want to use a fake logger
+
+```csharp title="NoOpLogger.cs"
+class NoOpLogger : ILogger<T>{
+  public void Log(string message) {}
+}
+```
+
+```csharp title="Enfarculator.Tests.cs"
+[TestMethod()]
+public void Enfarculator__Should_Enfarculate_Properly() {
+    var subject = new Enfarculator(
+      new NoOpLogger<Enfarculator>()
+    );
+    
+    // Etc....
+}
+```
+
+
+---
+
+
+## 
