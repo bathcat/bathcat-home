@@ -23,8 +23,7 @@ flavor: 'Deck'
 ### Lorem Ipsum
 - Parallelism spreads work across multiple CPUs
   - But thread might be blocked by IO operations
-- Asynch is non-blocking
-
+- Asyc is non-blocking
 
 ---
 
@@ -34,12 +33,28 @@ flavor: 'Deck'
 
 ### Overview
 
-- Aka 'data members'
+* [Fields](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/fields) are variables declared at the class level
+* Also known as 'data members'
+* Store the state of an object
+* Best practices:
+  - Keep fields [`private`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/private)
+  - Make them [`readonly`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/readonly) when possible
+* Common [naming convention](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions): camelCase with optional underscore prefix
+---
 
+### Example
 
-
+```csharp
+class Person{
+  private int age;
+  private string name;
+  private string email;
+}
+```
 
 ---
+
+
 
 ## Properties
 
@@ -150,7 +165,7 @@ class Person{
 
 ---
 
-### [Accessability](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/restricting-accessor-accessibility)
+### [Accessibility](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/restricting-accessor-accessibility)
 
 ```csharp
 class Person{
@@ -174,3 +189,288 @@ class Person{
   - Potential for abuse
   - Can't be passed as a variable
   - Encourages runtime validation instead of compile time
+
+
+---
+
+
+
+## Inheritance
+
+---
+
+### Cautionary Overview
+* Implementation inheritance means that you inherit the implementation of the base class
+* Aka 'is-a' relationship
+* Benefits:
+  - Code reuse
+  - Uniform interface -- aka [Liskov Substitution Principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle)
+* Drawbacks:
+  - Relationships are fixed at compile time
+  - Difficult to reason about
+
+---
+
+### Fatherly Advice
+* Use implementation inheritance sparingly
+* Prefer composition
+* Don't memorize inheritance rules
+* Look them up if you have to
+
+---
+
+### Example: UI Framework
+* A base `Control` class contains rendering pipeline, event handling, and layout logic
+* **Value**: Shared implementations for focus management, styling, accessibility features
+* **Why interfaces aren't enough**: Rendering and event bubbling are complex, but vary by control type
+
+---
+
+### Example: Control
+```csharp
+public abstract class Control {
+    public abstract void Paint();
+    public abstract void OnMouseDown();
+    
+    // Virtual method (can be overridden but has default implementation)
+    public virtual Size GetPreferredSize() => new Size(10, 10);
+        
+    // Sealed method (cannot be overridden by derived classes)
+    public sealed void RequestRepaint() {
+        ScheduleRender();
+        NotifyLayoutManager();
+    }
+    
+    // Private helper methods
+    private void NotifyLayoutManager() { /* Implementation */ }
+}
+```
+
+---
+
+### Example: Button
+
+```csharp title="Button.cs"
+public class Button : Control{
+  public override void Paint(){
+    // Do paint stuff
+  }
+  public override void OnMouseDown(){
+    // Style for button pressed
+  }
+  public override void OnMouseUp(){
+    // Style normally; fire handler
+  }
+}
+```
+
+
+---
+
+### Keywords
+* [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
+  - Can't be instantiated, only inherited
+  - Method has no implementation, must be overridden
+* [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
+  - Class can't be inherited
+  - Method can't be overridden
+* [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
+  - Method has an implementation but can be overridden
+  - Base implementation can be called via `base.Method()`
+* [`override`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override)
+  - Provides a new implementation of a virtual or abstract member
+  - Must match signature exactly
+* [`base`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)
+  - References base class implementation of overridden members
+  - Used in constructor chaining
+
+
+---
+
+### Gotcha: Non `virtual` by Default
+* In C#, methods are [non-virtual by default](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
+* Must explicitly mark methods as `virtual` to enable overriding
+* [Design philosophy](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/virtual-members):
+  - Promotes version resilience and performance
+  - Prevents "fragile base class" problem
+  - Forces intentional [design of inheritance points](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/framework-design-guidelines-digest)
+* Contrast with Java where methods are virtual by default
+
+---
+
+### Example: Vehicle
+
+```csharp
+public class Vehicle{
+  public void Go() => Console.WriteLine("Let's go!");
+}
+public class Car : Vehicle{
+  // Doesn't compile! 
+  public override void Go() => Console.WriteLine("Vroom!");
+}
+
+public class Boat : Vehicle{
+  // Probably not what you want!
+  public void Go() => Console.WriteLine("Splash!");
+}
+``` 
+
+---
+
+### Quiz: What's the Output?
+
+```csharp
+Vehicle v = new Vehicle();
+v.Go();
+
+Vehicle b1 = new Boat();
+b1.Go();
+
+Boat b2 = new Boat();
+b2.Go();
+```
+
+---
+
+### Takehome
+* Use `virtual` and `override` judiciously
+* **For code reuse**: prefer composition
+* **For a uniform interface**: prefer interface inheritance
+* If you're extra paranoid: `seal` your classes by default
+
+---
+
+
+## Keyword: `using`
+
+---
+
+### Overview
+* `using` has multiple uses
+  - Namespace imports
+  - Type imports
+  - Resource management (to be covered later)
+* Lots of approaches
+
+---
+
+### Approach 0: No `using`
+* No `using` directives
+* Fully qualified names
+* No one really does this
+* BUT it's how the CLR works
+
+
+---
+
+### Example: No `using`
+
+```csharp
+class MyClass{
+  public void DoWork(){
+    var fs = new System.IO.FileStream("file.txt", System.IO.FileMode.Open);
+    var reader = new System.IO.StreamReader(fs);
+    var line = reader.ReadLine();
+    System.Console.WriteLine(line);
+  }
+}
+
+```
+
+### Approach 1: Manual Namespace Import
+* Recipe: Add `using` directives to every file
+* Pros:
+  - Explicit
+  - Traditional
+* Cons:
+  - Tedious
+  - Error-prone
+  
+---
+
+### Example: Manual Namespace Import
+```csharp
+using System.IO;
+using System;
+
+class MyClass{
+  public void DoWork(){
+    var fs = new FileStream("file.txt", FileMode.Open);
+    var reader = new StreamReader(fs);
+    var line = reader.ReadLine();
+    System.Console.WriteLine(line);
+  }
+}
+
+```
+
+---
+
+### Approach 2: Gloabal Usings
+* Recipe: 
+  - Create a `global.cs` file
+  - Add `using` directives to it
+* Pros:
+  - Convenient
+  - Easy to manage
+* Cons:
+  - Less explicit
+  - Can conflict with other global usings
+
+---
+
+### Example: Global Usings
+```csharp title="global.cs"
+using System.IO;
+using System;
+```
+
+---
+
+### Approach 3: Implicit Usings
+* [Introduced in .NET 6/C# 10](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
+* Automatically imports common namespaces based on project type
+* Configured in project file via `<ImplicitUsings>enable</ImplicitUsings>`
+* Pros:
+  - Less boilerplate
+  - Standardizes imports across projects
+  - Different sets for different project types (Web, Desktop, etc.)
+* Cons:
+  - Less explicit
+  - Confusion about available types
+  - Potential namespace collisions
+
+---
+### Example: Implicit Usings
+```xml title="MyProject.csproj"
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
+
+```
+
+---
+
+### Takehome
+* Choice of `using` approach is primarily a style preference
+* Most important: be consistent within your project or organization
+* Consider team preferences and project conventions
+* For new projects, implicit usings offer a good default
+* For library development, explicit imports can improve clarity
+* Documentation and IDE support work equally well with all approaches
+
+---
+
+
+## Fields
+
+---
+
+### Overview

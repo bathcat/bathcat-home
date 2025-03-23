@@ -260,10 +260,10 @@ public class ComAdapter : IDisposable {
 
 ```csharp title='ComAdapter.cs'
     /// <remarks>
-    /// Called by the user explicly-- or with a `using` block
+    /// Called by the user explicitly-- or with a `using` block
     /// </remarks>
     public void Dispose() {
-        // Delegate to Dipose(bool)
+        // Delegate to Dispose(bool)
         Dispose(true);
 
         // Avoid running this twice
@@ -305,7 +305,7 @@ public class ComAdapter : IDisposable {
 ~ComAdapter() {
     // Safe to call from finalizer - uses native Windows API
     Debug.WriteLine("WARNING: ComAdapter finalizer called."+
-      " Resource haven't been properly disposed."
+      " Resource hasn't been properly disposed."
     );
     
     Dispose(false);
