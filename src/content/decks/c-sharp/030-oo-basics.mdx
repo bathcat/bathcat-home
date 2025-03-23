@@ -54,6 +54,78 @@ class Person{
 
 ---
 
+### Keyword: `readonly`
+* [Readonly](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/readonly) fields are initialized at runtime
+* Can be initialized in constructor or with an initializer
+* Cannot be changed after initialization
+* Not enforced at runtime
+
+---
+
+### Example
+* Follows the [explicit dependency principle](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/dependency-injection) 
+* If data can't change it can't get borked up
+
+```csharp
+class PersonsController{
+  private readonly IPersonRepository repository;
+
+  public PersonsController(IPersonRepository repository){
+    this.repository = repository;
+  }
+  // ...
+}
+```
+
+---
+
+### Keyword: `static`
+* [Static](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static) fields are shared across all instances of a class
+* Can be initialized with a static constructor
+* Can be used to implement [design patterns](https://en.wikipedia.org/wiki/Design_Patterns) like [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern)
+* Often a bad idea!
+
+---
+
+### Example: `static` field
+* Shared mutable state is a recipe for disaster
+```csharp
+class Person{
+  public static int Count = 0;
+
+  public Person(){
+    Count++;
+  }
+}
+```
+
+---
+
+### Keyword: `const`
+* [Const](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/const) fields are compile-time constants
+* Conceptually similar to `static readonly`
+* Must be initialized at declaration with compile-time constant values
+* Enforced at runtime via text substitution
+* Similar to a macro in C
+
+---
+
+### Example: `const` field
+
+```csharp
+class Person{
+  public const int MaxAge = 150;
+}
+```
+
+---
+
+
+
+
+
+
+
 
 
 ## Properties
@@ -377,18 +449,18 @@ class MyClass{
 
 ```
 
-### Approach 1: Manual Namespace Import
+---
+
+### Approach 1: Manual Import
 * Recipe: Add `using` directives to every file
-* Pros:
-  - Explicit
-  - Traditional
-* Cons:
-  - Tedious
-  - Error-prone
+* **Pros**: Explicit, Traditional
+* **Cons**:
+  - Less friendly to newcomers
+  - Tedious (?)
   
 ---
 
-### Example: Manual Namespace Import
+### Example: Manual Import
 ```csharp
 using System.IO;
 using System;
@@ -406,16 +478,14 @@ class MyClass{
 
 ---
 
-### Approach 2: Gloabal Usings
+### Approach 2: Global Usings
+* [Global Usings](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive#global-modifier) allow namespace imports to be shared across multiple files
+* Introduced in C# 10/.NET 6
 * Recipe: 
   - Create a `global.cs` file
   - Add `using` directives to it
-* Pros:
-  - Convenient
-  - Easy to manage
-* Cons:
-  - Less explicit
-  - Can conflict with other global usings
+* **Pros**: Convenient, Easy to manage
+* **Cons**: Less explicit, Potential collisions
 
 ---
 
@@ -428,17 +498,11 @@ using System;
 ---
 
 ### Approach 3: Implicit Usings
-* [Introduced in .NET 6/C# 10](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
+* Introduced in [.NET 6/C# 10](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
 * Automatically imports common namespaces based on project type
-* Configured in project file via `<ImplicitUsings>enable</ImplicitUsings>`
-* Pros:
-  - Less boilerplate
-  - Standardizes imports across projects
-  - Different sets for different project types (Web, Desktop, etc.)
-* Cons:
-  - Less explicit
-  - Confusion about available types
-  - Potential namespace collisions
+* Configured in project file
+* **Pros**: Less boilerplate, Standardizes imports across projects
+* **Cons**: Less explicit, Potential namespace collisions
 
 ---
 ### Example: Implicit Usings
@@ -459,18 +523,7 @@ using System;
 ---
 
 ### Takehome
-* Choice of `using` approach is primarily a style preference
-* Most important: be consistent within your project or organization
-* Consider team preferences and project conventions
-* For new projects, implicit usings offer a good default
-* For library development, explicit imports can improve clarity
+* Choice of `using` approach comes down to style
+* **Most important**: be consistent within your project or organization
 * Documentation and IDE support work equally well with all approaches
 
----
-
-
-## Fields
-
----
-
-### Overview
