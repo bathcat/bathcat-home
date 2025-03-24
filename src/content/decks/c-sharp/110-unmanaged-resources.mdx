@@ -312,19 +312,3 @@ public class ComAdapter : IDisposable {
 }
 ```
 
----
-
-### Red vs Blue Functions
-* [Red functions](https://ericlippert.com/2015/11/30/red-green-refactor/) are dangerous to call
-  - Can throw exceptions
-  - Can modify state
-  - Can have side effects
-* Blue functions are safe to call
-  - Pure functions
-  - No side effects
-  - Always return same output for same input
-* Finalizers must be blue functions
-  - Can't throw exceptions
-  - Can't access managed resources
-  - Must be thread-safe
-

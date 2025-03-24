@@ -359,7 +359,7 @@ public class Person{ /* etc...*/}
 
 ---
 
-### Example
+### Example: User Service
 ```csharp
 
 public class UserService{
@@ -389,6 +389,39 @@ public class UserService{
 * Compiler enforces null checks and warnings
 * Helps prevent `NullReferenceException` at runtime
 
+
+
+---
+
+### Operator: `?`
+* [Null-conditional operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-) (`?.`)
+* Safe way to access properties/methods of nullable types
+* Returns `null` if the left operand is `null`
+* Also available as `?[]` for array/list access
+* Can be chained: `user?.Address?.Street`
+
+---
+
+### Operator: `??`
+* [Null-coalescing operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-coalescing-operator) (`??`)
+* Returns the left operand if it's not `null`, otherwise the right operand
+* Useful for providing defaults
+
+---
+
+### Example: User Service Client
+```csharp {8}
+public class UsersController{
+  private readonly UserService userService;
+
+  public UsersController(UserService userService)
+    => this.userService = userService;
+  
+  public User GetUser(string username){
+    => userService.GetUser(username) ?? User.Anonymous;
+  }
+}
+```
 
 ---
 

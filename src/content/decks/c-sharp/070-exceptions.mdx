@@ -20,6 +20,17 @@ flavor: 'Deck'
 
 ---
 
+
+### Overview
+#### From [Microsoft:](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/)
+> The C# language's exception handling features help you deal with any unexpected or
+> exceptional situations that occur when a program is running. Exception handling uses 
+> the `try`, `catch`, and `finally` keywords to try actions that may not succeed, to handle 
+> failures when you decide that it's reasonable to do so, and to clean up resources 
+> afterward. 
+
+---
+
 ### Lorem Ipsum
 
 
@@ -51,8 +62,19 @@ flavor: 'Deck'
 * **Keyword `catch`** for code to execute if an exception occurs
 * **Keyword `finally`** for code that executes no matter what
 
+---
+
+### Exceptions and Performance
+* Exceptions are for exceptional cases, not normal flow
+* Stack unwinding is expensive - requires capturing and restoring state
+* [Performance impact](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions#performance-considerations) is significant
+* Use return values or `out` parameters for expected conditions
+* Consider [`TryParse`](https://learn.microsoft.com/en-us/dotnet/api/system.int32.tryparse) pattern for validation
 
 ---
+
+
+
 
 ## Syntax: Throwing
 
@@ -65,7 +87,7 @@ flavor: 'Deck'
 * Keyword: [`throw`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-throw-statement)
 * Guidelines
   - Don't be shy
-  - Don't use for expected problems
+  - Don't use for ***expected*** problems
   - Prefer the type system
 
 ---
@@ -74,7 +96,7 @@ flavor: 'Deck'
 * The `throw` statement immediately stops execution
 * Supply meaningful error messages and parameter names
 
-```csharp title='Math.cs'
+```csharp title='Math.cs' {3}
 public float Divide(int numerator, int denominator) {
   if (denominator == 0) {
       throw new ArgumentException("Denominator can't be 0.");
@@ -87,7 +109,7 @@ public float Divide(int numerator, int denominator) {
 
 ### Example 2: Null
 
-```csharp
+```csharp {7,10}
 public class ApiAdapter : IChatCompletionAdapter{
    private readonly ILogger<ApiAdapter> logger;
    private readonly IClientFactory clientFactory;
@@ -106,9 +128,9 @@ public class ApiAdapter : IChatCompletionAdapter{
 
 ---
 
-### Example: 
+### Example: Empty String
 
-```csharp title='ExceptionBasics.cs'
+```csharp {7}
 public class Person {
     
     public string GivenName{
@@ -135,6 +157,16 @@ public class Person {
 ---
 
 ### Custom Exceptions
+* Relatively rare - built-in exceptions usually suffice
+* Consider when:
+  - For domain-specific error information
+  - To catch specific business logic errors
+* Common in frameworks and libraries
+* Must inherit from [`Exception`](https://learn.microsoft.com/en-us/dotnet/api/system.exception) or its subclasses
+
+---
+
+### Example: Custom Exception
 
 ```csharp title='CustomExceptions.cs'
 // Define a custom exception class
@@ -187,12 +219,6 @@ public void ProcessOrder(Order order) {
 
 ---
 
-### Overview
-* Catch exceptions to handle errors gracefully
-* Use the `try`, `catch`, and `finally` blocks
-* Framework provides [many built-in exceptions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-use-the-try-catch-block-to-catch-exceptions)
-
----
 
 ### Catch Scenarios
 1. When you can do something to remedy the situation
@@ -205,30 +231,44 @@ public void ProcessOrder(Order order) {
 
 
 
-### Catching Custom Exceptions
+### Example: Main
 
-```csharp title='CustomExceptions.cs'
-// Define a custom exception class
-public class OrderException : Exception {
-    public int OrderId { get; }
-    
-    public OrderException(int orderId, string message) 
-        : base(message) {
-        OrderId = orderId;
-    }
-    
-    public OrderException(int orderId, string message, Exception inner) 
-        : base(message, inner) {
-        OrderId = orderId;
-    }
+```csharp title='Program.cs' {7-10}
+
+public static class Program{
+
+  public static int Main(string[] args){
+      try{
+          //...
+      }
+      catch(Exception e){
+          Console.WriteLine("An error occurred: " + e.Message);
+          return 1;
+      }
+      return 0;
+  }
 }
 
-// Throwing the custom exception
-public void ProcessOrder(Order order) {
-    if (order.Status == OrderStatus.Cancelled) {
-        throw new OrderException(order.Id, "Cannot process cancelled orders");
-    }
+```
+
+---
+
+### Example: Catch a Specific Exception
+
+```csharp {3-6}
+public static int Main(string[] args){
+  try{/* ... */ }
+  catch(OutOfMemoryException e){
+    Console.WriteLine("Out of memory. Close stuff and try again.");
+    return 2;
+  }
+  catch(Exception e){
+    Console.WriteLine("An error occurred: " + e.Message);
+    return 1;
+  }
+  return 0;
 }
+
 ```
 
 ---
@@ -243,15 +283,17 @@ public void ProcessOrder(Order order) {
 
 ---
 
+
+
 ## Syntax: Finally
-
-
 
 ---
 
-### Exception Handling Best Practices
+### Overview
+* Keyword: [`finally`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-finally-block)
+* Always executes, even if an exception occurs
+* Perfect for cleanup: closing files, releasing resources
+* Cannot use `return`, `break`, or `continue` in `finally`
+* Consider using [`using`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using) for `IDisposable` resources
 
-* Use `finally` to clean up resources
-* Avoid using `finally` for control flow
-* Document exceptions in XML comments with `<exception>` tags
-
+---

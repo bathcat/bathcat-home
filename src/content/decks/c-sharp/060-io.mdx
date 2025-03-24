@@ -16,12 +16,169 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+## Files
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asyc is non-blocking
+### Overview
+* `System.IO` namespace is straightforward
+* Methods for creating, copying, deleting, moving, and opening files
+* Two flavors:
+  - [`System.IO.File`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file) has static methods
+  - [`System.IO.FileInfo`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo) has instance methods
 
+---
+
+### Example: Read a file
+
+```csharp
+// Static method on `File`
+var contentsA = File.ReadAllText("file.txt");
+Console.WriteLine(contentsA);
+
+// Instance method on `FileInfo`
+var info = new FileInfo("file.txt");
+var contentsB = info.ReadAllText();
+Console.WriteLine(contentsB);
+
+```
+
+---
+
+### Example: Write a file
+
+```csharp
+public class FileLogger
+{
+    private readonly string _path;
+
+    public FileLogger(string path)
+      => _path = path;
+    
+    public void Log(string message)
+      => File.AppendText(
+          _path, 
+          $"{Message: {message}{Environment.NewLine}"
+        );
+}
+
+```
+
+---
+
+
+### Common Methods
+
+| File Method | FileInfo Method |
+|:------------|:----------------|
+| [`File.Exists`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.exists) | [`FileInfo.Exists`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.exists) |
+| [`File.ReadAllLines`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.readalllines) | [`FileInfo.ReadAllLines`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.readalllines) |
+| [`File.Move`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.move) | [`FileInfo.MoveTo`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.moveto) |
+| [`File.Delete`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.delete) | [`FileInfo.Delete`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.delete) |
+| [`File.Create`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.create) | [`FileInfo.Create`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.create) |
+| [`File.Copy`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.copy) | [`FileInfo.CopyTo`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.copyto) |
+| [`File.GetCreationTime`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.getcreationtime) | [`FileInfo.CreationTime`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.creationtime) |
+| [`File.GetFileSize`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.getfilesize) | [`FileInfo.Length`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.length) |
+
+---
+
+
+
+### Directories 
+* Similar pattern to Files:
+  - [`Directory`](https://learn.microsoft.com/en-us/dotnet/api/system.io.directory) has static methods
+  - [`DirectoryInfo`](https://learn.microsoft.com/en-us/dotnet/api/system.io.directoryinfo) has instance methods
+* Common operations:
+  - Create/Delete directories
+  - List contents
+  - Move/Rename
+  - Get creation/modification times
+
+---
+
+### Example: Create a directory
+
+```csharp
+// Static method
+Directory.CreateDirectory("logs");
+
+// Instance method
+var dir = new DirectoryInfo("logs");
+dir.Create();
+```
+
+---
+
+
+## Streams
+
+---
+
+### Motivation
+* You *can* read entire files into memory:
+  ```csharp
+  var allText = File.ReadAllText("huge.log");
+  ```
+* Potential problems:
+  - Spike memory usage
+  - Can't start processing until entire file is read
+  - No progress feedback
+  - Limited by available memory
+
+
+---
+
+### What's a Stream?
+* An abstract representation of sequential data
+* Base class: [`System.IO.Stream`](https://learn.microsoft.com/en-us/dotnet/api/system.io.stream)
+* Key characteristics:
+  - Read/write in chunks
+  - Can seek (move position) in some streams
+  - Can be chained together (e.g., compression + encryption)
+
+---
+
+### Common Streams
+* [`FileStream`](https://learn.microsoft.com/en-us/dotnet/api/system.io.filestream) for files
+* [`MemoryStream`](https://learn.microsoft.com/en-us/dotnet/api/system.io.memorystream) for in-memory data
+* [`NetworkStream`](https://learn.microsoft.com/en-us/dotnet/api/system.net.sockets.networkstream) for network data
+
+---
+
+### Example: Copy Directory Contents
+
+```csharp
+private async void DoCopy()){
+  var sourceD = @"c:\Users\exampleuser\start";
+  var destD = @"c:\Users\exampleuser\end";
+
+  foreach (var path in Directory.EnumerateFiles(sourceD)){
+    using var source = File.Open(path, FileMode.Open);
+    using var dest = File.Create(destD 
+      + path.Substring(filename.LastIndexOf('\\'))
+    );
+        
+    await source.CopyToAsync(dest);
+  }
+}
+```
+
+---
+
+### Example: Chain Streams
+```csharp
+using var file = File.OpenRead("data.gz");
+using var gzip = new GZipStream(file, CompressionMode.Decompress);
+using var reader = new StreamReader(gzip);
+var data = reader.ReadToEnd();
+```
+
+---
+
+### Managing Resources
+* Streams 
+  - **Ususally** hold on to resources that aren't garbage collected
+  - **Always** implement [`IDisposable`](https://learn.microsoft.com/en-us/dotnet/api/system.idisposable)
+* You should ***always*** close streams when done
+  - Leverage keyword [`using`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using) for automatic cleanup
+  - Details discussed elsewhere
