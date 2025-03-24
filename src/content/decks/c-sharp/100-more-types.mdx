@@ -16,12 +16,98 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+## Tuples
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asynch is non-blocking
+### Overview
+* [Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) are lightweight containers for multiple values
+* Like a list:
+  - Members aren't necessarily named
+* Like a class:
+  - Members _can_ be [named](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#tuple-field-names)
+  - Members are statically typed
+  - Value equality is built-in
+
+---
+
+### Example 1: 
+
+```csharp
+// Tuple with anonymous members
+var person = (30, "John");
+Console.WriteLine("PersonID"+person.Item1);
+
+// Tuple with named members
+var point = (x: 10, y: 20);
+Console.WriteLine("PointX"+point.x);
+```
+
+---
+
+### Example 2: Multiple Return Values
+
+```csharp
+public (bool Success, string Name) TryGetPersonName(int id){
+  if(id == 1){
+    return (Success: true, Name: "John");
+  }
+  return (Success: false, Name: "Not found");
+}
+
+var (success, name) = TryGetPersonName(1);
+if(success){
+  Console.WriteLine("Name"+name);
+}
+
+
+---
+
+Example 3: Min/Max
+
+```csharp
+public (int, int) GetMinMax(int[] numbers){
+  return (numbers.Min(), numbers.Max());
+}
+
+```
+
+
+
+
+---
+### Pros and Cons
+* **Pros**: Convenient, lightweight, support deconstruction
+* **Cons**: Limited semantics, names not preserved in metadata
+
+---
+
+### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
+
+* Modern [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple) (C# 7.0+):
+  - Value type (stack-allocated)
+  - Mutable structure
+  - Uses fields (`tuple.Item1`)
+  - Better performance
+  
+* Legacy [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple) class:
+  - Reference type (heap-allocated)
+  - Immutable object
+  - Uses properties (`tuple.Item1`)
+  - Higher allocation cost
+
+
+---
+
+### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
+
+| Feature               | [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple)                       | [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple)                          |
+|:----------------------|:-------------------------------------|:---------------------------------------------|
+| **Type**              | Reference type                       | Value type                                   |
+| **Immutable**         | <span style="color:green">✓</span>   | <span className='text-red-500'>✗</span>   |                     |
+| **Performance**       | Adds GC pressure                     | Lightweight                                  |
+| **Syntax sugar**      | <span className='text-red-500'>✗</span>                 | <span style="color:green">✓</span>  |
+| **Field Access**      | Properties                           | Fields     |
+| **Named Elements**    | <span className='text-red-500'>✗</span>   | <span style="color:green">✓</span>          |
+| **Equality Semantics**| Reference equality                   | Value equality                     |
 

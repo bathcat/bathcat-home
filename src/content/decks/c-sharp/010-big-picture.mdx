@@ -149,3 +149,29 @@ flavor: 'Deck'
 * Key tradeoff: startup speed vs flexibility
 * Limitations: restricted reflection and dynamic code
 
+---
+
+
+## IL
+
+---
+
+### Overview
+* [IL](https://learn.microsoft.com/en-us/dotnet/standard/managed-code) is .NET's platform-independent bytecode
+* C# compiles to IL, not machine code
+* Key features:
+  - [Stack-based](https://learn.microsoft.com/en-us/dotnet/standard/managed-code#stack-based-execution)
+  - [Type-safe](https://learn.microsoft.com/en-us/dotnet/standard/managed-code#type-safety)
+  - [Self-describing](https://learn.microsoft.com/en-us/dotnet/standard/managed-code#metadata)
+* [JIT](https://learn.microsoft.com/en-us/dotnet/standard/managed-code#just-in-time-compilation) compiles IL to native code at runtime
+
+
+---
+
+### IL Tools
+* Compiled assemblies can be inspected:
+  - [**ILDasm**](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/ildasm-tool): Non-graphical, built in
+  - [**ILSpy**](https://github.com/icsharpcode/ILSpy) or [dotnet IL tools](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/il-tools)
+* Interesting to look at. 
+* Good for learning.
+* Rarely useful for runtime performance analysis.

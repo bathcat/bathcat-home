@@ -248,11 +248,10 @@ public class Login{
 }
 ```
 
-````
 
 ---
 
-#### Example
+### Example
 
 ```csharp
 enum Status{
@@ -338,3 +337,81 @@ public class Person{ /* etc...*/}
 * [`<example>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#example) - Code examples for a type
 
 
+--- 
+
+## All about `null`
+
+---
+
+### Overview
+* [Null](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null) represents absence of a value
+* Reference types can be `null` by default
+* Value types cannot be `null` by default
+* Common source of runtime errors ([`NullReferenceException`](https://learn.microsoft.com/en-us/dotnet/api/system.nullreferenceexception))
+* Modern C# has [null reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) to catch issues at compile time
+* Best practice: Initialize fields in constructors, use null checks
+
+---
+
+### Use Case: Missing Value
+* Represents absence of a value
+* Common in APIs: Database records, web service responses, user inputs
+
+---
+
+### Example
+```csharp
+
+public class UserService{
+    private User[] users = new User[] {
+      new User("John", "Doe"),
+      new User("Jane", "Doe"),
+    };
+
+    public User? GetUser(string username){
+      foreach(User user in users){
+        if(user.Username == username)
+          return user;
+      }
+      return null;
+    }
+}
+```
+
+---
+
+### Modern C#
+* [Nullable reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) catch null issues at compile time
+* `?` indicates a value might be null:
+  - `string?` - nullable string
+  - `User?` - nullable User object
+* Enable in project file: `<Nullable>enable</Nullable>`
+* Compiler enforces null checks and warnings
+* Helps prevent `NullReferenceException` at runtime
+
+
+---
+
+### Best Practices
+* Enable [nullable reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) in project file
+* Initialize fields in constructors
+* Use [null-conditional operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-) (`?.`) for safe access
+* Use [null-coalescing operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-coalescing-operator) (`??`) for defaults
+* Validate arguments with [null checks](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/is)
+* Consider using [required](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required) keyword for non-null properties
+
+---
+
+### Billion Dollar Mistake
+
+<figure class='bc-framed-image' style='width:25%;height:auto;'>
+![Image sans description.](assets/Sir_Tony_Hoare_IMG_5125.jpg)
+<figcaption>
+  By Photograph by Rama, Wikimedia Commons, Cc-by-sa-2.0-fr, CC BY-SA 2.0 fr, https://commons.wikimedia.org/w/index.php?curid=15568323
+</figcaption>
+</figure>
+
+* Lorem ipsum dolor
+* Sit amet
+* Consectetur adipiscing elit
+* Ut enim ad minim veniam
