@@ -413,6 +413,8 @@ b2.Go();
 ---
 
 
+
+
 ## Keyword: `using`
 
 ---
@@ -527,3 +529,109 @@ using System;
 * **Most important**: be consistent within your project or organization
 * Documentation and IDE support work equally well with all approaches
 
+---
+
+
+## `System.Object`
+
+---
+
+### Overview
+
+* [System.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object) is the root of all types in .NET
+* Every type inherits from `object` (or `System.Object`)
+* Enables:
+  - Generic collections
+  - Boxing/unboxing
+  - Type reflection
+* Best practice: Override these methods when implementing value types
+
+---
+
+### Object Methods
+
+| Method | Description | Virtual |
+|:--------|:-------------|------------|
+| [`ToString()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring) | Converts object to string representation | <span style="color:green">✓</span> |
+| [`Equals()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals) | Determines object equality | <span style="color:green">✓</span> |
+| [`GetHashCode()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode) | Gets hash code for object | <span style="color:green">✓</span> |
+| [`GetType()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gettype) | Returns runtime type of object | <span style="color:red">✗</span> |
+
+---
+
+### `ToString()`
+* Converts an object to its string representation
+* Default implementation:
+  - Returns the full type name
+* Override for custom string representations
+
+---
+
+### Example: `ToString()`
+
+```csharp {4}
+public class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+  public override string ToString() => $"{Name} ({Age} years old)"; 
+}
+
+var p = new Person{ Name = "John", Age = 30 };
+Console.WriteLine(p); // Output: John (30 years old)
+```
+
+---
+
+### Overriding `Equals()`
+* Default compares references, not values
+* Override for value-based equality
+* Always override `GetHashCode()` too
+* Common in value types and collections
+* Must follow [equality contract](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals#notes-to-implementers)
+
+---
+
+### Example: Custom `Equals()`
+
+```csharp title="Person.cs"
+public class Person {
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public override bool Equals(object? obj) {
+        if (obj is not Person other) return false;
+        return Name == other.Name && Age == other.Age;
+    }
+    //TODO: Override GetHashCode
+}
+```
+
+---
+
+### About `GetHashCode()`
+* Used by hash-based collections (Dictionary, HashSet)
+* Must match `Equals()`: if `a.Equals(b)` then `a.GetHashCode() == b.GetHashCode()`
+* Fast, consistent hash function
+* Never changes during object lifetime
+* [Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode)
+
+---
+
+### Example: `GetHashCode()`
+* [`HashCode.Combine`](https://learn.microsoft.com/en-us/dotnet/api/system.hashcode.combine) is a helper method for combining hash codes
+* More efficient than manually combining hash codes
+* Handles `null` values gracefully
+
+```csharp title="Person.cs"
+public class Person {
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Name, Age);
+    }
+}
+```
+---
+
+### `GetType()`
