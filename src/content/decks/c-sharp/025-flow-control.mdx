@@ -1,0 +1,426 @@
+---
+title: "Flow Control"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Flow Control
+
+---
+
+### Goals
+
+1. Lorem
+2. Ipsum
+3. Sic
+
+---
+
+
+
+
+## Conditionals (Simple)
+
+---
+
+### Overview
+* [`?:` operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/conditional-operator) for simple if/else expressions
+* [`if`/`else`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-if-statement) for basic branching
+* [`switch`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-switch-statement) for multiple conditions
+* Modern C# features:
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching) in `if` and `switch`
+  - [Switch expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression)
+  - [Null checks](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns#logical-patterns) with `is` and `is not`
+
+---
+
+### Ternary Operator
+* Expression form of if/else: `condition ? trueValue : falseValue`
+* Can be used in assignments, method arguments, etc.
+* Example:
+```csharp
+public string ToStatus(bool isActive)
+    => isActive ? "Online" : "Offline";
+
+// Can be used directly in string interpolation
+Console.WriteLine($"User is {user.IsActive ? "online" : "offline"}");
+```
+
+---
+
+### `if`/`else`
+
+```csharp
+public string GetGreeting(int hour){
+    if (hour < 0 || hour > 23)
+        throw new ArgumentException("Hour must be between 0 and 23");
+
+    if (hour < 12)
+        return "Good morning!";
+    else if (hour < 17)
+        return "Good afternoon!";
+    else if (hour < 22)
+        return "Good evening!";
+    else
+        return "Good night!";
+}
+```
+
+---
+
+### Notes on If / Else
+* Extract complex conditions into [well-named methods](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-style-guidelines#naming-guidelines)
+* Avoid [arrow anti-pattern](https://blog.codinghorror.com/flattening-arrow-code/) with early returns
+* Keep nesting shallow - prefer [guard clauses](https://refactoring.guru/replace-nested-conditional-with-guard-clauses)
+* Consider [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching) for complex conditions
+* Use [expression-bodied members](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/expression-bodied-members) for simple conditions
+
+---
+
+### `switch`
+* Traditional [switch statement](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-switch-statement) for multiple conditions
+* Modern [switch expression](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression) for value selection
+* Supports [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#switch-expression) with `when` clauses
+* Can match on [type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns) and [property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern)
+* `default` case handles unmatched values
+
+---
+
+### Example, Old School
+
+```csharp
+public string GetDayName(int day)
+{
+    switch (day)
+    {
+        case 1: return "Monday";
+        case 2: return "Tuesday";
+        case 3: return "Wednesday";
+        case 4: return "Thursday";
+        case 5: return "Friday";
+        case 6: return "Saturday";
+        case 7: return "Sunday";
+        default: throw new ArgumentException("Day must be between 1 and 7");
+    }
+}
+```
+
+---
+
+### Example #2
+
+```csharp
+public string GetPeriod(int quarter) {
+    string period;
+    switch (quarter) {
+        case 1:
+            period = "Early";
+            break;
+        case 2:
+        case 3:
+            period = "Mid";
+            break;
+        default:
+            period = "Late";
+            break;
+    }
+    return period;
+}
+```
+
+---
+
+
+
+## Conditionals (Fancy)
+
+---
+
+### Pattern Matching
+
+* Introduced in C# 7.0, inspired by functional languages like F# and Haskell
+* Solves complex type checking and property matching in a declarative way
+* Reduces boilerplate code for type testing and property extraction
+* Enables more expressive and readable conditional logic
+* Key features:
+  - [Type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns) for safe type testing
+  - [Property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern) for object property matching
+  - [Positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern) for deconstructing objects
+  - [List patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns) for array/list matching (C# 11)
+
+---
+
+### Type Pattern Matching
+
+* Tests and extracts values based on type using `is` operator
+* Eliminates need for explicit type casting and null checks
+* Introduced in C# 7.0 with [basic type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns)
+* Enhanced in C# 9.0 with [relational patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#relational-patterns)
+* Common use cases:
+  - Safe type testing without exceptions
+  - Extracting values from polymorphic objects
+  - Combining type checks with property access
+
+---
+
+### Motivating Example
+
+```csharp
+public string ProcessShape(Shape shape){
+    if (shape is Circle){
+        var circle = (Circle)shape;
+        return $"Circle with radius {circle.Radius}";
+    }
+    if (shape is Rectangle){
+        var rect = (Rectangle)shape;
+        return $"Rectangle {rect.Width}x{rect.Height}";
+    }
+    return "Unknown shape type";
+}
+```
+
+---
+
+
+
+### Type Pattern Example
+
+```csharp
+public string ProcessShape(Shape shape)
+{
+    if (shape is Circle circle)
+        return $"Circle with radius {circle.Radius}";
+        
+    if (shape is Rectangle rect)
+        return $"Rectangle {rect.Width}x{rect.Height}";
+        
+    if (shape is null)
+        return "No shape provided";
+        
+    return "Unknown shape type";
+}
+```
+
+---
+
+### Property Pattern Matching
+
+* Tests object properties directly in pattern matching expressions
+* Introduced in C# 8.0 with [property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern)
+* Enhanced in C# 10.0 with [extended property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#extended-property-patterns)
+* Common use cases:
+  - Matching on object state without type checking
+  - Combining multiple property conditions
+  - Nested property access in patterns
+
+---
+
+### Property Pattern Example
+
+```csharp title='OrderProcessor.cs'
+public string GetOrderStatus(Order order)
+{
+    if (order is { Status: OrderStatus.Pending, Amount: > 1000 })
+        return "High value pending order";
+        
+    if (order is { Customer: { IsVIP: true }, Status: OrderStatus.Processing })
+        return "VIP order in processing";
+        
+    if (order is { Status: OrderStatus.Cancelled, CancellationReason: not null })
+        return $"Order cancelled: {order.CancellationReason}";
+        
+    return "Standard order";
+}
+```
+
+---
+
+### Positional Pattern Matching
+
+* Matches on object deconstruction using [positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern)
+* Works with types that implement [Deconstruct](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
+* Common use cases:
+  - Matching on record types
+  - Working with tuple-like structures
+  - Extracting multiple values in one pattern
+
+---
+
+### Positional Pattern Example
+
+```csharp title='PointProcessor.cs'
+public string GetQuadrant(Point point) {
+    return point switch {
+        (0, 0) => "Origin",
+        (var x, var y) when x > 0 && y > 0 => "Quadrant 1",
+        (var x, var y) when x < 0 && y > 0 => "Quadrant 2",
+        (var x, var y) when x < 0 && y < 0 => "Quadrant 3",
+        (var x, var y) when x > 0 && y < 0 => "Quadrant 4",
+        _ => "Invalid point"
+    };
+}
+```
+
+---
+
+### List Pattern Matching
+
+* Introduced in C# 11 with [list patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns)
+* Matches on array or list elements using slice patterns
+* Common use cases:
+  - Matching sequence prefixes
+  - Extracting head and tail elements
+  - Validating list structure
+* Supports `..` for slice patterns and `_` for discards
+
+---
+
+### List Pattern Example
+
+```csharp title='CommandParser.cs'
+public string ParseCommand(string[] args) 
+    => args switch {
+        ["run", "test", ..] => "Running tests",
+        ["build", "release", var target] => $"Building release for {target}",
+        ["help", var command] => $"Showing help for {command}",
+        ["version"] => "v1.0.0",
+        [] => "No command provided",
+        _ => "Unknown command"
+    };
+
+```
+
+---
+
+
+
+## Loops
+
+---
+
+### Overview
+
+* [`for`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement) for counting and index-based iteration
+* [`foreach`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement) for collection traversal
+* [`while`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-while-statement) and [`do-while`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-do-statement) for condition-based loops
+* Modern alternatives:
+  - [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/) for collection operations
+  - [Functional programming](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/) with map/reduce
+
+---
+
+### `for` loop
+* Works exactly as you'd expect
+* Use when you need:
+  - Index-based access
+  - Counting or sequence generation
+  - Multiple loop variables
+* Prefer `foreach` for collection traversal
+
+
+---
+
+### Example: For Loop
+
+```csharp title='ArrayProcessor.cs'
+public int[] CreateSequence(int start, int count) {
+    var result = new int[count];
+    for (int i = 0; i < count; i++) {
+        result[i] = start + i;
+    }
+    return result;
+}
+```
+
+---
+
+### `foreach` loop
+* Use when you need:
+  - Collection traversal
+  - Read-only access to elements
+  - Clean, declarative syntax
+* Prefer `for` when index is needed
+
+---
+
+### Example: Foreach Loop
+
+```csharp title='CollectionProcessor.cs'
+public int SumPositive(IEnumerable<int> numbers) {
+    var sum = 0;
+    foreach (var num in numbers) {
+        if (num > 0) sum += num;
+    }
+    return sum;
+}
+```
+
+
+---
+
+### While Loop
+* Use when you need:
+  - Complex termination conditions
+  - External state changes
+  - Infinite loops with breaks
+* Prefer `for` for counting, `foreach` for collections
+
+---
+
+### Example: While Loop
+```csharp title='StreamProcessor.cs'
+public string ReadUntilEnd(StreamReader reader) {
+    var result = new StringBuilder();
+    while (!reader.EndOfStream) {
+        result.Append(reader.ReadLine());
+    }
+    return result.ToString();
+}
+```
+
+---
+
+### Break and Continue
+
+* [`break`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/jump-statements#the-break-statement) exits the nearest enclosing loop
+* [`continue`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/jump-statements#the-continue-statement) skips to next iteration
+* Common use cases:
+  - Early loop termination
+  - Skipping invalid items
+  - Infinite loops with conditions
+* Prefer early `return` over `break` when possible
+
+---
+
+### Example: Break
+```csharp title='BreakExample.cs'
+public void ProcessItems(IEnumerable<Item> items) {
+    foreach (var item in items) {
+        if (item.IsInvalid) {
+            break;  // Stop processing on first invalid item
+        }
+        ProcessItem(item);
+    }
+}
+```
+
+---
+
+### Example: Continue
+```csharp title='ContinueExample.cs'
+public int SumValidNumbers(IEnumerable<string> inputs) {
+    var sum = 0;
+    foreach (var input in inputs) {
+        if (!int.TryParse(input, out var number)) {
+            continue;  // Skip invalid inputs
+        }
+        sum += number;
+    }
+    return sum;
+}
+```
+
+---
+
+

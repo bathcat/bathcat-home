@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Live'
+status: 'Draft'
 flavor: 'Deck'
 ---
 
@@ -17,74 +17,6 @@ flavor: 'Deck'
 
 ---
 
-## Generics
-
----
-
-### Overview
-* Generics create type-safe, reusable components
-* Introduced in C# 2.0
-* Use type parameters instead of specific types
-* Prevents boxing/unboxing of value types
-* Provides compile-time type checking
-
----
-
-### Declaring Generic Types
-
-```csharp
-// Generic class with type parameter T
-public class Box<T>{
-    public T Content { get; set; }
-}
-
-// Usage
-var intBox = new Box<int>();
-var stringBox = new Box<string>();
-```
-
----
-
-### Generic Methods
-
-```csharp
-// Generic method
-public T First<T>(List<T> items){
-    return items[0];
-}
-
-// Usage
-int number = First<int>(numberList);
-string name = First(nameList); // Type inference
-```
-
----
-
-### Constraints
-
-```csharp
-// Type constraint
-public class Calculator<T> where T : struct{
-    // Only value types allowed
-}
-
-// Interface constraint
-public T Create<T>() where T : IComparable, new(){
-    return new T();
-}
-```
-
----
-
-### Benefits of Generics
-
-* Enables type-safe data structures
-* Eliminates casting and type errors
-* Improves performance by avoiding boxing
-* Reduces code duplication
-* Enables stronger APIs and frameworks
-
----
 
 ## Enumerable
 
