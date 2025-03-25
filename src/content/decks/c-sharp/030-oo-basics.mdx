@@ -635,3 +635,43 @@ public class Person {
 ---
 
 ### `GetType()`
+* Returns runtime type information
+* Key method for [.NET Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection)
+* Used by serialization, dependency injection, and testing frameworks
+* Only non-virtual method in System.Object
+* Returns a [Type](https://learn.microsoft.com/en-us/dotnet/api/system.type) object
+
+
+---
+
+
+
+## Keyword: `this`
+
+
+---
+
+### Overview
+* [`this`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/this) refers to current object instance
+* Required to resolve name conflicts (e.g., parameter vs field)
+* Optional for accessing members
+* Style choice in most cases
+* Used in extension methods and indexers
+
+---
+
+### Example: `this`
+
+```csharp
+public class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public Person(string name, int age){
+    this.Name = name;
+    Age = age;
+  }
+}
+
+```
+
