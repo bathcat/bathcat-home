@@ -33,59 +33,52 @@ flavor: 'Deck'
 
 ---
 
-### Complaints
-* lorem ipsum
+### Common Complaints (Apparently)
+
+* **Verbosity**: [C# can be wordy](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-style-rules)
+  - Explicit type declarations
+  - Boilerplate in older versions
+* **Null Handling**: [NullReferenceException](https://learn.microsoft.com/en-us/dotnet/api/system.nullreferenceexception) is common
+  - Nullable reference types help but are opt-in
+* **Async/Await**: [Callback hell](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/) in older code
+  - Better now with async/await
+* **Package Management**: [NuGet](https://www.nuget.org/) ecosystem can be complex
+  - Version conflicts
+  - Package restore issues
 
 ---
 
-## Comparisons
+### My Own Personal Complaints
 
-
----
-
-### Overview
-* Some is personal preference
-* Some not
-
-
----
-
-### [Visual Basic](https://learn.microsoft.com/en-us/dotnet/visual-basic/)
-* Lorem ipsum
-- Capabilities
-  - **Performance** ⭐ ⭐ ⭐ ☆ ☆
-  - **Expressiveness** ⭐ ☆ ☆ ☆ ☆
-  - **Ecosystem** ⭐ ☆ ☆ ☆ ☆
-
+* **No Algebraic Data Types**
+  - [Discriminated unions](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/discriminated-unions) would be nice
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) is limited
+* **Type System**
+  - No [structural typing](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) like TypeScript
+  - Nominal typing everywhere
+* **Modern Features**
+  - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) are a start
+  - No pipe/composition operators
+  - No immutable collections
 
 ---
 
-### [Typescript](https://typescriptlang.org)
-* Lorem ipsum
-- Capabilities
-  - **Performance** ⭐ ⭐ ⭐ ☆ ☆
-  - **Expressiveness** ⭐ ☆ ☆ ☆ ☆
-  - **Ecosystem** ⭐ ☆ ☆ ☆ ☆
+### Compared with VB
+
+* **Syntax**: More concise (and more cryptic)
+  - Curly braces instead of `End` statements
+  - Semicolons required
+  - Case-sensitive
+* **Modern Features**: [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching), [records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record)
+* **Community**: Larger ecosystem, more resources
+* **Future**: Primary focus of .NET development
 
 ---
 
-### [F#](https://learn.microsoft.com/en-us/dotnet/fsharp/)
-* Lorem ipsum
-- Capabilities
-  - **Performance** ⭐ ⭐ ⭐ ☆ ☆
-  - **Expressiveness** ⭐ ☆ ☆ ☆ ☆
-  - **Ecosystem** ⭐ ☆ ☆ ☆ ☆
 
----
 
-### [C#](https://learn.microsoft.com/en-us/dotnet/csharp/)
-* Lorem ipsum
-- Capabilities
-  - **Performance** ⭐ ⭐ ⭐ ☆ ☆
-  - **Expressiveness** ⭐ ☆ ☆ ☆ ☆
-  - **Ecosystem** ⭐ ☆ ☆ ☆ ☆
 
----
+
 
 ## History
 
@@ -175,3 +168,121 @@ flavor: 'Deck'
 * Interesting to look at. 
 * Good for learning.
 * Rarely useful for runtime performance analysis.
+
+---
+
+
+
+
+## Projects and Solutions
+
+---
+
+### Overview
+
+* **Solution** - Container for multiple projects
+* **Project** - Contains source code and configuration
+* **Project Types**:
+  - [Class Library](https://learn.microsoft.com/en-us/dotnet/core/tutorials/library-with-visual-studio)
+  - [Web Application](https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api)
+  - [Console Application](https://learn.microsoft.com/en-us/dotnet/core/tutorials/with-visual-studio-code)
+* **Dependencies** managed via [NuGet](https://learn.microsoft.com/en-us/nuget/what-is-nuget)
+
+---
+
+### Assembly
+
+* **Theoretical**: [Deployable unit of code](https://learn.microsoft.com/en-us/dotnet/standard/assembly/)
+* **Reality**: 
+  - Rarely deployed independently
+  - Key for code organization
+* **No Tree-Shaking**: Entire assembly ships
+  - Unused code included in deployment
+  - [Assembly contents](https://learn.microsoft.com/en-us/dotnet/standard/assembly/assembly-contents) always complete
+
+---
+
+### NuGet
+
+* **Package Manager** for .NET ecosystem
+* Inspired by RubyGems (2010)
+* Key features:
+  - [Central package repository](https://www.nuget.org/)
+  - Version management
+  - Dependency resolution
+* [Package format](https://learn.microsoft.com/en-us/nuget/reference/nuspec) is open standard
+* Integrated into Visual Studio and dotnet CLI
+
+---
+
+
+
+## Tooling
+
+---
+
+
+### Overview
+
+* **Visual Studio**: Full-featured IDE
+  - [Rich debugging](https://learn.microsoft.com/en-us/visualstudio/debugger/)
+  - Integrated NuGet, testing, deployment
+  - Windows-only (VS for Mac discontinued)
+* **VS Code**: Lightweight editor
+  - Cross-platform
+  - [C# extension](https://code.visualstudio.com/docs/languages/csharp) provides core features
+  - Great for .NET Core development
+* **JetBrains Rider**: Cross-platform IDE
+  - Full Visual Studio feature parity
+  - Built on IntelliJ platform
+  - Subscription-based
+
+---
+
+### Dotnet CLI
+
+* **Command-line tool** for .NET development
+* Inspired by [Node.js](https://nodejs.org/)/npm (2016)
+* [Cross-platform](https://learn.microsoft.com/en-us/dotnet/core/tools/) project management
+* Essential for:
+  - CI/CD and containers
+  - Server environments
+  - Automation
+
+---
+
+### Dotnet Watch *
+
+* **Hot reload** for test/content
+* [Not built into Visual Studio](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#dotnet-watch-test)
+* Key features: Auto-runs tests / build on file changes
+* Limitations:
+  - Can be slow with large test suites
+  - Sometimes misses changes
+  - No test coverage updates
+
+---
+
+### Dotnet Watch Test Commands
+
+* Basic usage:
+```shell
+dotnet watch test
+```
+
+* With filters:
+```shell
+dotnet watch test --filter "FullyQualifiedName~MyTest"
+```
+
+* With logger:
+```shell
+dotnet watch test --logger "console;verbosity=detailed"
+```
+
+* [Full options](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-test#options)
+
+---
+
+
+

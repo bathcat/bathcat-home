@@ -1,0 +1,312 @@
+---
+title: "Objects: Fancyness"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+# Objects: Fancy
+
+---
+
+### Goals
+
+1. Lorem
+2. Ipsum
+3. Sic
+
+---
+
+
+
+
+## Inheritance
+
+---
+
+### Cautionary Overview
+* Implementation inheritance means that you inherit the implementation of the base class
+* Aka 'is-a' relationship
+* Benefits:
+  - Code reuse
+  - Uniform interface -- aka [Liskov Substitution Principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle)
+* Drawbacks:
+  - Relationships are fixed at compile time
+  - Difficult to reason about
+
+---
+
+### Fatherly Advice
+* Use implementation inheritance sparingly
+* Prefer composition
+* Don't memorize inheritance rules
+* Look them up if you have to
+
+---
+
+### Example: UI Framework
+* A base `Control` class contains rendering pipeline, event handling, and layout logic
+* **Value**: Shared implementations for focus management, styling, accessibility features
+* **Why interfaces aren't enough**: Rendering and event bubbling are complex, but vary by control type
+
+---
+
+### Example: Control
+```csharp
+public abstract class Control {
+    public abstract void Paint();
+    public abstract void OnMouseDown();
+    
+    // Virtual method (can be overridden but has default implementation)
+    public virtual Size GetPreferredSize() => new Size(10, 10);
+        
+    // Sealed method (cannot be overridden by derived classes)
+    public sealed void RequestRepaint() {
+        ScheduleRender();
+        NotifyLayoutManager();
+    }
+    
+    // Private helper methods
+    private void NotifyLayoutManager() { /* Implementation */ }
+}
+```
+
+---
+
+### Example: Button
+
+```csharp title="Button.cs"
+public class Button : Control{
+  public override void Paint(){
+    // Do paint stuff
+  }
+  public override void OnMouseDown(){
+    // Style for button pressed
+  }
+  public override void OnMouseUp(){
+    // Style normally; fire handler
+  }
+}
+```
+
+
+---
+
+### Keywords
+* [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
+  - Can't be instantiated, only inherited
+  - Method has no implementation, must be overridden
+* [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
+  - Class can't be inherited
+  - Method can't be overridden
+* [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
+  - Method has an implementation but can be overridden
+  - Base implementation can be called via `base.Method()`
+* [`override`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override)
+  - Provides a new implementation of a virtual or abstract member
+  - Must match signature exactly
+* [`base`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)
+  - References base class implementation of overridden members
+  - Used in constructor chaining
+
+
+---
+
+### Gotcha: Non `virtual` by Default
+* In C#, methods are [non-virtual by default](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
+* Must explicitly mark methods as `virtual` to enable overriding
+* [Design philosophy](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/virtual-members):
+  - Promotes version resilience and performance
+  - Prevents "fragile base class" problem
+  - Forces intentional [design of inheritance points](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/framework-design-guidelines-digest)
+* Contrast with Java where methods are virtual by default
+
+---
+
+### Example: Vehicle
+
+```csharp
+public class Vehicle{
+  public void Go() => Console.WriteLine("Let's go!");
+}
+public class Car : Vehicle{
+  // Doesn't compile! 
+  public override void Go() => Console.WriteLine("Vroom!");
+}
+
+public class Boat : Vehicle{
+  // Probably not what you want!
+  public void Go() => Console.WriteLine("Splash!");
+}
+``` 
+
+---
+
+### Quiz: What's the Output?
+
+```csharp
+Vehicle v = new Vehicle();
+v.Go();
+
+Vehicle b1 = new Boat();
+b1.Go();
+
+Boat b2 = new Boat();
+b2.Go();
+```
+
+---
+
+### Takehome
+* Use `virtual` and `override` judiciously
+* **For code reuse**: prefer composition
+* **For a uniform interface**: prefer interface inheritance
+* If you're extra paranoid: `seal` your classes by default
+
+---
+
+
+
+
+## `System.Object`
+
+---
+
+### Overview
+
+* [System.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object) is the root of all types in .NET
+* Every type inherits from `object` (or `System.Object`)
+* Enables:
+  - Generic collections
+  - Boxing/unboxing
+  - Type reflection
+* Best practice: Override these methods when implementing value types
+
+---
+
+### Object Methods
+
+| Method | Description | Virtual |
+|:--------|:-------------|------------|
+| [`ToString()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring) | Converts object to string representation | <span style="color:green">✓</span> |
+| [`Equals()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals) | Determines object equality | <span style="color:green">✓</span> |
+| [`GetHashCode()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode) | Gets hash code for object | <span style="color:green">✓</span> |
+| [`GetType()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gettype) | Returns runtime type of object | <span style="color:red">✗</span> |
+
+---
+
+### `ToString()`
+* Converts an object to its string representation
+* Default implementation:
+  - Returns the full type name
+* Override for custom string representations
+
+---
+
+### Example: `ToString()`
+
+```csharp {4}
+public class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+  public override string ToString() => $"{Name} ({Age} years old)"; 
+}
+
+var p = new Person{ Name = "John", Age = 30 };
+Console.WriteLine(p); // Output: John (30 years old)
+```
+
+---
+
+### Overriding `Equals()`
+* Default compares references, not values
+* Override for value-based equality
+* Always override `GetHashCode()` too
+* Common in value types and collections
+* Must follow [equality contract](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals#notes-to-implementers)
+
+---
+
+### Example: Custom `Equals()`
+
+```csharp title="Person.cs"
+public class Person {
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public override bool Equals(object? obj) {
+        if (obj is not Person other) return false;
+        return Name == other.Name && Age == other.Age;
+    }
+    //TODO: Override GetHashCode
+}
+```
+
+---
+
+### About `GetHashCode()`
+* Used by hash-based collections (Dictionary, HashSet)
+* Must match `Equals()`: if `a.Equals(b)` then `a.GetHashCode() == b.GetHashCode()`
+* Fast, consistent hash function
+* Never changes during object lifetime
+* [Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode)
+
+---
+
+### Example: `GetHashCode()`
+* [`HashCode.Combine`](https://learn.microsoft.com/en-us/dotnet/api/system.hashcode.combine) is a helper method for combining hash codes
+* More efficient than manually combining hash codes
+* Handles `null` values gracefully
+
+```csharp title="Person.cs"
+public class Person {
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Name, Age);
+    }
+}
+```
+---
+
+### `GetType()`
+* Returns runtime type information
+* Key method for [.NET Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection)
+* Used by serialization, dependency injection, and testing frameworks
+* Only non-virtual method in System.Object
+* Returns a [Type](https://learn.microsoft.com/en-us/dotnet/api/system.type) object
+
+
+---
+
+
+
+## Keyword: `this`
+
+
+---
+
+### Overview
+* [`this`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/this) refers to current object instance
+* Required to resolve name conflicts (e.g., parameter vs field)
+* Optional for accessing members
+* Style choice in most cases
+* Used in extension methods and indexers
+
+---
+
+### Example: `this`
+
+```csharp
+public class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public Person(string name, int age){
+    this.Name = name;
+    Age = age;
+  }
+}
+
+```
+
