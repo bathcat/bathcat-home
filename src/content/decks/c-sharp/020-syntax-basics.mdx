@@ -57,6 +57,36 @@ Console.WriteLine(message);
 
 ---
 
+### About `var`
+
+* [Implicitly typed local variables](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/var) introduced in C# 3.0
+* Compiler infers type from initialization expression
+* **Benefits**: Less verbose, handles complex generic types, supports anonymous types
+* **Tradeoffs**: Can reduce code readability, may hide type information
+* **Best practice**: Use when type is obvious from context
+
+---
+
+### Examples
+
+
+```csharp title='HelloVar.cs' {1}
+var message = "Hello, World!";
+Console.WriteLine(message);
+```
+
+
+```csharp title='Example.cs'
+var message = "Hello";  // string
+var numbers = new List<int>();  // List<int>
+var point = new { X = 1, Y = 2 };  // Anonymous type
+```
+
+---
+
+
+
+
 ## Primitives
 
 ---
@@ -90,8 +120,8 @@ Console.WriteLine(message);
 | `sbyte`  | <span style="color:green">✓</span> | 8    | `-128` to `127`                                  |
 | `byte`   | <span style="color:red">✗</span>   | 8    | `0` to `255`                                     |
 | `short`  | <span style="color:green">✓</span> | 16   | `-32768` to `32767`                              |
-| `ushort` | <span style="color:red">✗</span>   | 16   | `0` to `65535`                                   |
-| `int`    | <span style="color:green">✓</span> | 32   | `-2147483648` to `2147483647`                    |
+| `ushort` | <span style="color:red">✗</span>   | 16   | `0` to `65,535`                                   |
+| **`int`**    | <span style="color:green">✓</span> | 32   | `-2,147,483,648` to `2,147,483,647`                    |
 | `uint`   | <span style="color:red">✗</span>   | 32   | 0 to 4.3 × 10<sup>9</sup>                        |
 | `long`   | <span style="color:green">✓</span> | 64   | -9.2 × 10 <sup>18</sup> to 9.2 × 10<sup>18</sup> |
 | `ulong`  | <span style="color:red">✗</span>   | 64   | 0 to 1.8 × 10<sup>19</sup>                       |
@@ -121,6 +151,9 @@ char middleInitial = 'J';
 ```
 
 ---
+
+
+
 
 ## Strings
 
@@ -215,15 +248,67 @@ Console.WriteLine(message);
 
 ---
 
+### String Interpolation
+
+* [String interpolation](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated) introduced in C# 6.0
+* Replaces string concatenation with cleaner syntax
+* Uses `$` prefix and `{}` for expressions
+* Supports:
+  - **Simple variables**: `$"Hello {name}"`
+  - **Complex expressions**: `$"Count: {items.Count + 1}"`
+  - **Format specifiers**: `$"Price: {price:C2}"`
+* More readable than `string.Format()` or concatenation
+
+---
+
+### Raw String Literals
+
+* [Raw string literals](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string) introduced in C# 11
+* Preserves whitespace and line breaks
+* No need to escape quotes or backslashes
+* Common use cases:
+  - JSON/XML/HTML templates
+  - SQL queries
+  - File paths
+  - Multi-line strings
+* Syntax: Three double quotes
+  - i.e. `$"""..."""` with optional `$` for interpolation
+
+---
+
+### Example
+
+```csharp title='RawString.cs'
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public string ToJson() => """
+{
+    "name": {Name},
+    "age": {Age}
+}
+""";
+}
+Console.WriteLine(json);
+```
+
+---
+
+
+
 ## Enumerations
 
 ---
 
 ### [Overview](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum)
 
-- Alternative to magic strings
-- Maps a lable to an undelying integral value
-- Keyword: `enum`
+* [Enumeration type](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum) maps labels to integral values
+* Provides type safety over magic numbers/strings
+* Can be [signed or unsigned](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
+* Supports [bit flags](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) with `[Flags]` attribute
+* Values can be [explicitly specified](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
+* Best practice: Use for fixed sets of related values
 
 ---
 
@@ -265,6 +350,24 @@ public class Login{
 }
 ````
 
+---
+
+### Example 2: Colors
+
+```csharp title='ColorWavelengths.cs'
+enum ColorWavelength {
+    Red = 700,
+    Orange = 600,
+    Yellow = 580,
+    Green = 550,
+    Blue = 470,
+    Violet = 400
+}
+
+public string GetColorInfo(ColorWavelength color) =>
+    $"{color} light has a wavelength of {(int)color}nm";
+
+```
 
 ---
 
@@ -345,6 +448,10 @@ public class Person{ /* etc...*/}
 
 
 --- 
+
+
+
+
 
 ## All about `null`
 
@@ -451,7 +558,18 @@ public class UsersController{
 </figcaption>
 </figure>
 
-* Lorem ipsum dolor
-* Sit amet
-* Consectetur adipiscing elit
-* Ut enim ad minim veniam
+* [Tony Hoare](https://en.wikipedia.org/wiki/Tony_Hoare) introduced null references in ALGOL W (1965)
+* Called it his ["billion-dollar mistake"](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/)
+* Null references cause:
+  - Runtime errors 
+  - Defensive programming overhead
+  - Complex null-checking logic
+
+---
+
+### My Approach
+#### Belt and braces
+1. Use nullable reference types
+  - Turn on [nullable context](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-context)
+2. [Treat warnings as errors](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings#treatwarningsaserrors)
+3. Check for nulls obsessively
