@@ -340,7 +340,7 @@ var cats = new List<Cat> {
 
 ---
 
-### Spread Operator
+### Range Operator
 
 * Introduced in [C# 12/.NET 8](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12) (November 2023)
 * Creates [collection expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions) with simplified syntax
@@ -354,19 +354,21 @@ var cats = new List<Cat> {
 
 ### Examples
 ```csharp title="Collection Expressions"
-var numbers = [1, 2, 3];
+int[] firstList = [1, 2, 3];
+List<int> secondList = [1, 2, 3];
+
 
 // Combining collections with spread operator
-var combined = [..firstList, ..secondList];
+int[] combined = [.. firstList, .. secondList];
 
 // Cloning a list
-var clone = [..original];
+List<int> clone = [.. combined];
 
 // Adding elements
-var withMore = [..original, 4, 5, 6];
+List<int> withMore = [.. combined, 4, 5, 6];
 
 // Mixed operations
-var result = [item1, ..middleItems, item2];
+List<int> result = [9, .. withMore, 22];
 ```
 
 ---
@@ -406,3 +408,37 @@ public class Person {
     public IReadOnlyCollection<DateOnly> AvailableDates => availableDates.AsReadOnly();
 }
 ```
+
+---
+
+### From the End
+
+* **Index from end operator** (`^`) introduced in [C# 8.0](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
+* Provides [cleaner syntax](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#index-from-end-operator-) for accessing elements from collection end
+* Replaces verbose expressions like `array[array.Length - 1]`
+* Works with [arrays, spans, and strings](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/ranges)
+* Pairs with [range operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#range-operator-) for slicing collections
+* Strongly typed with [System.Index](https://learn.microsoft.com/en-us/dotnet/api/system.index) struct
+* Improves code readability for collections with unknown length
+
+---
+
+### From the End Examples
+
+```csharp title="Index From End Examples"
+// Last element
+var lastItem = array[^1];  // Same as array[array.Length - 1]
+
+// Third from end
+var thirdFromEnd = list[^3];  // Same as list[list.Count - 3]
+
+// Ranges with from-end operator
+var lastThreeItems = array[^3..];  // Last three elements
+
+// Slicing with both ends
+var middleItems = array[2..^2];  // All but first two and last two
+
+// Works with strings too
+var extension = filename[^4..];  // Last four characters
+```
+
