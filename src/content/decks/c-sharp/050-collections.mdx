@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+status: 'Live'
 flavor: 'Deck'
 ---
 
@@ -198,5 +198,211 @@ foreach (var item in query) // Execution happens here
 
 ---
 
+### Pitfalls
+
+* **Single-use enumerators**: Some [IEnumerable sources](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.range) can only be enumerated once
+* **Deferred execution**: Changes to source data [affect results](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example)
+* **Resource leaks**: Unclosed [database connections](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/managing-connections) or [file streams](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.openread)
+* **Hidden costs**: Some operations force [multiple passes](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/classification-of-standard-query-operators-by-manner-of-execution) over data
+* **Memory pressure**: Large sequences can cause [performance issues](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/performance-tips)
+* **Thread safety**: Most implementations are [not thread-safe](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)
+
+---
+
+### Problematic Connection Management
+
+```csharp title="ConnectionLeakExample.cs"
+public static IEnumerable<Person> GetAll() {
+    using var connection = new SqlConnection("connection_string");
+    connection.Open();
+    
+    var command = new SqlCommand("SELECT * FROM Person", connection);
+    var reader = command.ExecuteReader();
+    
+    while (reader.Read()) {
+        yield return new Person {
+            Id = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            Age = reader.GetInt32(2)
+        };
+    }
+    // Connection remains open until enumeration completes
+}
+```
+
+---
 
 
+
+## Keyword: `yield`
+
+---
+
+### Overview
+
+* Creates [iterator methods](https://learn.microsoft.com/en-us/dotnet/csharp/iterators) without explicit state management
+* Produces values on-demand with [deferred execution](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/classification-of-standard-query-operators-by-manner-of-execution)
+* Compiler generates [state machine](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/yield) under the hood
+* Maintains method state between iterations
+* Enables [lazy evaluation](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example) for efficient processing
+* Powers many LINQ extension methods
+* Can cause resource leaks when [improperly used](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/disposable-resource-usage)
+
+---
+
+### Example (Dumb)
+
+```csharp
+public static IEnumerable<string> GetWords() {
+    yield return "Hello";
+    yield return "World";
+}
+
+// Usage
+foreach (var word in GetWords()) {
+    Console.WriteLine(word);
+}
+```
+
+---
+
+### Example (Less Dumb)
+
+```csharp
+public static IEnumerable<TResult> Map<TSource, TResult>(
+    this IEnumerable<TSource> source,
+    Func<TSource, TResult> map
+) {
+    foreach (var item in source) {
+        yield return map(item);
+    }
+}
+```
+
+---
+
+### Example: Fibonacci Sequence
+
+```csharp
+public static IEnumerable<int> Fibonacci() {
+    int previous = 0, current = 1;
+    while(true) {
+        yield return previous;
+        int temp = previous + current;
+        previous = current;
+        current = temp;
+    }
+}
+
+```
+
+---
+
+
+
+
+## Common Collections
+
+---
+
+### Overview
+* **Workhorses**
+  - **[Array](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/arrays/)**: Fixed-size contiguous memory block, fastest random access
+  - **[List](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)**: Resizable array, best general-purpose collection
+  - **[Dictionary](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2)**: Key-value pairs with O(1) lookups
+* **Occasionally useful**
+  - **[ArrayList](https://learn.microsoft.com/en-us/dotnet/api/system.collections.arraylist)**: Legacy non-generic list, avoid in new code
+  - **[HashSet](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1)**: Unique elements, efficient membership testing
+  - **[Queue](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.queue-1)**: FIFO collection for ordered processing
+  - **[Stack](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.stack-1)**: LIFO collection for reverse-order processing
+
+---
+
+### Initialization
+
+```csharp
+var xs = new List<string>();
+xs.Add("a");
+xs.Add("b");
+xs.Add("c");
+
+var ys = new List<int> { 1, 2, 3 };
+
+List<int> zs = [1, 2, 3];
+
+var bs = [1, 2, 3];
+
+var cats = new List<Cat> {
+    new Cat("Whiskers"),
+    new Cat("Mittens")
+};
+```
+
+---
+
+### Spread Operator
+
+* Introduced in [C# 12/.NET 8](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12) (November 2023)
+* Creates [collection expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions) with simplified syntax
+* Solves verbose collection initialization problem
+* Enables [spread elements](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions) with `..` syntax
+* Works with arrays, lists, and other collection types
+* Improves readability by reducing boilerplate code
+* Supports inference of most appropriate collection type
+
+---
+
+### Examples
+```csharp title="Collection Expressions"
+var numbers = [1, 2, 3];
+
+// Combining collections with spread operator
+var combined = [..firstList, ..secondList];
+
+// Cloning a list
+var clone = [..original];
+
+// Adding elements
+var withMore = [..original, 4, 5, 6];
+
+// Mixed operations
+var result = [item1, ..middleItems, item2];
+```
+
+---
+
+### On Interfaces
+
+* Interfaces define [contracts](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/interfaces/) for collections
+* Enable [polymorphism](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism) and looser coupling
+* Allow generic algorithms that work on multiple collection types
+* **Why Read-Only Interfaces?**
+  - IEnumerable only provides iteration, no direct access
+  - [IReadOnlyList](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1) adds indexing and Count
+  - Clearer intent than IEnumerable or casting to concrete types
+  - Performance: direct access without LINQ overhead
+* Good for [API design](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/guidelines-for-collections) and defensive programming
+
+---
+
+### Interfaces
+
+* **[IEnumerable](https://learn.microsoft.com/en-us/dotnet/api/system.collections.ienumerable)**: Base interface for all collections, enables foreach
+* **[ICollection](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.icollection-1)**: Adds size and modification capabilities
+* **[IList](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ilist-1)**: Provides indexed access and list manipulation
+* **[IDictionary](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.idictionary-2)**: Provides key/value pair access
+* Read only
+  - **[IReadOnlyCollection](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlycollection-1)**: Read-only view of a collection
+  - **[IReadOnlyList](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1)**: Read-only view with indexed access
+  - **[IReadOnlyDictionary](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2)**: Read-only view of key/value pairs
+
+---
+
+### Creating `IReadOnlyCollection<T>`
+
+```csharp
+public class Person {
+    private readonly List<DateOnly> availableDates;
+    public IReadOnlyCollection<DateOnly> AvailableDates => availableDates.AsReadOnly();
+}
+```
