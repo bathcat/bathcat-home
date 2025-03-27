@@ -64,6 +64,9 @@ class User{
 
 ---
 
+
+
+
 ## Fancy `using`
 
 ---
@@ -78,6 +81,9 @@ class User{
 * **Complaints**: Not as explicit, minimal time savings
 
 ---
+
+
+
 
 ## Top-level Statements
 
@@ -127,7 +133,10 @@ namespace Acme{
   - Reduced uniformity
 
 
---- 
+---
+
+
+
 
 ## Records
 
@@ -222,9 +231,166 @@ public static LoginManager{
 
 ---
 
+
+
+
 ## Pattern Matching
 
 ---
 
+
+
 ### Overview
-* 
+
+* Introduced in C# 7.0, inspired by functional languages like F# and Haskell
+* Solves complex type checking and property matching in a declarative way
+* Reduces boilerplate code for type testing and property extraction
+* Enables more expressive and readable conditional logic
+* Key features:
+  - [Type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns) for safe type testing
+  - [Property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern) for object property matching
+  - [Positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern) for deconstructing objects
+  - [List patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns) for array/list matching (C# 11)
+
+---
+
+### Type Pattern Matching
+
+* Tests and extracts values based on type using `is` operator
+* Eliminates need for explicit type casting and null checks
+* Introduced in C# 7.0 with [basic type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns)
+* Enhanced in C# 9.0 with [relational patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#relational-patterns)
+* Common use cases:
+  - Safe type testing without exceptions
+  - Extracting values from polymorphic objects
+  - Combining type checks with property access
+
+---
+
+### Motivating Example
+
+```csharp
+public string ProcessShape(Shape shape){
+    if (shape is Circle){
+        var circle = (Circle)shape;
+        return $"Circle with radius {circle.Radius}";
+    }
+    if (shape is Rectangle){
+        var rect = (Rectangle)shape;
+        return $"Rectangle {rect.Width}x{rect.Height}";
+    }
+    return "Unknown shape type";
+}
+```
+
+---
+
+
+
+### Type Pattern Example
+
+```csharp
+public string ProcessShape(Shape shape)
+{
+    if (shape is Circle circle)
+        return $"Circle with radius {circle.Radius}";
+        
+    if (shape is Rectangle rect)
+        return $"Rectangle {rect.Width}x{rect.Height}";
+        
+    if (shape is null)
+        return "No shape provided";
+        
+    return "Unknown shape type";
+}
+```
+
+---
+
+### Property Pattern Matching
+
+* Tests object properties directly in pattern matching expressions
+* Introduced in C# 8.0 with [property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern)
+* Enhanced in C# 10.0 with [extended property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#extended-property-patterns)
+* Common use cases:
+  - Matching on object state without type checking
+  - Combining multiple property conditions
+  - Nested property access in patterns
+
+---
+
+### Property Pattern Example
+
+```csharp title='OrderProcessor.cs'
+public string GetOrderStatus(Order order)
+{
+    if (order is { Status: OrderStatus.Pending, Amount: > 1000 })
+        return "High value pending order";
+        
+    if (order is { Customer: { IsVIP: true }, Status: OrderStatus.Processing })
+        return "VIP order in processing";
+        
+    if (order is { Status: OrderStatus.Cancelled, CancellationReason: not null })
+        return $"Order cancelled: {order.CancellationReason}";
+        
+    return "Standard order";
+}
+```
+
+---
+
+### Positional Pattern Matching
+
+* Matches on object deconstruction using [positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern)
+* Works with types that implement [Deconstruct](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
+* Common use cases:
+  - Matching on record types
+  - Working with tuple-like structures
+  - Extracting multiple values in one pattern
+
+---
+
+### Positional Pattern Example
+
+```csharp title='PointProcessor.cs'
+public string GetQuadrant(Point point) {
+    return point switch {
+        (0, 0) => "Origin",
+        (var x, var y) when x > 0 && y > 0 => "Quadrant 1",
+        (var x, var y) when x < 0 && y > 0 => "Quadrant 2",
+        (var x, var y) when x < 0 && y < 0 => "Quadrant 3",
+        (var x, var y) when x > 0 && y < 0 => "Quadrant 4",
+        _ => "Invalid point"
+    };
+}
+```
+
+---
+
+### List Pattern Matching
+
+* Introduced in C# 11 with [list patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns)
+* Matches on array or list elements using slice patterns
+* Common use cases:
+  - Matching sequence prefixes
+  - Extracting head and tail elements
+  - Validating list structure
+* Supports `..` for slice patterns and `_` for discards
+
+---
+
+### List Pattern Example
+
+```csharp title='CommandParser.cs'
+public string ParseCommand(string[] args) 
+    => args switch {
+        ["run", "test", ..] => "Running tests",
+        ["build", "release", var target] => $"Building release for {target}",
+        ["help", var command] => $"Showing help for {command}",
+        ["version"] => "v1.0.0",
+        [] => "No command provided",
+        _ => "Unknown command"
+    };
+
+```
+

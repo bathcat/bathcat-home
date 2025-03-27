@@ -20,7 +20,7 @@ flavor: 'Deck'
 
 
 
-## Conditionals (Simple)
+## Conditionals
 
 ---
 
@@ -74,7 +74,6 @@ public string GetGreeting(int hour){
 * Avoid [arrow anti-pattern](https://blog.codinghorror.com/flattening-arrow-code/) with early returns
 * Keep nesting shallow - prefer [guard clauses](https://refactoring.guru/replace-nested-conditional-with-guard-clauses)
 * Consider [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching) for complex conditions
-* Use [expression-bodied members](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/expression-bodied-members) for simple conditions
 
 ---
 
@@ -90,10 +89,8 @@ public string GetGreeting(int hour){
 ### Example, Old School
 
 ```csharp
-public string GetDayName(int day)
-{
-    switch (day)
-    {
+public string GetDayName(int day){
+    switch (day){
         case 1: return "Monday";
         case 2: return "Tuesday";
         case 3: return "Wednesday";
@@ -117,7 +114,7 @@ public string GetPeriod(int quarter) {
         case 1:
             period = "Early";
             break;
-        case 2:
+        case 2: // fall through
         case 3:
             period = "Mid";
             break;
@@ -133,165 +130,86 @@ public string GetPeriod(int quarter) {
 
 
 
-## Conditionals (Fancy)
+## Comparisons
 
 ---
 
-### Pattern Matching
+### Overview
+* Things usually work as expected
+* Equality is sometimes tricky
 
-* Introduced in C# 7.0, inspired by functional languages like F# and Haskell
-* Solves complex type checking and property matching in a declarative way
-* Reduces boilerplate code for type testing and property extraction
-* Enables more expressive and readable conditional logic
-* Key features:
-  - [Type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns) for safe type testing
-  - [Property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern) for object property matching
-  - [Positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern) for deconstructing objects
-  - [List patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns) for array/list matching (C# 11)
 
 ---
 
-### Type Pattern Matching
+### Comparison Operators
 
-* Tests and extracts values based on type using `is` operator
-* Eliminates need for explicit type casting and null checks
-* Introduced in C# 7.0 with [basic type patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#type-patterns)
-* Enhanced in C# 9.0 with [relational patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#relational-patterns)
-* Common use cases:
-  - Safe type testing without exceptions
-  - Extracting values from polymorphic objects
-  - Combining type checks with property access
+| Op | Description | Example |
+|----------|:-------------|:---------|
+| `==` | [Equals ](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/equality-operators#equality-operator-) | `if (x == y)` |
+| `!=` | [Not equals](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/equality-operators#inequality-operator-) | `if (x != y)` |
+| `<` | [Less than](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators#less-than-operator-) | `if (x < y)` |
+| `>` | [Greater than](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators#greater-than-operator-) | `if (x > y)` |
+| `<=` | [Less than or equal](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators#less-than-or-equal-operator-) | `if (x <= y)` |
+| `>=` | [Greater than or equal](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators#greater-than-or-equal-operator-)) | `if (x >= y)` |
+
 
 ---
 
-### Motivating Example
+### Type Checking
+| Op | Description | Example |
+|----------|:-------------|---------|
+| `is` | Tests if object is compatible with a type ([docs](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/type-testing-and-cast#is-operator)) | `if (obj is string)` |
+| `is not` | Tests if object is _not_ compatible with a type ([docs](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns#logical-patterns)) | `if (obj is not null)` |
+
+---
+
+### Equality
+
+* **Value types**: Use [structural equality](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/equality-comparisons) (comparing actual values)
+* **Reference types**: Use [reference equality](https://learn.microsoft.com/en-us/dotnet/api/system.object.referenceequals) (comparing memory addresses)
+* **Customizable**: Override [`Equals`](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals) and [`GetHashCode`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode)
+* **Consistency**: Always implement [`IEquatable<T>`](https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1) when customizing
+* **Verification**: [Unit tests](https://learn.microsoft.com/en-us/dotnet/core/testing/) help verify equality behavior works as expected
+
+
+---
+
+### Examples
 
 ```csharp
-public string ProcessShape(Shape shape){
-    if (shape is Circle){
-        var circle = (Circle)shape;
-        return $"Circle with radius {circle.Radius}";
-    }
-    if (shape is Rectangle){
-        var rect = (Rectangle)shape;
-        return $"Rectangle {rect.Width}x{rect.Height}";
-    }
-    return "Unknown shape type";
-}
+var equals0 = "Hello" == "hello"; // false
+var equals1 = String.Equals("Hello", "Hello", StringComparison.OrdinalIgnoreCase); // true
+
+var list1 = new List<int> { 1, 2, 3 };
+var list2 = new List<int> { 1, 2, 3 };
+var equals2 = list1 == list2; // false
+var equals3 = Enumerable.SequenceEqual(list1, list2); // true
+
+var point1 = new Point(1, 2);
+var point2 = new Point(1, 2);
+var equals4 = point1 == point2; // ???
 ```
 
----
-
-
-
-### Type Pattern Example
-
-```csharp
-public string ProcessShape(Shape shape)
-{
-    if (shape is Circle circle)
-        return $"Circle with radius {circle.Radius}";
-        
-    if (shape is Rectangle rect)
-        return $"Rectangle {rect.Width}x{rect.Height}";
-        
-    if (shape is null)
-        return "No shape provided";
-        
-    return "Unknown shape type";
-}
-```
 
 ---
 
-### Property Pattern Matching
+### Handy Methods
 
-* Tests object properties directly in pattern matching expressions
-* Introduced in C# 8.0 with [property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#property-pattern)
-* Enhanced in C# 10.0 with [extended property patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#extended-property-patterns)
-* Common use cases:
-  - Matching on object state without type checking
-  - Combining multiple property conditions
-  - Nested property access in patterns
+* **[Object.ReferenceEquals](https://learn.microsoft.com/en-us/dotnet/api/system.object.referenceequals)**: Checks if two references point to same object
+* **[Enumerable.SequenceEqual](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.sequenceequal)**: Compares collections element by element
+* **[String.IsNullOrEmpty](https://learn.microsoft.com/en-us/dotnet/api/system.string.isnullorempty)**: Checks if string is null or empty
+* **[String.Equals](https://learn.microsoft.com/en-us/dotnet/api/system.string.equals)**: Compares strings with optional case insensitivity
 
 ---
 
-### Property Pattern Example
-
-```csharp title='OrderProcessor.cs'
-public string GetOrderStatus(Order order)
-{
-    if (order is { Status: OrderStatus.Pending, Amount: > 1000 })
-        return "High value pending order";
-        
-    if (order is { Customer: { IsVIP: true }, Status: OrderStatus.Processing })
-        return "VIP order in processing";
-        
-    if (order is { Status: OrderStatus.Cancelled, CancellationReason: not null })
-        return $"Order cancelled: {order.CancellationReason}";
-        
-    return "Standard order";
-}
-```
+### More to Come
+* There's a lot more to say.
+* Modern C# includes:
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching)
+  - [Null-related operators](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns#logical-patterns) with `is` and `is not`
 
 ---
 
-### Positional Pattern Matching
-
-* Matches on object deconstruction using [positional patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#positional-pattern)
-* Works with types that implement [Deconstruct](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
-* Common use cases:
-  - Matching on record types
-  - Working with tuple-like structures
-  - Extracting multiple values in one pattern
-
----
-
-### Positional Pattern Example
-
-```csharp title='PointProcessor.cs'
-public string GetQuadrant(Point point) {
-    return point switch {
-        (0, 0) => "Origin",
-        (var x, var y) when x > 0 && y > 0 => "Quadrant 1",
-        (var x, var y) when x < 0 && y > 0 => "Quadrant 2",
-        (var x, var y) when x < 0 && y < 0 => "Quadrant 3",
-        (var x, var y) when x > 0 && y < 0 => "Quadrant 4",
-        _ => "Invalid point"
-    };
-}
-```
-
----
-
-### List Pattern Matching
-
-* Introduced in C# 11 with [list patterns](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching#list-patterns)
-* Matches on array or list elements using slice patterns
-* Common use cases:
-  - Matching sequence prefixes
-  - Extracting head and tail elements
-  - Validating list structure
-* Supports `..` for slice patterns and `_` for discards
-
----
-
-### List Pattern Example
-
-```csharp title='CommandParser.cs'
-public string ParseCommand(string[] args) 
-    => args switch {
-        ["run", "test", ..] => "Running tests",
-        ["build", "release", var target] => $"Building release for {target}",
-        ["help", var command] => $"Showing help for {command}",
-        ["version"] => "v1.0.0",
-        [] => "No command provided",
-        _ => "Unknown command"
-    };
-
-```
-
----
 
 
 
@@ -324,12 +242,12 @@ public string ParseCommand(string[] args)
 ### Example: For Loop
 
 ```csharp title='ArrayProcessor.cs'
-public int[] CreateSequence(int start, int count) {
-    var result = new int[count];
-    for (int i = 0; i < count; i++) {
-        result[i] = start + i;
+public int Sum(int[] numbers) {
+    int sum = 0;
+    for (int i = 0; i<numbers.Length; i++) {
+        sum += numbers[i];
     }
-    return result;
+    return sum;
 }
 ```
 
@@ -347,7 +265,7 @@ public int[] CreateSequence(int start, int count) {
 ### Example: Foreach Loop
 
 ```csharp title='CollectionProcessor.cs'
-public int SumPositive(IEnumerable<int> numbers) {
+public int Sum(IEnumerable<int> numbers) {
     var sum = 0;
     foreach (var num in numbers) {
         if (num > 0) sum += num;
@@ -423,4 +341,12 @@ public int SumValidNumbers(IEnumerable<string> inputs) {
 
 ---
 
+### Loop Alternatives
 
+* **Functional approaches** replace explicit loops with higher-order functions
+* e.g. `Select`, `Where`, `Aggregate`
+* **Benefits**:
+  - Declarative - i.e. what to do, not how
+  - Concise, readable
+  - Easier to test in isolation
+* [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/) brings these patterns to C# with a SQL-like syntax
