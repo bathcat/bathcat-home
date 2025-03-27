@@ -135,4 +135,21 @@ public class Example {
 3. **Spacing**:
    - Use `<br/>` for intentional line breaks
    - Use `<div style='height:3rem'></div>` for vertical spacing when needed
+
+## Section Formatting
+
+1. **Section Headers**: Sections within a deck must use level 2 headings (`## Section Title`)
+2. **Subsection Spacing**: For visual navigation in the editor, include approximately 4 blank lines before subsection headers:
+```
+
+---
+
+
+
+
+## Subsection Title
+
+```
+3. **Slide Separation**: All slides must be separated with `---` on its own line with newlines before and after
+4. **Slide Titles**: Content slides must have a level 3 heading title (`### Slide Title`)
 ```

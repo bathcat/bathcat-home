@@ -393,4 +393,121 @@ public string ParseCommand(string[] args)
     };
 
 ```
+---
+
+
+
+## Keyword: `using`
+
+---
+
+### Overview
+* `using` has multiple uses
+  - Namespace imports
+  - Type imports
+  - Resource management (to be covered later)
+* Lots of approaches
+
+---
+
+### Approach 0: No `using`
+* No `using` directives
+* Fully qualified names
+* No one really does this
+* BUT it's how the CLR works
+
+
+---
+
+### Example: No `using`
+
+```csharp
+class MyClass{
+  public void DoWork(){
+    var fs = new System.IO.FileStream("file.txt", System.IO.FileMode.Open);
+    var reader = new System.IO.StreamReader(fs);
+    var line = reader.ReadLine();
+    System.Console.WriteLine(line);
+  }
+}
+
+```
+
+---
+
+### Approach 1: Manual Import
+* Recipe: Add `using` directives to every file
+* **Pros**: Explicit, Traditional
+* **Cons**:
+  - Less friendly to newcomers
+  - Tedious (?)
+  
+---
+
+### Example: Manual Import
+```csharp
+using System.IO;
+using System;
+
+class MyClass{
+  public void DoWork(){
+    var fs = new FileStream("file.txt", FileMode.Open);
+    var reader = new StreamReader(fs);
+    var line = reader.ReadLine();
+    System.Console.WriteLine(line);
+  }
+}
+
+```
+
+---
+
+### Approach 2: Global Usings
+* [Global Usings](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive#global-modifier) allow namespace imports to be shared across multiple files
+* Introduced in C# 10/.NET 6
+* Recipe: 
+  - Create a `global.cs` file
+  - Add `using` directives to it
+* **Pros**: Convenient, Easy to manage
+* **Cons**: Less explicit, Potential collisions
+
+---
+
+### Example: Global Usings
+```csharp title="global.cs"
+using System.IO;
+using System;
+```
+
+---
+
+### Approach 3: Implicit Usings
+* Introduced in [.NET 6/C# 10](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
+* Automatically imports common namespaces based on project type
+* Configured in project file
+* **Pros**: Less boilerplate, Standardizes imports across projects
+* **Cons**: Less explicit, Potential namespace collisions
+
+---
+### Example: Implicit Usings
+```xml title="MyProject.csproj"
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
+
+```
+
+---
+
+### Takehome
+* Choice of `using` approach comes down to style
+* **Most important**: be consistent within your project or organization
+* Documentation and IDE support work equally well with all approaches
 

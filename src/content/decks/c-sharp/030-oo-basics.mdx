@@ -16,16 +16,64 @@ flavor: 'Deck'
 
 ---
 
-## Overview
+
+
+
+## OO in C#
 
 ---
 
-### Lorem Ipsum
-- Parallelism spreads work across multiple CPUs
-  - But thread might be blocked by IO operations
-- Asyc is non-blocking
+### OO Defined
+
+* [Object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming) combines data and behavior into a single unit called an object
+* Objects maintain [state](https://en.wikipedia.org/wiki/State_(computer_science)) (fields) and expose [behavior](https://en.wikipedia.org/wiki/Behavior-driven_development) (methods)
+* Facilitates code reuse, modularity, and separation of concerns
 
 ---
+
+### Core OO Principles
+1. [Encapsulation](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/encapsulation): Hide implementation details, expose controlled interfaces
+1. [Inheritance](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/inheritance): Derive new types from existing ones
+1. [Polymorphism](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/polymorphism): Objects can take different forms at runtime
+1. [Abstraction](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/abstractions): Model complex systems using simplified representations
+
+---
+
+### OO in C#
+
+* Key language constructs:
+  - [`class`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/class): Defines a reference type that encapsulates data and behavior
+  - [`new`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/new-operator): Creates instances of types at runtime
+* Strong type system with compile-time checking
+* Built-in support for common OO patterns and practices
+* [Properties](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/properties) provide controlled access to object state
+
+---
+
+### Example
+```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+}
+Person p = new Person();
+p.Name = "John";
+p.Age = 30;
+```
+
+---
+
+### Words of Caution
+* OO was [dominant in the early 2000s](https://en.wikipedia.org/wiki/Object-oriented_programming#History)
+* Pure OO systems can become:
+  - Brittle through [tight coupling](https://en.wikipedia.org/wiki/Coupling_(computer_programming))
+  - Hard to test
+  - [Difficult to parallelize](https://www.microsoft.com/en-us/research/publication/objects-have-failed-notes-for-a-debate/) safely
+* Modern C# is [multi-paradigm](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/#object-oriented-and-component-oriented)
+
+
+---
+
 
 ## Fields
 
@@ -51,6 +99,28 @@ class Person{
   private string email;
 }
 ```
+
+---
+
+### Access Modifiers
+
+* Control the visibility and accessibility of types and members
+* Available modifiers:
+  - [`public`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/public): Accessible from anywhere
+  - [`private`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/private): Accessible only within the containing type
+  - [`protected`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/protected): Accessible within the type and derived types
+  - [`internal`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/internal): Accessible within the same assembly
+  - [`protected internal`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/protected-internal): Accessible within the assembly or derived types
+  - [`private protected`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/private-protected): Accessible within containing type or derived types in same assembly
+* [Default accessibility](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/access-modifiers) is `private` for members, `internal` for types
+
+
+---
+
+### Fatherly Advice
+* **Always** `private` for fields
+* **Never** accept the default-- i.e. be explicit
+* **>95%** of the time use `private` or `public` 
 
 ---
 
@@ -134,14 +204,13 @@ class Person{
 
 ### Motivating Example (I)
 
-- Classes should protect invariants
-- Public fields let anyone create invalid state
+* Classes should protect invariants
+* BUT public fields let anyone create invalid state
 
 ```csharp title='Person.cs'
 class Person{
   public int age;
 }
-
 // Elsewhere
 var p = new Person();
 p.age = -30;
@@ -154,10 +223,10 @@ p.age = -30;
 ```csharp title="Person.cs"
 class Person{
   private int age;
-
-  public int GetAge(){
-    return age;
-  }
+  // Getters and Setters are ok. 
+  // But not ergonomic
+  public int GetAge() => age;
+  
   public void SetAge(int value){
     if(value <= 0 || value > 150){
       throw new ArgumentException("Bogus age");
@@ -258,7 +327,6 @@ class Person{
   - Easy to consume
 * Cons
   - Obscures intention
-  - Potential for abuse
   - Can't be passed as a variable
   - Encourages runtime validation instead of compile time
 
@@ -266,131 +334,165 @@ class Person{
 ---
 
 
-## Keyword: `using`
+
+
+## Constructors
 
 ---
 
 ### Overview
-* `using` has multiple uses
-  - Namespace imports
-  - Type imports
-  - Resource management (to be covered later)
-* Lots of approaches
+* [Constructors](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/constructors) are special methods used to initialize objects
+* Initialize fields and perform setup tasks
+* Can have parameters and optional parameters
 
 ---
 
-### Approach 0: No `using`
-* No `using` directives
-* Fully qualified names
-* No one really does this
-* BUT it's how the CLR works
-
-
----
-
-### Example: No `using`
+### Example
 
 ```csharp
-class MyClass{
-  public void DoWork(){
-    var fs = new System.IO.FileStream("file.txt", System.IO.FileMode.Open);
-    var reader = new System.IO.StreamReader(fs);
-    var line = reader.ReadLine();
-    System.Console.WriteLine(line);
+class Die{
+  private int sides;
+  private Random random;
+
+  public Die(int sides, Random random){
+    this.sides = sides;
+    this.random = random;
   }
-}
 
-```
+  public Die(int sides = 6):
+    this(sides, new Random())
+  {}
 
----
-
-### Approach 1: Manual Import
-* Recipe: Add `using` directives to every file
-* **Pros**: Explicit, Traditional
-* **Cons**:
-  - Less friendly to newcomers
-  - Tedious (?)
+  public int Roll() => random.Next(1, sides + 1);
   
----
-
-### Example: Manual Import
-```csharp
-using System.IO;
-using System;
-
-class MyClass{
-  public void DoWork(){
-    var fs = new FileStream("file.txt", FileMode.Open);
-    var reader = new StreamReader(fs);
-    var line = reader.ReadLine();
-    System.Console.WriteLine(line);
-  }
 }
-
 ```
 
 ---
 
-### Approach 2: Global Usings
-* [Global Usings](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive#global-modifier) allow namespace imports to be shared across multiple files
-* Introduced in C# 10/.NET 6
-* Recipe: 
-  - Create a `global.cs` file
-  - Add `using` directives to it
-* **Pros**: Convenient, Easy to manage
-* **Cons**: Less explicit, Potential collisions
-
----
-
-### Example: Global Usings
-```csharp title="global.cs"
-using System.IO;
-using System;
-```
-
----
-
-### Approach 3: Implicit Usings
-* Introduced in [.NET 6/C# 10](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
-* Automatically imports common namespaces based on project type
-* Configured in project file
-* **Pros**: Less boilerplate, Standardizes imports across projects
-* **Cons**: Less explicit, Potential namespace collisions
-
----
-### Example: Implicit Usings
-```xml title="MyProject.csproj"
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-</Project>
-
-```
-
----
-
-### Takehome
-* Choice of `using` approach comes down to style
-* **Most important**: be consistent within your project or organization
-* Documentation and IDE support work equally well with all approaches
-
----
 
 
 
 
-## Keyword: `this`
-
+## Methods
 
 ---
 
 ### Overview
+* [Methods](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods) are functions attached to objects (or types)
+* Same access modifiers as fields
+* Can have parameters, return values, and optional parameters
+* Can be [virtual](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual) or [abstract](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
+* One-liners can use expression body
+
+---
+
+
+### Example
+
+```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public void Greet(){
+    Console.WriteLine($"Hello, my name is {Name} and I am {Age} years old.");
+  }
+
+  public int Add(int a, int b)
+    => a + b;
+}
+```
+
+---
+
+### About Parameters
+
+* Parameters are [type/name pairs](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods#method-parameters) separated by commas
+* [Optional parameters](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/named-and-optional-arguments#optional-arguments) have default values: `void Method(int x = 10)`
+* Pass-by-reference options ([`ref`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/ref)/[`out`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-parameter-modifier)) exist but are rarely needed
+
+---
+
+### Example: Parameters
+
+```csharp
+class Person{
+  public static void Greet(string name, int age = 0) =>
+    Console.WriteLine($"Hello, my name is {name} and I am {age} years old.");
+  
+}
+```
+
+---
+
+### Calling Methods
+
+* Methods are called using the object/instance name, followed by a dot, method name, and parentheses
+* [Named parameters](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/named-and-optional-arguments#named-arguments) improve readability: `Method(x: 10, y: 20)`
+* Order doesn't matter when using named parameters
+* Can mix positional and named parameters (positional must come first)
+
+---
+
+
+### Example: Calling Methods
+
+```csharp
+
+```
+
+---
+
+
+
+
+## Instantiation
+
+---
+
+### Overview
+* [Instantiation](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers) is the process of creating an object from a class
+* Can be done using the `new` keyword or object initializer syntax
+
+---
+
+### Example
+
+```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+}
+
+var p = new Person();
+```
+
+---
+
+### Object Initializer
+
+```csharp
+var p = new Person{
+  Name = "John",
+  Age = 30
+};
+```
+
+---
+
+### "new" is Glue
+
+* Using `new` [couples](https://en.wikipedia.org/wiki/Tight_coupling) your code to specific implementations
+* Better approach: [Program to interfaces](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/abstractions-abstract-types-and-interfaces)
+* [Dependency Injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection):
+  - Makes components more testable and modular
+  - Implements the [Explicit Dependency Principle](https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles#explicit-dependencies)
+* More to come
+
+---
+
+### Keyword: `this`
 * [`this`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/this) refers to current object instance
 * Required to resolve name conflicts (e.g., parameter vs field)
 * Optional for accessing members
@@ -403,14 +505,15 @@ using System;
 
 ```csharp
 public class Person{
-  public string Name { get; set; }
-  public int Age { get; set; }
+  private string name;
+  private int age;
 
   public Person(string name, int age){
-    this.Name = name;
-    Age = age;
+    this.name = name;
+    this.age = age;
   }
 }
 
 ```
+
 
