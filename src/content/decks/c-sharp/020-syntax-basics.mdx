@@ -17,6 +17,9 @@ flavor: 'Deck'
 
 ---
 
+
+
+
 ## Overview
 
 ---
@@ -25,17 +28,17 @@ flavor: 'Deck'
 
 - **Variables** Declared using the `type name` syntax. e.g. `int count = 4;`
 - **Control Flow** Standard stuff: `if`/`then`/`else`, `switch`, `for`, `while`
-- **Classes and Objects** : Classes are defined using the...
+- **Classes and Objects** : Classes are types, objects are instances
 
 ---
 
 ### Shortest Program Ever!
 
 - **Type** `Console`
-- **Operator** This thing: `.`, pronounced 'dot'. Invokes a method.
+- **Operator** Dot. Invokes a method.
 - **Method** `WriteLine` (It's static.)
 - **Argument** `"Hello, World!"` (It's a string.)
-- **Line terminator** Mandatory semicolon. (This thing: `;`.)
+- **Line terminator** Mandatory semicolon.
 
 ```csharp
 Console.WriteLine("Hello, World!");
@@ -61,7 +64,7 @@ Console.WriteLine(message);
 
 * [Implicitly typed local variables](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/var) introduced in C# 3.0
 * Compiler infers type from initialization expression
-* **Benefits**: Less verbose, handles complex generic types, supports anonymous types
+* **Benefits**: Concise, handles complex generic types, supports anonymous types
 * **Tradeoffs**: Can reduce code readability, may hide type information
 * **Best practice**: Use when type is obvious from context
 
@@ -312,21 +315,22 @@ Console.WriteLine(json);
 
 ---
 
-### Motivating Examples
+### Motivating Example #1
+* Booleans aren't extensible
 
-- Booleans aren't extensible
-
-```csharp
+```csharp {3}
 public class Login{
     string username = "";
     bool isActive = false; // TODO: Support Paused / Suspended
 }
-
 ```
 
-- Magic constants are easy to forget, easy to mess up
+---
 
-```csharp
+### Motivating Example #2
+
+* Magic constants are easy to forget, easy to mess up
+```csharp {3}
 public class Login{
     string username = "";
     int statusCode = 22; //What's this?
@@ -338,7 +342,7 @@ public class Login{
 
 ### Example
 
-```csharp
+```csharp {8}
 enum Status{
   Active,
   Paused,
@@ -421,11 +425,8 @@ public string GetColorInfo(ColorWavelength color) =>
 ---
 
 ### XML Comments
-* Used for documenting APIs
 * Three slashes: `///`
-* Used by tooling
-  - Intellisense
-  - Documentation generators
+* Used by tooling like Intellisense
 
 ```csharp
 /// <summary>
@@ -474,17 +475,15 @@ public class Person{ /* etc...*/}
 ---
 
 ### Example: User Service
-```csharp
-
+```csharp {11}
 public class UserService{
     private User[] users = new User[] {
       new User("John", "Doe"),
       new User("Jane", "Doe"),
     };
-
-    public User? GetUser(string username){
+    public User? GetUserByGivenName(string givenName){
       foreach(User user in users){
-        if(user.Username == username)
+        if(user.GivenName == givenName)
           return user;
       }
       return null;
