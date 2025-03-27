@@ -67,32 +67,47 @@ flavor: 'Deck'
 
 - Feedback
 - Questions
-- Cameras
 
-#### _No eye-contact_ makes this even **more** important
 
 ---
 
 ### Tools You **_Need_**
 
-- .NET SDK
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download)
+* Text editor
 
 ---
 
-### Tools You **_Want_**
+### Tools You Might **_Want_**
 
-- [Visual Studio](https://code.visualstudio.com/)
+- [Visual Studio](https://visualstudio.microsoft.com/)
+- [Powershell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5)
+- [Git](https://git-scm.com/downloads)
 
 ---
 
 ### Materials
 
-- **Slides** are HTML
-- **Projects** are pure Python
-- Live here:
-  https://github.com/bathcat/python_foundations
-  - Won't last forever
-  - Moving target
+* **Slides** are HTML / PDF
+* **Projects** are C# 13 + .NET 9 
+* Live here:
+  - https://github.com/bathcat/looking-sharp
+  - Might not last forever
+  - Moving target (So do a `git pull` every once in a while)
+
+---
+
+### Getting Materials
+* Clone
+```bash
+cd c:\wherever\you\want
+git clone https://github.com/bathcat/looking-sharp
+```
+* Pull
+```bash
+cd c:\wherever\you\want\looking-sharp
+git pull
+```
 
 ---
 
@@ -103,16 +118,15 @@ flavor: 'Deck'
     <div class='dek-agenda-theme'>Fundamentals</div>
     <ol>
       <li>Big Picture</li>
-      <li>Expressions</li>
-      <li>Primitives</li>
-      <li>Containers</li>
+      <li>Syntax</li>
+      <li>Objects</li>
     </ol>
   </li>
   <li>
-    <div class='dek-agenda-theme'>Tools & Techniques</div>
+    <div class='dek-agenda-theme'>Objects</div>
     <ol start='6'>
-      <li>Containers (Continued)</li>
-      <li>Objects</li>
+      <li>Objects (Continued)</li>
+      <li>Interfaces</li>
       <li>Guardrails</li>   
       <li>Functions</li>
     </ol>
@@ -122,13 +136,13 @@ flavor: 'Deck'
 ---
 
 ### Agenda (continued)
+{/* TODO: Finish this when the slides get completed */}
 
 <ol class='dek-agenda' start='3'>
   <li>
-    <div class='dek-agenda-theme'>IoT Projects</div>
+    <div class='dek-agenda-theme'>Functions</div>
     <ol start='10'>
-      <li>IoT Introductions</li>
-      <li>Generators and Comprehensions</li>
+      <li>Delegates, `Func` and `Action`</li>
       <li>Defensive Programming</li>
     </ol>
   </li>
@@ -138,10 +152,10 @@ flavor: 'Deck'
 
 ### Introductions
 
-- Name
-- Background
-- Expectations
-- Childhood career ambitions
+* Name
+* Background
+* Expectations
+* Childhood career ambitions
 
 ---
 
@@ -151,14 +165,17 @@ flavor: 'Deck'
 ![Image sans description.](assets/housekeeping.jpg)
 </figure>
 
-- Hours
-- ~~Restrooms~~
-- ~~Phones~~
-- Breaks
-- ~~Food~~
-- ~~Coffee~~
+* **Hours** 9-5ish
+* **Restrooms**
+* **Phones**
+* **Breaks** 10-15 minutes
+* **Food**
+* **Coffee**
 
 ---
+
+
+
 
 ## Lab 0: Whirlwind Tour
 
@@ -166,10 +183,9 @@ flavor: 'Deck'
 
 ### Setup & Casting
 
-- Let's get set up
-- Follow along
-- Goals
+* Let's get set up
+* Follow along
+* Goals
   1. Aquire
-  1. Install
   1. Run
   1. Poke around
