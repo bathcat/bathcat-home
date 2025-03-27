@@ -10,6 +10,7 @@ flavor: 'Deck'
 ---
 
 ### Goals
+{/* TODO: Finish this when the slides get completed */}
 
 1. Lorem
 2. Ipsum
@@ -17,81 +18,24 @@ flavor: 'Deck'
 
 ---
 
-## Context
+
+
+
+
+## C# At A Glance
 
 ---
 
-### Lorem Ipsum
-
-* Lorem
-* Ipsum
-
+### Overview: C#
 <figure class='bc-framed-image' style='width:25%;height:auto;'>
 ![Image sans description.](assets/anders-hejlsberg.jpg)
 <figcaption>Photo: Anders Hejlsberg by DBegley, via https://www.flickr.com/photos/begley/2985424826/in/set-72157608507966144. Licensed under [CC BY-SA 2.0].</figcaption>
 </figure>
 
----
-
-### Common Complaints (Apparently)
-
-* **Verbosity**: [C# can be wordy](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-style-rules)
-  - Explicit type declarations
-  - Boilerplate in older versions
-* **Null Handling**: [NullReferenceException](https://learn.microsoft.com/en-us/dotnet/api/system.nullreferenceexception) is common
-  - Nullable reference types help but are opt-in
-* **Async/Await**: [Callback hell](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/) in older code
-  - Better now with async/await
-* **Package Management**: [NuGet](https://www.nuget.org/) ecosystem can be complex
-  - Version conflicts
-  - Package restore issues
-
----
-
-### My Own Personal Complaints
-
-* **No Algebraic Data Types**
-  - [Discriminated unions](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/discriminated-unions) would be nice
-  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) is limited
-* **Type System**
-  - No [structural typing](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) like TypeScript
-  - Nominal typing everywhere
-* **Modern Features**
-  - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) are a start
-  - No pipe/composition operators
-  - No immutable collections
-
----
-
-### Compared with VB
-
-* **Syntax**: More concise (and more cryptic)
-  - Curly braces instead of `End` statements
-  - Semicolons required
-  - Case-sensitive
-* **Modern Features**: [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching), [records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record)
-* **Community**: Larger ecosystem, more resources
-* **Future**: Primary focus of .NET development
-
----
-
-
-
-
-
-
-## History
-
----
-
-### Motivations Behind .NET
-* Unify disparate Windows programming models
-* Create platform-independent [runtime environment](https://learn.microsoft.com/en-us/dotnet/standard/clr)
-* Simplify enterprise application development
-* Provide garbage collection and memory safety
-* Support multiple programming languages on same platform
-* Enable component-based development
-* Respond to Java's cross-platform success
+* [Modern, object-oriented language](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/)
+* Created by [Anders Hejlsberg](https://en.wikipedia.org/wiki/Anders_Hejlsberg) at Microsoft in the early 2000s
+* Evolved from purely OOP to [multi-paradigm](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/)
+* [Type safe](https://learn.microsoft.com/en-us/dotnet/standard/base-types/common-type-system), [garbage collected](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/), and cross-platform
 
 ---
 
@@ -104,25 +48,27 @@ flavor: 'Deck'
 * Enable rapid application development with elegant syntax
 * Balance performance needs with developer productivity
 
+
 ---
 
-### What's the CLR?
-* [Common Language Runtime](https://learn.microsoft.com/en-us/dotnet/standard/clr) - virtual execution environment
-* Code compiles to IL (Intermediate Language), not native binary
-* Key advantages over direct binary compilation:
-  - Platform independence (write once, run anywhere)
-  - Language interoperability (C#, VB, F# work together)
-  - Automatic memory management (garbage collection)
-  - Enhanced security (type safety, code verification)
-* Just-in-time (JIT) compilation optimizes for specific hardware
-* Managed execution environment handles memory and exceptions
-* Runtime services like reflection and dynamic loading
+
+### Compared with VB
+
+* **Syntax**: More concise (and more cryptic)
+  - Curly braces instead of `End` statements
+  - Semicolons required
+  - Case-sensitive
+* **Modern Features**: [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching), [records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record)
+* **Community**: Larger ecosystem, more resources
+* **Future**: Primary focus of .NET development
+
+
 
 ---
 
 ### Modern C#
 * Evolved from purely OOP to [multi-paradigm](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/)
-* Added significant functional programming features:
+* Functional programming features:
   - Pattern matching
   - [Expression-bodied members](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/expression-bodied-members)
   - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) for immutable data
@@ -130,6 +76,104 @@ flavor: 'Deck'
 * Modern features focus on developer productivity:
   - [Null reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
   - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) and [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
+
+
+
+---
+
+### My Own Personal Complaints
+* **It's big** lots of features, not everyone knows what's available
+* **Dogmatic** about OO
+* **No Algebraic Data Types**
+  - [Discriminated unions](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/discriminated-unions) would be nice
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) is limited
+* **Type System**
+  - No [structural typing](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) like TypeScript
+  - Nominal typing everywhere (almost)
+
+---
+
+### C#: The Good Parts
+* C# itself
+  - Consistent, concise, clear
+  - Strongly typed
+  - Modern features like pattern matching and records
+* Related
+  - Tooling
+  - Ecosystem
+  - Community
+
+
+---
+
+### .NET Ecosystem
+
+* **Market Adoption**: [Over 5 million developers](https://visualstudiomagazine.com/articles/2021/05/18/microsoft-build-dev-tools.aspx) use .NET worldwide
+* **GitHub Activity**: [.NET Core](https://github.com/dotnet/core) repository has 17k+ stars and 4k+ contributors
+* **Package Ecosystem**: [NuGet.org](https://www.nuget.org/) hosts 300k+ unique packages with 40B+ downloads
+* **Stack Overflow**: [C# ranked #5](https://survey.stackoverflow.co/2023/most-popular-technologies-language) in most popular languages (2023)
+* **Job Market**: [3x more job listings](https://www.indeed.com/jobs?q=c%23) for C# compared to Visual Basic
+* **Active Community**: [.NET Foundation](https://dotnetfoundation.org/) supports 3.5k+ open-source projects
+
+---
+
+
+
+
+## .NET From 30,000 Feet
+
+---
+
+### Motivations Behind .NET
+* Unify disparate Windows programming models
+* Platform-independent [runtime environment](https://learn.microsoft.com/en-us/dotnet/standard/clr)
+* Simplify enterprise application development
+* Memory safety
+* Support multiple programming languages on same platform
+* Respond to Java's success
+
+---
+
+### History
+
+* **2002**: [.NET Framework 1.0](https://learn.microsoft.com/en-us/dotnet/framework/get-started/net-framework-versions) released with Visual Studio .NET
+* **2002-2015**: [Multiple .NET Framework versions](https://learn.microsoft.com/en-us/dotnet/framework/migration-guide/versions-and-dependencies) (1.0-4.6) with Windows-only focus
+* **2016**: [.NET Core 1.0](https://devblogs.microsoft.com/dotnet/announcing-net-core-1-0/) launched as open-source cross-platform redesign
+* **2020**: [.NET 5](https://devblogs.microsoft.com/dotnet/announcing-net-5-0/) unification began, dropping "Core" and "Framework" labels
+* **2021-Present**: [.NET 6](https://devblogs.microsoft.com/dotnet/announcing-net-6/) and [.NET 7](https://devblogs.microsoft.com/dotnet/announcing-dotnet-7/) established predictable release cadence
+
+---
+
+### .NET Core
+
+* **Open Source**: [Available on GitHub](https://github.com/dotnet/core) under MIT license
+* **Source Transparency**: View [runtime source code](https://source.dot.net/) for everything
+* **Modular Architecture**: [NuGet-based packages](https://learn.microsoft.com/en-us/dotnet/core/introduction#modular-design) vs monolithic Framework
+* **Cross-Platform**: Runs on [Windows, Linux, macOS](https://learn.microsoft.com/en-us/dotnet/core/introduction#cross-platform)
+* **Container-Ready**: [First-class Docker support](https://learn.microsoft.com/en-us/dotnet/core/docker/introduction) and small deployment footprint
+
+---
+
+### .NET Framework, .NET Core, .NET 5+ 
+
+* [.NET Framework](https://learn.microsoft.com/en-us/dotnet/framework/get-started/): Legacy, Windows-only. No longer receives new features
+* [.NET Core](https://learn.microsoft.com/en-us/dotnet/core/introduction): Cross-platform redesign launched in 2016
+* [.NET 5+](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-5) Core, dropping "Core" from name
+* [.NET releases](https://learn.microsoft.com/en-us/dotnet/core/releases/) now follow predictable annual November schedule
+
+
+
+---
+
+### What's the CLR?
+* [Common Language Runtime](https://learn.microsoft.com/en-us/dotnet/standard/clr)
+* Source code compiles to IL (Intermediate Language), not native binary
+* IL is compiled Just-in-time (JIT) to native code
+* Key advantages:
+  - Platform independence
+  - Multi-Language
+  - Runtime services - GC, reflection, dynamic loading
+
 
 
 ---
@@ -143,6 +187,9 @@ flavor: 'Deck'
 * Limitations: restricted reflection and dynamic code
 
 ---
+
+
+
 
 
 ## IL
@@ -196,9 +243,7 @@ flavor: 'Deck'
 * **Reality**: 
   - Rarely deployed independently
   - Key for code organization
-* **No Tree-Shaking**: Entire assembly ships
-  - Unused code included in deployment
-  - [Assembly contents](https://learn.microsoft.com/en-us/dotnet/standard/assembly/assembly-contents) always complete
+* **No Tree-Shaking**: Unused code included in deployment
 
 ---
 
@@ -217,12 +262,21 @@ flavor: 'Deck'
 
 
 
+
 ## Tooling
 
 ---
 
-
 ### Overview
+* **IDEs**: [Visual Studio](https://visualstudio.microsoft.com/), [VS Code](https://code.visualstudio.com/), and [Rider](https://www.jetbrains.com/rider/)
+* **CLI Tools**: [.NET CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/) cross-platform development 
+* **Package Management**: with [NuGet](https://www.nuget.org/)
+* **Testing**: [xUnit](https://xunit.net/), [MSTest](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-mstest), and [NUnit](https://nunit.org/) provide test frameworks
+* **Mocking**: [Moq](https://github.com/moq/moq4), [NSubstitute](https://nsubstitute.github.io/), and [FakeItEasy](https://fakeiteasy.github.io/) simplify test isolation
+
+---
+
+### Editors
 
 * **Visual Studio**: Full-featured IDE
   - [Rich debugging](https://learn.microsoft.com/en-us/visualstudio/debugger/)
@@ -231,7 +285,6 @@ flavor: 'Deck'
 * **VS Code**: Lightweight editor
   - Cross-platform
   - [C# extension](https://code.visualstudio.com/docs/languages/csharp) provides core features
-  - Great for .NET Core development
 * **JetBrains Rider**: Cross-platform IDE
   - Full Visual Studio feature parity
   - Built on IntelliJ platform
@@ -242,12 +295,29 @@ flavor: 'Deck'
 ### Dotnet CLI
 
 * **Command-line tool** for .NET development
-* Inspired by [Node.js](https://nodejs.org/)/npm (2016)
-* [Cross-platform](https://learn.microsoft.com/en-us/dotnet/core/tools/) project management
+* Inspired by [Node.js](https://nodejs.org/)/npm
+* [Cross-platform](https://learn.microsoft.com/en-us/dotnet/core/tools/)
 * Essential for:
   - CI/CD and containers
   - Server environments
   - Automation
+
+---
+
+### Example: Create a new project
+
+```shell
+# Create a new empty solution
+dotnet new sln --name LS.Enfarculation
+
+# Create a class library project
+dotnet new classlib --name LS.Enfarculation.Core
+
+# Add the project to the solution
+dotnet sln LS.Enfarculation.sln add LS.Enfarculation.Core/LS.Enfarculation.Core.csproj
+```
+
+
 
 ---
 
@@ -281,8 +351,4 @@ dotnet watch test --logger "console;verbosity=detailed"
 ```
 
 * [Full options](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-test#options)
-
----
-
-
 
