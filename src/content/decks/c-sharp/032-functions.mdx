@@ -1,0 +1,357 @@
+---
+title: "Functions"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Functions
+
+---
+
+### Goals
+
+1. Lorem
+2. Ipsum
+3. Sic
+
+---
+
+
+
+
+## Extension Methods
+
+---
+
+### Extension Methods Defined
+* Static methods that extend existing types
+* Introduced in C# 3.0
+* Declared with "this" parameter modifier
+* [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/) is built on extension methods
+* Extend types without modifying original source code
+
+---
+
+### Extension Methods Example
+
+```csharp
+// Extension method for any IEnumerable<T>
+public static class EnumerableExtensions{
+    public static T ForEach<T>(this IEnumerable<T> source, Action<T> action){
+        foreach (T item in source){
+            action(item);
+        }
+    }
+}
+
+// Usage
+List<int> numbers = new List<int> { 1, 2, 3 };
+numbers.ForEach(n => Console.WriteLine(n));
+```
+
+---
+
+
+
+
+## Lambdas
+
+---
+
+### Overview
+
+* [Lambda expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions) are functions as objects
+* Enable [functional programming](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/functional-programming-vs-object-oriented-programming) in C#
+* Common use cases:
+  - [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/write-linq-queries)
+  - [Events](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/events/)
+  - [Predicates](https://learn.microsoft.com/en-us/dotnet/api/system.predicate-1)
+  - Callbacks
+* Can capture variables from the surrounding scope ([closures](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/using-delegates#delegates-with-lambda-expressions))
+
+---
+
+### Func and Action
+
+* [`Action`](https://learn.microsoft.com/en-us/dotnet/api/system.action-1): Takes 0 or more arguments, returns nothing
+* [`Func`](https://learn.microsoft.com/en-us/dotnet/api/system.func-2): Takes 0 or more aguments, returns something
+  - e.g. `Func<string>` is a function that takes nothing and returns a string
+  - `Func<string, int, char>` is a function that takes a string and an int and returns a char
+
+
+---
+
+### Example: 'Anonymous' Functions
+```csharp
+// Action - Just pass the method
+Action<string> print = Console.WriteLine;
+print("Hello, World!");
+
+// Func<string,string> - 'fat arrow' syntax
+Func<string, string> toUpper = str => str.ToUpper();
+string upper = toUpper("Hello, World!");
+
+// Func<int,int, int>
+Func<int, int, int> add = (a, b) => a + b;
+int sum = add(1, 2);
+```
+
+---
+
+### Key Term: Higher-Order Functions
+* A function that takes a function as an argument or returns a function
+* Core concept in [functional programming](https://learn.microsoft.com/en-us/dotnet/standard/linq/functional-vs-imperative-programming)
+* Enables [composition](https://learn.microsoft.com/en-us/dotnet/standard/linq/compose-lambda-expressions) of operations
+* Examples in .NET:
+  - LINQ methods ([Where](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.where), [Select](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select))
+  - [Task continuation](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.continuewith)
+  - [Dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) factories
+* Fundamental to declarative and [composable APIs](https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming)
+
+---
+
+### Example: Counter
+
+```csharp
+public static Func<int> MakeCounter(){
+    // 'counter' is a local variable
+    // It's "closed over"
+    int counter = 0;
+    return () => counter++;
+}
+
+var getNext = MakeCounter();
+Console.WriteLine(getNext()); // 0
+Console.WriteLine(getNext()); // 1
+Console.WriteLine(getNext()); // 2
+```
+
+---
+
+### Example: Instrumented
+
+```csharp
+// Higher-order function that measures execution time
+public static Func<T, TResult> Time<T, TResult>(Func<T, TResult> func) 
+    => arg => {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var result = func(arg);
+        Console.WriteLine($"Execution time: {sw.ElapsedMilliseconds}ms");
+        return result;
+    };
+
+Func<int, int> slowOperation = n => {
+    Thread.Sleep(n); // Simulate work
+    return n * 2;
+};
+
+// Create instrumented version of the function
+var timedOperation = Time(slowOperation);
+
+// Execute and time automatically
+var result = timedOperation(1000); // Prints timing and returns 2000
+```
+
+---
+
+### Quiz: Guess the Output
+
+```csharp
+// What will this print?
+var actions = new List<Action>();
+
+for (int i = 0; i < 3; i++) {
+    actions.Add(() => Console.WriteLine(i));
+}
+
+foreach (var action in actions) {
+    action();
+}
+
+```
+
+---
+
+
+
+## Lambdas in Action
+
+---
+
+### HoF in the .NET Standard Library
+
+* [ASP Middleware](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/)
+* [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/) - Select, Where, OrderBy, GroupBy
+* [Task API](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task) - WhenAll, WhenAny, Run
+* [UI Events](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/routed-events-overview) - Button.Click, TextBox.TextChanged
+* [Async methods](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/) - `await`
+
+---
+
+### Example: ASP Middleware
+* [ASP.NET Middleware](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/) uses function composition
+* [`Use`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.useextensions.use) method takes a function that takes a function
+* Pipeline built with [higher-order functions](https://learn.microsoft.com/en-us/dotnet/standard/linq/higher-order-operations)
+* Each middleware:
+  - Receives `next` delegate to the rest of pipeline
+  - Can choose to invoke `next` or short-circuit
+* Enables clean separation of concerns
+* Request flows in, response flows out
+
+
+---
+
+### Example: ASP Middleware
+
+```csharp title='Program.cs'
+app.Use(async (context, next) =>{
+    var cultureQuery = context.Request.Query["culture"];
+    if (!string.IsNullOrWhiteSpace(cultureQuery)){
+        var culture = new CultureInfo(cultureQuery);
+
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+    }
+
+    // Call the next delegate/middleware in the pipeline.
+    await next(context);
+});
+```
+
+---
+
+
+
+## Delegates
+
+---
+
+### Keyword `delegate`
+* [Delegates](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/) are type-safe function pointers
+* Artifact from .NET 1.0, before generics existed
+* Base class for [`Func`](https://learn.microsoft.com/en-us/dotnet/api/system.func-2) and [`Action`](https://learn.microsoft.com/en-us/dotnet/api/system.action)
+* Used for [event handling](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/events/)
+* Still necessary for custom delegate types with specific requirements
+* Enables [multicast](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/how-to-combine-delegates-multicast-delegates) functionality
+
+---
+
+### Example: Multicast Delegate
+
+```csharp {13}
+public static void WriteGreen(string message){
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine(message);
+}
+
+public static void WriteRed(string message){
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine(message);
+}
+
+static void Main(string[] args){
+    Action<string> write = WriteGreen;
+    write += WriteRed;
+
+    write("Hello, World!");
+}
+```
+
+
+---
+
+### Example: Type safety
+
+```csharp {13}
+public delegate void Sender(string message);
+public delegate void Accepter(string message);
+
+public static void WriteA(string message) 
+    => Console.WriteLine(message);
+
+public static void WriteB(string message) 
+    => Console.WriteLine(message);
+
+static void Main(string[] args){
+    Sender send = WriteA;
+    Accepter accept = WriteB;
+    var both = send + accept; //Doesn't compile
+
+    both("Hello, World!");
+}
+```
+
+
+---
+
+
+
+## Events
+
+---
+
+### Overview
+* [Events](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/events/) enable publisher-subscriber communication pattern
+* Built with delegates
+* Thread-safety is hard
+* Used extensively in UI frameworks
+* [Observable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.iobservable-1) often provides better composability and control
+
+---
+
+### Example: Event Handling
+
+```csharp
+public class LineReadEventArgs : EventArgs{
+    public required string Line { get; init; }
+}
+
+public class ConsoleReader{
+    public event EventHandler<LineReadEventArgs> ReadLine;
+
+    public void Start(){
+        Console.WriteLine("Type something (type 'exit' to quit):");
+        while (true){
+            string? line = Console.ReadLine();
+            if (line == "exit"){
+                return;
+            }
+            ReadLine?.Invoke(this, new LineReadEventArgs { Line = line ?? String.Empty });
+        }
+    }
+}
+```
+
+---
+
+### Usage
+
+```csharp
+internal class Program{
+    static void Main(){
+        var reader = new ConsoleReader();
+
+        // Subscribe to the event
+        reader.ReadLine += (sender, e) =>
+            Console.WriteLine($"You typed: {e.Line}");
+
+        // Start reading
+        reader.Start();
+    }
+}
+```
+
+---
+
+### Pitfall: Memory Leaks
+* Event handlers create are **references** to subscribers
+* Subscribers won't be garbage collected until unsubscribed
+* Solutions:
+  - Always unsubscribe
+  - Use [weak event pattern](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/weak-event-patterns)
+  - Consider [Rx.NET](https://github.com/dotnet/reactive) for complex event scenarios
+
+---
+
+
