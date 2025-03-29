@@ -356,6 +356,8 @@ svg[aria-roledescription='xychart'] {
     display: inline-block;
   }
 
+  // This is for standard captions containing attribution.
+  //    Expressive code uses <figure> elements. We want to ignore those.
   figure figcaption:not(.header) {
     @apply text-sm;
     visibility: hidden;
@@ -458,6 +460,7 @@ svg[aria-roledescription='xychart'] {
     }
   }
 }
+
 
 .bc-slide > .bc-slide-title,
 .bc-slide > astro-slot > .bc-slide-title {
