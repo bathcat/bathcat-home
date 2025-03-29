@@ -234,9 +234,7 @@ classDiagram
     Vehicle <|-- Car
     Vehicle <|-- Boat
     
-    note for Vehicle "Non-virtual"
-    note for Car "Error"
-    note for Boat "Method hiding (not override)      . "
+
 ```
 
 ---
@@ -261,7 +259,7 @@ public class Boat : Vehicle{
 ---
 
 ### Quiz: What's the Output?
-
+* Version A
 ```csharp
 Vehicle v = new Vehicle();
 v.Go();
@@ -271,6 +269,14 @@ b1.Go();
 
 Boat b2 = new Boat();
 b2.Go();
+```
+
+* Version B
+```csharp
+Vehicle[] vs = [new Vehicle(), new Boat()];
+foreach (var v in vs) {
+  v.Go();
+}
 ```
 
 ---

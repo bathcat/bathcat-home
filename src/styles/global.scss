@@ -271,12 +271,13 @@ svg[aria-roledescription='xychart'] {
       .basic.label-container {
         min-width: 220px !important;
       }
+      width: 29rem !important;
 
       /* Fix spacing and overflow for all node types */
       foreignObject {
         width: auto !important;
         overflow: visible !important;
-        min-width: 210px !important;
+        min-width: 240px !important;
       }
 
       /* Make sure text containers display correctly */
@@ -355,7 +356,7 @@ svg[aria-roledescription='xychart'] {
     display: inline-block;
   }
 
-  figure figcaption {
+  figure figcaption:not(.header) {
     @apply text-sm;
     visibility: hidden;
     width: 200px;
