@@ -1,7 +1,7 @@
 ---
 title: "Generics"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+status: 'Live'
 flavor: 'Deck'
 ---
 
@@ -17,9 +17,23 @@ flavor: 'Deck'
 
 ---
 
-## Generics
+### Roadmap
+1. Overview
+2. Using Generics
+3. Custom Generics
 
 ---
+
+
+
+
+
+## Motivations
+
+---
+
+
+
 
 ### Overview
 * Generics create type-safe, reusable components
@@ -27,6 +41,138 @@ flavor: 'Deck'
 * Use type parameters instead of specific types
 * Prevents boxing/unboxing of value types
 * Provides compile-time type checking
+
+---
+
+
+
+
+## Using Generics
+
+---
+
+### Things that can be generic
+* Classes
+* Structs
+* Interfaces
+* Methods
+* Delegates
+* Events
+
+---
+
+### Syntax
+* [Type parameter](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-type-parameters)
+  - Placeholder for a specific type specified by client code
+  - Angle bracket syntax `SomeGenericClass<T>{}`
+  - By convention: `T` for single type, `TKey`/`TValue` for pairs
+  - Can have multiple parameters: `T1 SomeGenericMethod<T1,T2>(){}`
+
+
+---
+
+### Examples (I)
+
+```csharp title='GenericExample.cs'
+// Generic approach using List<T>
+List<int> numbers = new List<int>();
+numbers.Add(1);
+numbers.Add(2);
+numbers.Add(3);
+
+// No casting needed - type-safe at compile time
+int sum = 0;
+foreach (int item in numbers) {
+    sum += item;
+}
+Console.WriteLine($"Sum: {sum}");
+```
+
+---
+
+### Examples (II)
+
+```csharp title='GenericExample.cs'
+// Generic method with multiple type parameters
+public static TValue GetValueOrDefault<TKey, TValue>(
+    Dictionary<TKey, TValue> dict, 
+    TKey key, 
+    TValue defaultValue
+) 
+    => dict.TryGetValue(key, out TValue? value) ? value : defaultValue;
+
+
+// Usage with type inference
+var scores = new Dictionary<string, int> {
+    ["Alice"] = 95,
+    ["Bob"] = 87
+};
+
+int aliceScore = GetValueOrDefault(scores, "Alice", 0);  // 95
+int charlieScore = GetValueOrDefault(scores, "Charlie", 0);  // 0
+```
+
+---
+
+### Inference
+
+* [Type inference](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-methods#type-inference) lets compiler deduce types
+* Works when types can be determined from arguments
+* Not always possible - must specify types when ambiguous
+* Makes code cleaner but can reduce readability
+
+
+---
+
+### Inference Examples
+```csharp title='GenericExample.cs'
+public static T GetFirst<T>(IEnumerable<T> xs){
+    var enumerator = xs.GetEnumerator();
+    if (!enumerator.MoveNext()){
+        throw new InvalidOperationException("Sequence contains no elements");
+    }
+    return enumerator.Current;
+}
+
+static void Main(){
+    int[] xs = [1, 2, 3, 4, 5];
+
+    var first = GetFirst(xs);
+
+    var otherFirst = GetFirst<int>(xs);
+}
+
+```
+---
+
+### Familiar Generic Types
+
+* [List&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1) - Dynamic array
+* [Dictionary&lt;TKey,TValue&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2) - Key-value pairs
+* [Task&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1) - Asynchronous operations
+* [Nullable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1) - Optional values
+* [IEnumerable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1) - Collections
+* [IComparable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.icomparable-1) - Comparable types
+* [EventHandler&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.eventhandler-1) - Event handlers
+
+---
+
+### Generic Methods
+
+* [Array.Empty&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.array.empty) - Empty array singleton
+* Enumerable:
+  - [.Empty&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.empty) - Empty sequence
+  - [.First&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.first) - First element
+  - [.Single&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.single) - Single element
+  - [.DefaultIfEmpty&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.defaultifempty) - Default value if empty
+* [Task.FromResult&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.fromresult) - Completed task with result
+
+---
+
+
+
+
+## Custom Generics
 
 ---
 
@@ -60,6 +206,20 @@ string name = First(nameList); // Type inference
 
 ---
 
+### Generic Constraints
+
+* [Type constraints](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters) ensure type parameters meet requirements
+* Common constraints:
+  - `struct` - Only value types
+  - `class` - Only reference types
+  - `new()` - Must have parameterless constructor
+  - Interface - Must implement specific interface
+* Enables use of type-specific operations
+* Provides compile-time guarantees
+* Improves type safety and code clarity
+
+---
+
 ### Constraints
 
 ```csharp
@@ -76,14 +236,181 @@ public T Create<T>() where T : IComparable, new(){
 
 ---
 
-### Benefits of Generics
+### Generic Interfaces
 
-* Enables type-safe data structures
-* Eliminates casting and type errors
-* Improves performance by avoiding boxing
-* Reduces code duplication
-* Enables stronger APIs and frameworks
+* Similar syntax to generic classes
+* Common in .NET:
+  - [IComparable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.icomparable-1) - Type-safe comparison
+  - [IEquatable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1) - Type-safe equality
+  - [IEnumerable&lt;T&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1) - Type-safe enumeration
+* Can have constraints like classes
+* Enables type-safe interface implementations
+* Supports covariance/contravariance with `in`/`out`
+
+---
+
+### Generic Interfaces Examples
+
+```csharp title='GenericInterfacesExample.cs'
+public class Person : IComparable<Person>, IEquatable<Person> {
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public int CompareTo(Person? other) => 
+        other is null ? 1 : Age.CompareTo(other.Age);
+
+    public bool Equals(Person? other) => 
+        other is not null && Name == other.Name && Age == other.Age;
+}
+
+// Usage
+var people = new List<Person> {
+    new() { Name = "Alice", Age = 30 },
+    new() { Name = "Bob", Age = 25 }
+};
+
+people.Sort();  // Uses IComparable<T>
+var alice = new Person { Name = "Alice", Age = 30 };
+Console.WriteLine(alice.Equals(people[0]));  // Uses IEquatable<T>
+```
 
 ---
 
 
+
+
+## Covariance and Contravariance
+
+---
+
+### Motivation
+
+```mermaid
+classDiagram
+    class Bird {
+        <<abstract>>
+        +GetBestFeather()
+    }
+    class Crow {
+    }
+    class Rooster {
+    }
+    class Feather {
+    }
+    class RedFeather {
+    }
+    class BlackFeather {
+    }
+    
+    Bird <|-- Crow
+    Bird <|-- Rooster
+    Feather <|-- RedFeather
+    Feather <|-- BlackFeather
+```
+
+
+---
+
+### In code
+* Compiler error [CS1715](https://learn.microsoft.com/en-us/dotnet/csharp/misc/cs1715): 'Type1': type must be 'Type2' to match overridden member 'MemberName'
+```csharp
+// Feathers
+public class Feather{}
+public class RedFeather : Feather{}
+public class BlackFeather : Feather{}
+
+// Birds
+public abstract class Bird{
+    public virtual required ICollection<Feather> Feathers { get; set; }
+}
+
+public class Crow : Bird{
+    public override required ICollection<BlackFeather> Feathers { get; set; }
+}
+
+public class Rooster : Bird{
+    public override required ICollection<RedFeather> Feathers { get; set; }
+}
+
+
+```
+
+---
+
+### Return Covariance
+
+* [Return type covariance](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-9.0/covariant-returns) enables overriding methods to return more specific types
+* Built-in feature since C# 9
+* No special syntax required - unlike generic covariance
+* Works with class inheritance hierarchies
+* Makes APIs more precise while maintaining type safety
+* Allows subclasses to return derived types matching their specific implementation
+
+---
+
+### Return Covariance
+```csharp
+
+public abstract class Bird{
+    public abstract Feather GetBestFeather();
+}
+
+public class Crow : Bird{
+    public override BlackFeather GetBestFeather()
+      => throw new NotImplementedException();
+}
+
+public class Rooster : Bird{
+    public override RedFeather GetBestFeather()
+      =>  throw new NotImplementedException();    
+}
+
+```
+---
+
+### Feather Covariance 
+{/* TODO: This doesn't actually compile */}
+```csharp title='FeatherCovariance.cs'
+// Define covariant interface with out keyword
+public interface IFeatherCollection<out T> where T : Feather {
+    IEnumerable<T> GetFeathers();
+    int Count { get; }
+}
+
+// Feathers
+public class Feather {}
+public class RedFeather : Feather {}
+public class BlackFeather : Feather {}
+
+// Birds with covariant collections
+public abstract class Bird {
+    public virtual required IFeatherCollection<Feather> Feathers { get; set; }
+}
+
+public class Crow : Bird {
+    // Now compiles - IFeatherCollection<BlackFeather> is assignment-compatible
+    // with IFeatherCollection<Feather> because of covariance (out keyword)
+    public override required IFeatherCollection<BlackFeather> Feathers { get; set; }
+}
+
+public class Rooster : Bird {
+    public override required IFeatherCollection<RedFeather> Feathers { get; set; }
+}
+```
+
+---
+
+
+### Terminology
+
+* [**Covariance**](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/covariance-and-contravariance-in-generics#covariance) - Use of **more derived** types than originally specified
+  - `out` keyword for return types
+  - Example: `IEnumerable<Derived>` can be assigned to `IEnumerable<Base>`
+
+* [**Contravariance**](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/covariance-and-contravariance-in-generics#contravariance) - Use of **more generic** types than originally specified
+  - `in` keyword for parameter types
+  - Example: `Action<Base>` can be assigned to `Action<Derived>`
+
+* _Only applies to reference types, not value types_
+
+---
