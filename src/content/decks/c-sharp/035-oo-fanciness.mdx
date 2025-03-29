@@ -88,26 +88,122 @@ public class Button : Control{
 }
 ```
 
+---
+
+
+## Keywords
 
 ---
 
-### Keywords
+### Overview
 * [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
-  - Can't be instantiated, only inherited
-  - Method has no implementation, must be overridden
 * [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
-  - Class can't be inherited
-  - Method can't be overridden
 * [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
-  - Method has an implementation but can be overridden
-  - Base implementation can be called via `base.Method()`
 * [`override`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override)
-  - Provides a new implementation of a virtual or abstract member
-  - Must match signature exactly
 * [`base`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)
-  - References base class implementation of overridden members
-  - Used in constructor chaining
 
+
+---
+
+### Keyword: [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
+* Abstract **classes** can't be instantiated
+* Abstract **methods** have no implementation
+
+```csharp
+public abstract class Shape {
+    public abstract double CalculateArea();
+    public void Display() => Console.WriteLine($"Area: {CalculateArea()}");
+}
+
+// Must implement all abstract methods
+public class Circle : Shape {
+    public double Radius { get; set; }    
+    public override double CalculateArea() => Math.PI * Radius * Radius;
+}
+```
+
+---
+
+### Keyword: [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
+* Sealed **classes** can't be inherited
+* Sealed **methods** can't be overridden
+
+
+```csharp
+// Can't be used as a base class
+public sealed class Utility {
+    public void DoWork() => Console.WriteLine("Working...");
+}
+
+public class Base {
+    public virtual void Method() => Console.WriteLine("Base implementation");
+}
+
+public class Derived : Base {
+    // No further overrides allowed in subclasses
+    public sealed override void Method() => Console.WriteLine("Final implementation");
+}
+```
+
+---
+
+### Keyword:  [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
+* Virtual **methods** have an implementation but can be overridden
+* Base implementation can be called via `base.Method()`
+
+```csharp
+public class Animal {
+    public virtual void MakeSound() => Console.WriteLine("...");
+    public void Breathe() => Console.WriteLine("Inhale, exhale");
+}
+
+public class Dog : Animal {
+    public override void MakeSound() => Console.WriteLine("Woof!");
+}
+```
+
+---
+
+
+### Keyword: [`override`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override)
+* Provides a new implementation of a virtual or abstract member
+* Must match signature exactly
+
+```csharp
+public class Device {
+    public virtual void TurnOn() => Console.WriteLine("Device turning on");
+    public virtual void TurnOff() => Console.WriteLine("Device turning off");
+}
+
+public class Television : Device {
+    public override void TurnOn() 
+      => Console.WriteLine("TV powering up and initializing display");
+}
+```
+
+---
+
+### Keyword: [`base`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)
+* Reference base class implementation of overridden members
+
+```csharp
+public class Vehicle {
+    public string Make { get; private init;}    
+    public Vehicle(string make) => Make = make;
+    public virtual void Start() => Console.WriteLine("Engine starting");
+}
+public class Car : Vehicle {
+    public int Doors { get; private init;}
+    
+    public Car(string make, int doors) : base(make) 
+      => Doors = doors;
+    
+    public override void Start() {
+        base.Start();
+        Console.WriteLine("Car ready to drive");
+    }
+}
+```
 
 ---
 
@@ -119,6 +215,29 @@ public class Button : Control{
   - Prevents "fragile base class" problem
   - Forces intentional [design of inheritance points](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/framework-design-guidelines-digest)
 * Contrast with Java where methods are virtual by default
+
+---
+
+### Example: Vehicle
+{/* TODO: Fix diagram */}
+```mermaid
+classDiagram
+    class Vehicle {
+        +Go() 
+    }
+    class Car {
+        +Go() 
+    }
+    class Boat {
+        +Go()  
+    }
+    Vehicle <|-- Car
+    Vehicle <|-- Boat
+    
+    note for Vehicle "Non-virtual"
+    note for Car "Error"
+    note for Boat "Method hiding (not override)      . "
+```
 
 ---
 
@@ -191,6 +310,39 @@ b2.Go();
 | [`Equals()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.equals) | Determines object equality | <span style="color:green">✓</span> |
 | [`GetHashCode()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gethashcode) | Gets hash code for object | <span style="color:green">✓</span> |
 | [`GetType()`](https://learn.microsoft.com/en-us/dotnet/api/system.object.gettype) | Returns runtime type of object | <span style="color:red">✗</span> |
+
+---
+
+### `GetType()`
+* Returns runtime type information
+* Key method for [.NET Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection)
+* Used by serialization, dependency injection, and testing frameworks
+* Only non-virtual method in System.Object
+* Returns a [Type](https://learn.microsoft.com/en-us/dotnet/api/system.type) object
+
+---
+
+### Example: `GetType()`
+
+```csharp {3}
+// Get and display all public members of any object
+public static void GetPublicMembers(object obj) {
+    Type type = obj.GetType();
+    
+    Console.WriteLine($"Type: {type.FullName}");
+    Console.WriteLine("Public Members:");
+    
+    var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance);
+    
+    foreach (var member in members) {
+        Console.WriteLine($"- {member.MemberType}: {member.Name}");
+    }
+}
+
+// Usage
+var person = new Person { Name = "Alice", Age = 28 };
+GetPublicMembers(person);
+```
 
 ---
 
@@ -267,13 +419,3 @@ public class Person {
     }
 }
 ```
----
-
-### `GetType()`
-* Returns runtime type information
-* Key method for [.NET Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection)
-* Used by serialization, dependency injection, and testing frameworks
-* Only non-virtual method in System.Object
-* Returns a [Type](https://learn.microsoft.com/en-us/dotnet/api/system.type) object
-
-

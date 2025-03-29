@@ -252,6 +252,72 @@ svg[aria-roledescription='xychart'] {
   }
 }
 
+/* Generic Mermaid class diagram fixes */
+.bc-slide {
+  svg.classDiagram {
+    /* Fix sizing to fit the slide */
+    width: 90% !important;
+    max-width: 90% !important;
+    height: auto !important;
+    max-height: 70vh !important;
+    margin: 0 auto !important;
+    display: block !important;
+    transform: scale(0.8) !important;
+    transform-origin: top center !important;
+
+    /* Fix overflow issues */
+    .node {
+      /* Both note and class boxes */
+      .basic.label-container {
+        min-width: 220px !important;
+      }
+
+      /* Fix spacing and overflow for all node types */
+      foreignObject {
+        width: auto !important;
+        overflow: visible !important;
+        min-width: 210px !important;
+      }
+
+      /* Make sure text containers display correctly */
+      div[xmlns] {
+        white-space: normal !important;
+        overflow: visible !important;
+        width: 210px !important;
+        max-width: none !important;
+      }
+    }
+
+    /* Compact layout to reduce height */
+    .nodes {
+      transform: scale(0.9) !important;
+    }
+
+    .edgePaths,
+    .edgeLabels {
+      transform: scale(0.9) !important;
+    }
+
+    /* Make method/property labels not truncate */
+    .nodeLabel {
+      white-space: nowrap !important;
+      overflow: visible !important;
+      width: 210px !important;
+    }
+
+    /* Specific fixes for notes */
+    .node.undefined {
+      .basic.label-container {
+        min-width: 250px !important;
+      }
+
+      div[xmlns] {
+        width: 240px !important;
+      }
+    }
+  }
+}
+
 .bc-slide {
   @apply overflow-hidden;
   @apply list-inside;
@@ -285,32 +351,32 @@ svg[aria-roledescription='xychart'] {
   }
 
   figure {
-  position: relative;
-  display: inline-block;
-}
+    position: relative;
+    display: inline-block;
+  }
 
-figure figcaption {
-  @apply text-sm;
-  visibility: hidden;
-  width: 200px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  text-align: center;
-  border-radius: 6px;
-  padding: 8px;
-  position: absolute;
-  z-index: 1;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
+  figure figcaption {
+    @apply text-sm;
+    visibility: hidden;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
 
-figure:hover figcaption {
-  visibility: visible;
-  opacity: 1;
-}
+  figure:hover figcaption {
+    visibility: visible;
+    opacity: 1;
+  }
 
   .bc-slide-title {
     font-size: 8vmin;

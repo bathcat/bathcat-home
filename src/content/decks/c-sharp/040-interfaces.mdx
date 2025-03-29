@@ -1,7 +1,7 @@
 ---
 title: "Interfaces"
 description: "Limitations of classical OO, motivations for interfaces, and how to use them."
-status: 'Draft'
+status: 'Live'
 flavor: 'Deck'
 ---
 # Objects in Depth
@@ -306,6 +306,38 @@ void Main(){
 * What's undebatable:
   - **Testing** is easier with interfaces
   - **Code is more flexible** when it's loosely coupled
+
+---
+
+### Example: Program.cs
+
+```csharp {8-15}
+public static class ServiceCollectionExtensions{
+   public static HostApplicationBuilder AddCliServices(
+      this HostApplicationBuilder builder
+   ){
+      builder.Configuration.AddJsonFile("appsettings.json");
+      builder.Services.AddTransient<AppDbContext>();
+      
+      builder.Services.AddSingleton<IMutableStore<string, Game>, DbGameStore>();
+      builder.Services.AddSingleton<IChatCompletionAdapter, DeepSeekAdapter>();
+      builder.Services.AddTransient<IConversationStore, DbConversationStore>();
+      builder.Services.AddTransient<IStore<string, PlayerInfo>, DbPlayerInfoStore>();
+      builder.Services.AddTransient<IStore<string, Player>, DbPlayerStore>();
+      builder.Services.AddTransient<IChatCompletionBot, CompletionBot>();
+      builder.Services.AddTransient<IGameEvaluator, GameEvaluator>();
+      builder.Services.AddTransient<IConversationService, ConversationService>();
+
+      return builder;
+   }
+}
+
+
+```
+
+
+
+
 
 ---
 
