@@ -10,11 +10,9 @@ flavor: 'Deck'
 ---
 
 ### Goals
-{/* TODO: Finish this when the slides get completed */}
-
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the meaning of 'multi-paradigm'
+2. Define IL and CLR
+3. Distinguish between a project and an assembly
 
 ---
 
@@ -51,11 +49,11 @@ flavor: 'Deck'
 
 ### Motivations Behind C#
 * Combine C++ power with Visual Basic productivity
-* Create a [truly object-oriented language](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/) from the ground up
-* Avoid C++'s complexity and unsafe memory management
+* [Truly object-oriented language](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/) from the ground up
+* Avoid manual memory management
 * Provide a language optimized for the CLR
-* Offer modern features like garbage collection and type safety
-* Enable rapid application development with elegant syntax
+* Provide type safety
+* Elegant syntax
 * Balance performance needs with developer productivity
 
 
@@ -79,14 +77,11 @@ flavor: 'Deck'
 ### Modern C#
 * Evolved from purely OOP to [multi-paradigm](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/)
 * Functional programming features:
-  - Pattern matching
+  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) and [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
   - [Expression-bodied members](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/expression-bodied-members)
-  - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) for immutable data
-  - [Local functions](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions)
 * Modern features focus on developer productivity:
   - [Null reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
-  - [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching) and [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct)
-
+  - [Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record) for immutable data
 
 
 ---
@@ -249,7 +244,7 @@ flavor: 'Deck'
 
 ### Assembly
 
-* **Theoretical**: [Deployable unit of code](https://learn.microsoft.com/en-us/dotnet/standard/assembly/)
+* **Theoretical**: [Deployable unit of _compiled_ code](https://learn.microsoft.com/en-us/dotnet/standard/assembly/)
 * **Reality**: 
   - Rarely deployed independently
   - Key for code organization
@@ -344,21 +339,31 @@ dotnet sln LS.Enfarculation.sln add LS.Enfarculation.Core/LS.Enfarculation.Core.
 ---
 
 ### Dotnet Watch Test Commands
+* Local hot-loading Continuous Integration 
+* **Not** in Visual Studio 2022
+* Hot reload is only ok
 
-* Basic usage:
+
 ```shell
-dotnet watch test
+dotnet watch build
 ```
-
-* With filters:
+```shell
+dotnet watch run
+```
 ```shell
 dotnet watch test --filter "FullyQualifiedName~MyTest"
 ```
 
-* With logger:
-```shell
-dotnet watch test --logger "console;verbosity=detailed"
-```
+---
 
-* [Full options](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-test#options)
 
+
+
+## Fin
+
+---
+
+### Review
+1. Explain the meaning of 'multi-paradigm'
+2. Define IL and CLR
+3. Distinguish between a project and an assembly

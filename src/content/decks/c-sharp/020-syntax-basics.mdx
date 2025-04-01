@@ -1,9 +1,12 @@
 ---
 title: "Syntax Basics"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+description: "Built-in types, variables, comments, and `null`"
 status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
 
 # Syntax Basics
 
@@ -11,9 +14,9 @@ flavor: 'Deck'
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Define 'string interning'
+2. Explain the `var` keyword
+3. Contrast the modern nullable types with legacy behavior
 
 ---
 
@@ -23,7 +26,6 @@ flavor: 'Deck'
 2. Variables
 3. Primitives
 4. Strings
-5. Enums
 6. Comments
 7. `null`
 
@@ -113,6 +115,13 @@ var point = new { X = 1, Y = 2 };  // Anonymous type
 - e.g.
   - `int` is a language keyword
   - `System.Int32` is the built-in type
+
+```csharp
+// Equivalent 
+int x = 40;  // Language keyword
+Int32 y = 40; // .NET type
+
+```
 
 ---
 
@@ -242,7 +251,7 @@ Console.WriteLine(message);
 
 ---
 
-### Example
+### Example (Slow)
 
 ```csharp
 
@@ -250,14 +259,36 @@ string message = "Hello";
 char[] targetChars = new char[] { 'W', 'o', 'r', 'l', 'd' };
 
 message += ", ";
-for (int i = 0; i < targetChars.Length; i++)
-{
+for (int i = 0; i < targetChars.Length; i++){
     message += targetChars[i];
 }
 
 message += "!";
 
 Console.WriteLine(message);
+
+```
+
+
+---
+
+### Example (with StringBuilder)
+
+```csharp
+var builder = new StringBuilder();
+string message = "Hello";
+builder.Append(message);
+
+char[] targetChars = new char[] { 'W', 'o', 'r', 'l', 'd' };
+
+builder.Append(", ");
+for (int i = 0; i < targetChars.Length; i++){
+    builder.Append(targetChars[i]);
+}
+
+builder.Append("!");
+
+Console.WriteLine(builder.ToString());
 
 ```
 
@@ -298,8 +329,8 @@ class Person{
   public string Name { get; set; }
   public int Age { get; set; }
 
-  public string ToJson() => """
-{
+  public string ToJson() => $"""
+{{
     "name": {Name},
     "age": {Age}
 }
@@ -311,81 +342,6 @@ Console.WriteLine(json);
 ---
 
 
-
-## Enumerations
-
----
-
-### [Overview](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum)
-
-* [Enumeration type](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum) maps labels to integral values
-* Provides type safety over magic numbers/strings
-* Can be [signed or unsigned](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
-* Supports [bit flags](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) with `[Flags]` attribute
-* Values can be [explicitly specified](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
-* Best practice: Use for fixed sets of related values
-
----
-
-### Motivating Example #1
-* Booleans aren't extensible
-
-```csharp {3}
-public class Login{
-    string username = "";
-    bool isActive = false; // TODO: Support Paused / Suspended
-}
-```
-
----
-
-### Motivating Example #2
-
-* Magic constants are easy to forget, easy to mess up
-```csharp {3}
-public class Login{
-    string username = "";
-    int statusCode = 22; //What's this?
-}
-```
-
-
----
-
-### Example
-
-```csharp {8}
-enum Status{
-  Active,
-  Paused,
-  Suspended
-}
-public class Login{
-    string username = "";
-    Status MyStatus = Status.Active;
-}
-````
-
----
-
-### Example 2: Colors
-
-```csharp title='ColorWavelengths.cs'
-enum ColorWavelength {
-    Red = 700,
-    Orange = 600,
-    Yellow = 580,
-    Green = 550,
-    Blue = 470,
-    Violet = 400
-}
-
-public string GetColorInfo(ColorWavelength color) =>
-    $"{color} light has a wavelength of {(int)color}nm";
-
-```
-
----
 
 
 
@@ -584,3 +540,17 @@ public class UsersController{
   - Turn on [nullable context](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-context)
 2. [Treat warnings as errors](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings#treatwarningsaserrors)
 3. Check for nulls obsessively
+
+---
+
+
+
+## Fin
+
+---
+
+### Review
+
+1. Define 'string interning'
+2. Explain the `var` keyword
+3. Contrast the modern nullable types with legacy behavior

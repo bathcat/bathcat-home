@@ -5,15 +5,18 @@ status: 'Live'
 flavor: 'Deck'
 ---
 
+
+
+
 # Flow Control
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. List 3 different conditional constructs
+1. Contrast 'value equality' with 'reference equality'
+1. Explain why you might prefer `foreach` to `for`
 
 ---
 
@@ -83,6 +86,34 @@ public string GetGreeting(int hour){
 * Avoid [arrow anti-pattern](https://blog.codinghorror.com/flattening-arrow-code/) with early returns
 * Keep nesting shallow - prefer [guard clauses](https://refactoring.guru/replace-nested-conditional-with-guard-clauses)
 * Consider [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/pattern-matching) for complex conditions
+
+---
+
+### Logical Operators
+
+| Op    | Short Circuit?                     | Name |
+| :---- | :--------------------------------- | :--- | 
+| `&&`  | <span style="color:green">✓</span> | And  |
+| `&`   | <span style="color:red">✗</span>   | And  |
+| `\|\|`  | <span style="color:green">✓</span> | Or   |
+| `\|`   | <span style="color:red">✗</span>   | Or   |
+| `^`   | <span style="color:red">✗</span>   | Xor  |
+
+---
+
+### Examples
+
+```csharp
+Console.WriteLine($"1: {true && false}");
+Console.WriteLine($"2: {true & false}");
+
+Console.WriteLine($"3: {true || false}");
+Console.WriteLine($"4: {true | false}");
+
+Console.WriteLine($"5: {true ^ false}");
+Console.WriteLine($"6: {true ^ true}");
+
+```
 
 ---
 
@@ -359,3 +390,17 @@ public int SumValidNumbers(IEnumerable<string> inputs) {
   - Concise, readable
   - Easier to test in isolation
 * [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/) brings these patterns to C# with a SQL-like syntax
+
+---
+
+
+
+## Fin
+
+---
+
+### Review
+
+1. List 3 different conditional constructs
+1. Contrast 'value equality' with 'reference equality'
+1. Explain why you might prefer `foreach` to `for`
