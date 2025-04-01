@@ -4,15 +4,19 @@ description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dap
 status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
 # Objects: The Basics
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the purpose of the `class` keyword
+2. List 3 access modifiers
+3. Explain the keyword `value`
+4. Describe reasons to be cautious with keyword `new`
 
 ---
 
@@ -83,6 +87,8 @@ p.Age = 30;
 
 
 ---
+
+
 
 
 ## Fields
@@ -262,19 +268,22 @@ p.SetAge(-30);
 
 ### Example, Old School I
 
-````csharp
+```csharp
 class Person{
   private int age;
 
   public int Age{
     get { return age;}
-    set {this.age = value;} //Notice `value`
+    set {this.age = value;} //Notice 'value'
   }
 }
 
 // Elsewhere
 var p = new Person();
 p.SetAge(-30); // Still ok!
+
+```
+
 
 ---
 
@@ -318,6 +327,8 @@ class Person{
 
 ### [Accessibility](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/restricting-accessor-accessibility)
 
+* Getters and setters don't have to get the same accessibility
+
 ```csharp
 class Person{
   public int Age{
@@ -330,12 +341,30 @@ class Person{
 
 ---
 
+### Keyword: `init`
+* Often paired with `required` keyword
+* Enable immutable data classes
+* Can only be set on initialization
+
+```csharp
+public class Person{
+  public required Guid ID{get;init;}
+  public required int Age{get;init;}
+  public required string GivenName{get;init;}
+  public required string Surname{get;init;}  
+}
+
+```
+
+---
+
+
 ### Pros and Cons
 
-* Pros
+* **Pros**
   - Allows changes without breaking binary compatibily
   - Easy to consume
-* Cons
+* **Cons**
   - Obscures intention
   - Can't be passed as a variable
   - Encourages runtime validation instead of compile time
@@ -409,6 +438,28 @@ class Person{
     Console.WriteLine($"Hello, my name is {Name} and I am {Age} years old.");
   }
 
+  public int Add(int a, int b){
+    return a + b;
+  }
+}
+```
+
+---
+
+### Expression-bodied Methods
+* Shorthand for 1-line methods
+* Implicit `return`
+* Compiles to the same thing
+* Use fat-arrow syntax =>
+
+```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public void Greet()
+    => Console.WriteLine($"Hello, my name is {Name} and I am {Age} years old.");
+  
   public int Add(int a, int b)
     => a + b;
 }
@@ -430,7 +481,6 @@ class Person{
 class Person{
   public static void Greet(string name, int age = 0) =>
     Console.WriteLine($"Hello, my name is {name} and I am {age} years old.");
-  
 }
 ```
 
@@ -443,14 +493,6 @@ class Person{
 * Order doesn't matter when using named parameters
 * Can mix positional and named parameters (positional must come first)
 
----
-
-
-### Example: Calling Methods
-
-```csharp
-
-```
 
 ---
 
@@ -502,6 +544,21 @@ var p = new Person{
 
 ---
 
+### Glue Antipattern
+
+```csharp
+class PersonsController{
+  private readonly IPersonRepository repository;
+
+  public PersonsController(){
+    this.repository = new DbPersonRepository();
+  }
+  // ...
+}
+```
+
+---
+
 ### Keyword: `this`
 * [`this`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/this) refers to current object instance
 * Required to resolve name conflicts (e.g., parameter vs field)
@@ -525,6 +582,9 @@ public class Person{
 }
 
 ```
+
+---
+
 
 
 
@@ -601,3 +661,18 @@ public string GetColorInfo(ColorWavelength color) =>
 
 ```
 
+---
+
+
+
+## Fin
+
+---
+
+
+### Review
+
+1. Explain the purpose of the `class` keyword
+2. List 3 access modifiers
+3. Explain the keyword `value`
+4. Describe reasons to be cautious with keyword `new`

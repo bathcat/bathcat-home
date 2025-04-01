@@ -108,10 +108,11 @@ var point = new { X = 1, Y = 2 };  // Anonymous type
 
 ---
 
+
 ### Overview
 
-- Built into the language
-- Have a language keyword
+- Types built into the language
+- Have a language keyword + a .NET type
 - e.g.
   - `int` is a language keyword
   - `System.Int32` is the built-in type
@@ -127,13 +128,16 @@ Int32 y = 40; // .NET type
 
 ### Catalog
 
-- **Boolean**
+* [**System.Boolean**](https://learn.microsoft.com/en-us/dotnet/api/system.boolean)
   - Keyword: `bool`
-- **Integrals**
+* [**Integrals**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/integral-numeric-types)
   - **Signed** `sbyte`, `ushort`, `int`, `long`
   - **Unsigned** `byte`, `ushort`, `uint`, `ulong`
-- **Floating Point**
+* [**Floating Point**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/floating-point-numeric-types)
   - `float`, `double`, `decimal` (sort of)
+* [**Character**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/char)
+  - Keyword: `char`
+  - UTF-16 encoded
 
 ---
 
@@ -152,13 +156,33 @@ Int32 y = 40; // .NET type
 
 ---
 
-### Everything else
+### Floats
 
 | Type      | Signed                             | Bits | Range                  |
 | :-------- | :--------------------------------- | :--- | :--------------------- |
 | `float`   | <span style="color:green">✓</span> | 32   | ±1.5e-45 to ±3.4e+38   |
 | `double`  | <span style="color:green">✓</span> | 64   | ±5.0e-324 to ±1.8e+308 |
 | `decimal` | <span style="color:green">✓</span> | 128  | ±1.0e-28 to ±7.9e+28   |
+
+```csharp
+float f = 123.456f;
+double d = 123.456;
+```
+
+---
+
+### Decimal
+
+* [System.Decimal](https://learn.microsoft.com/en-us/dotnet/api/system.decimal) - 128-bit decimal type
+* Perfect for financial calculations
+* No floating-point rounding errors
+* Suffix: `m` or `M`
+
+```csharp
+decimal price = 19.99m;
+decimal tax = price * 0.08m;
+decimal total = price + tax;
+```
 
 ---
 
@@ -442,6 +466,56 @@ public class Person{ /* etc...*/}
 
 ---
 
+### Example: User Service (Old School)
+```csharp {11}
+public class UserService{
+    private User[] users = new User[] {
+      new User("John", "Doe"),
+      new User("Jane", "Doe"),
+    };
+    public User GetUserByGivenName(string givenName){
+      foreach(User user in users){
+        if(user.GivenName == givenName)
+          return user;
+      }
+      return null;
+    }
+}
+```
+
+---
+
+
+### Billion Dollar Mistake
+
+<figure class='bc-framed-image' style='width:25%;height:auto;'>
+![Image sans description.](assets/Sir_Tony_Hoare_IMG_5125.jpg)
+<figcaption>
+  By Photograph by Rama, Wikimedia Commons, Cc-by-sa-2.0-fr, CC BY-SA 2.0 fr, https://commons.wikimedia.org/w/index.php?curid=15568323
+</figcaption>
+</figure>
+
+* [Tony Hoare](https://en.wikipedia.org/wiki/Tony_Hoare) introduced null references in ALGOL W (1965)
+* Called it his ["billion-dollar mistake"](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/)
+* Null references cause:
+  - Runtime errors 
+  - Defensive programming overhead
+  - Complex null-checking logic
+
+---
+
+### Modern C#
+* [Nullable reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) catch null issues at compile time
+* `?` indicates a value might be null:
+  - `string?` - nullable string
+  - `User?` - nullable User object
+* Enable in project file: `<Nullable>enable</Nullable>`
+* Compiler enforces null checks and warnings
+* Helps prevent `NullReferenceException` at runtime
+
+---
+
+
 ### Example: User Service
 ```csharp {11}
 public class UserService{
@@ -458,18 +532,6 @@ public class UserService{
     }
 }
 ```
-
----
-
-### Modern C#
-* [Nullable reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) catch null issues at compile time
-* `?` indicates a value might be null:
-  - `string?` - nullable string
-  - `User?` - nullable User object
-* Enable in project file: `<Nullable>enable</Nullable>`
-* Compiler enforces null checks and warnings
-* Helps prevent `NullReferenceException` at runtime
-
 
 
 ---
@@ -513,24 +575,6 @@ public class UsersController{
 * Use [null-coalescing operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-coalescing-operator) (`??`) for defaults
 * Validate arguments with [null checks](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/is)
 * Consider using [required](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required) keyword for non-null properties
-
----
-
-### Billion Dollar Mistake
-
-<figure class='bc-framed-image' style='width:25%;height:auto;'>
-![Image sans description.](assets/Sir_Tony_Hoare_IMG_5125.jpg)
-<figcaption>
-  By Photograph by Rama, Wikimedia Commons, Cc-by-sa-2.0-fr, CC BY-SA 2.0 fr, https://commons.wikimedia.org/w/index.php?curid=15568323
-</figcaption>
-</figure>
-
-* [Tony Hoare](https://en.wikipedia.org/wiki/Tony_Hoare) introduced null references in ALGOL W (1965)
-* Called it his ["billion-dollar mistake"](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/)
-* Null references cause:
-  - Runtime errors 
-  - Defensive programming overhead
-  - Complex null-checking logic
 
 ---
 
