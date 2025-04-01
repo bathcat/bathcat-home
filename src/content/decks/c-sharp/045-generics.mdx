@@ -1,7 +1,7 @@
 ---
 title: "Generics"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Live'
+status: 'Draft'
 flavor: 'Deck'
 ---
 
@@ -401,16 +401,19 @@ public class Rooster : Bird {
 ---
 
 
-### Terminology
+### [Terminology](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/)
 
-* [**Covariance**](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/covariance-and-contravariance-in-generics#covariance) - Use of **more derived** types than originally specified
+* **Covariance** - Use of **more derived** types than originally specified
   - `out` keyword for return types
   - Example: `IEnumerable<Derived>` can be assigned to `IEnumerable<Base>`
 
-* [**Contravariance**](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/covariance-and-contravariance-in-generics#contravariance) - Use of **more generic** types than originally specified
+* **Contravariance** - Use of **more generic** types than originally specified
   - `in` keyword for parameter types
   - Example: `Action<Base>` can be assigned to `Action<Derived>`
 
 * _Only applies to reference types, not value types_
 
 ---
+
+### Example: `out`
+
