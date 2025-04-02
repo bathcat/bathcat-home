@@ -1,18 +1,22 @@
 ---
 title: "Objects: Fancyness"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+description: "A deep dive into advanced object-oriented programming concepts in C#, including inheritance, virtual methods, and System.Object fundamentals."
+status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
 # Objects: Fancy
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the difference between inheritance and composition
+2. Describe the difference between `virtual` and `override`
+3. Define the concept of an `abstract` class
+4. Name 2 methods that every class has 
 
 ---
 
@@ -98,62 +102,29 @@ public class Button : Control{
 
 ---
 
+### Explanation
+* `Button` **is a** `Control`
+* Reuse `Control`'s implementation of `RequestRepaint`
+* Override `Paint` and `OnMouseDown` to customize behavior
+* Client code gets a uniform interface
+
+---
+
 
 ## Keywords
 
 ---
 
 ### Overview
+* [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
 * [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
 * [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
-* [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
 * [`override`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override)
 * [`base`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)
 
 
 ---
 
-### Keyword: [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
-* Abstract **classes** can't be instantiated
-* Abstract **methods** have no implementation
-
-```csharp
-public abstract class Shape {
-    public abstract double CalculateArea();
-    public void Display() => Console.WriteLine($"Area: {CalculateArea()}");
-}
-
-// Must implement all abstract methods
-public class Circle : Shape {
-    public double Radius { get; set; }    
-    public override double CalculateArea() => Math.PI * Radius * Radius;
-}
-```
-
----
-
-### Keyword: [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
-* Sealed **classes** can't be inherited
-* Sealed **methods** can't be overridden
-
-
-```csharp
-// Can't be used as a base class
-public sealed class Utility {
-    public void DoWork() => Console.WriteLine("Working...");
-}
-
-public class Base {
-    public virtual void Method() => Console.WriteLine("Base implementation");
-}
-
-public class Derived : Base {
-    // No further overrides allowed in subclasses
-    public sealed override void Method() => Console.WriteLine("Final implementation");
-}
-```
-
----
 
 ### Keyword:  [`virtual`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/virtual)
 * Virtual **methods** have an implementation but can be overridden
@@ -220,7 +191,7 @@ public class Car : Vehicle {
 * Must explicitly mark methods as `virtual` to enable overriding
 * [Design philosophy](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/virtual-members):
   - Promotes version resilience and performance
-  - Prevents "fragile base class" problem
+  - Prevents ["fragile base class"](https://en.wikipedia.org/wiki/Fragile_base_class) problem
   - Forces intentional [design of inheritance points](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/framework-design-guidelines-digest)
 * Contrast with Java where methods are virtual by default
 
@@ -284,6 +255,49 @@ b2.Go();
 Vehicle[] vs = [new Vehicle(), new Boat()];
 foreach (var v in vs) {
   v.Go();
+}
+```
+
+---
+
+
+### Keyword: [`abstract`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract)
+* Abstract **classes** can't be instantiated
+* Abstract **methods** have no implementation
+
+```csharp
+public abstract class Shape {
+    public abstract double CalculateArea();
+    public void Display() => Console.WriteLine($"Area: {CalculateArea()}");
+}
+
+// Must implement all abstract methods
+public class Circle : Shape {
+    public double Radius { get; set; }    
+    public override double CalculateArea() => Math.PI * Radius * Radius;
+}
+```
+
+---
+
+### Keyword: [`sealed`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/sealed)
+* Sealed **classes** can't be inherited
+* Sealed **methods** can't be overridden
+
+
+```csharp
+// Can't be used as a base class
+public sealed class Utility {
+    public void DoWork() => Console.WriteLine("Working...");
+}
+
+public class Base {
+    public virtual void Method() => Console.WriteLine("Base implementation");
+}
+
+public class Derived : Base {
+    // No further overrides allowed in subclasses
+    public sealed override void Method() => Console.WriteLine("Final implementation");
 }
 ```
 

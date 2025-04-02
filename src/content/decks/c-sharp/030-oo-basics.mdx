@@ -1,6 +1,6 @@
 ---
 title: "Objects: The Basics"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+description: "Introducing object-oriented programming in C#: classes, fields, properties, constructors, and methods."
 status: 'Live'
 flavor: 'Deck'
 ---
@@ -409,6 +409,45 @@ class Die{
 
 ---
 
+### Chaining
+* [Constructor chaining](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/constructors#constructor-chaining) allows one constructor to call another
+* Use `: this()` to call another constructor in the same class
+* Use `: base()` to call a constructor in the base class
+* Common pattern for:
+  - Providing default values
+  - Reducing code duplication
+  - Implementing the [DRY principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
+* Best practice: Chain to the most specific constructor
+
+---
+
+
+### Example: Chaining
+
+```csharp title='Person.cs'
+class Person {
+    private readonly string name;
+    private readonly int age;
+    private readonly string email;
+
+    // Most specific constructor
+    public Person(string name, int age, string email) {
+        this.name = name;
+        this.age = age;
+        this.email = email;
+    }
+
+    // Chain to most specific, providing default email
+    public Person(string name, int age) 
+        : this(name, age, $"{name.ToLower()}@example.com") {}
+
+    // Chain to most specific, providing default age and email
+    public Person(string name) 
+        : this(name, 0) {}
+}
+```
+
+---
 
 
 
@@ -493,6 +532,21 @@ class Person{
 * Order doesn't matter when using named parameters
 * Can mix positional and named parameters (positional must come first)
 
+---
+
+### Example: Calling Methods
+
+```csharp title='MethodCalls.cs'
+class Person {
+    public void UpdateProfile(string name, int age, string email) {
+        // ... implementation
+    }
+}
+
+var person = new Person();
+// Named parameters can be in any order
+person.UpdateProfile(age: 30, name: "John", email: "john@example.com");
+```
 
 ---
 
@@ -505,11 +559,15 @@ class Person{
 
 ### Overview
 * [Instantiation](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers) is the process of creating an object from a class
-* Can be done using the `new` keyword or object initializer syntax
+* Using `new` keyword
+* Options:
+  - [Object initializer](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#object-initializers)
+  - Constructor
+* Best practice: Use [dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) instead of direct instantiation
 
 ---
 
-### Example
+### Example I
 
 ```csharp
 class Person{
@@ -518,13 +576,56 @@ class Person{
 }
 
 var p = new Person();
+p.Name = "John";
+p.Age = 30;
 ```
 
 ---
 
-### Object Initializer
+### Example II
 
 ```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public Person(string name, int age){
+    Name = name;
+    Age = age;
+  }
+}
+
+var p = new Person("John", 30);
+```
+
+
+---
+
+### Syntax: Object Initializer
+
+* [Object initializer syntax](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#object-initializers) uses curly braces after `new`
+* Properties are set using assignment syntax
+* Can be used with or without a constructor
+* Properties must be [public](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/public) and have a setter
+* Order of property assignments doesn't matter
+* Cannot set readonly fields or properties
+
+---
+
+### Example III
+
+```csharp
+class Person{
+  public string Name { get; set; }
+  public int Age { get; set; }
+
+  public Person(string name, int age){
+    Name = name;
+    Age = age;
+  }
+}
+
+
 var p = new Person{
   Name = "John",
   Age = 30
