@@ -481,23 +481,35 @@ svg[aria-roledescription='xychart'] {
 //
 @media print {
   @page {
-    margin: 1cm;
-    padding: 2cm;
-    size: landscape; // Forces landscape orientation
+    margin: 0;
+    padding: 0;
+    size: landscape;
   }
 
+  // Hide all header and footer elements
   header,
-  footer {
-    display: none;
+  footer,
+  .site-footer,
+  [data-footer],
+  footer[role='contentinfo'] {
+    display: none !important;
+    height: 0 !important;
+    visibility: hidden !important;
+  }
+
+  // Force the main content to not generate extra pages
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   .bc-slide {
     // Use viewport units for consistent sizing
     width: 90vw !important;
     height: 90vh !important;
-    margin: 0 auto !important;
-    padding: 2rem !important;
-    break-inside: avoid; // Prevent slides from breaking across pages
+    margin: 1cm auto !important;
+    padding: 1.5rem !important;
+    break-inside: avoid;
 
     // Ensure content fits within bounds
     overflow: visible !important;
@@ -507,47 +519,22 @@ svg[aria-roledescription='xychart'] {
 
   // Handle text wrapping and scaling
   .bc-slide {
-    font-size: 3vmin !important; // Scale font size based on viewport
+    font-size: 3vmin !important;
 
-    // Ensure lists wrap properly
-    ul,
-    ol {
-      max-width: 100% !important;
-      overflow-wrap: break-word !important;
-      word-wrap: break-word !important;
-      padding-left: 2rem !important;
-    }
-
-    // Handle code blocks
-    div.expressive-code {
-      max-width: 100% !important;
-      overflow-x: auto !important;
-      font-size: 2.5vmin !important;
-    }
-
-    // Ensure tables fit
-    table {
-      max-width: 100% !important;
-      font-size: 2.5vmin !important;
-    }
-
-    // Handle images
-    img {
-      max-width: 100% !important;
-      height: auto !important;
-    }
+    // Rest of the slide styles...
   }
 
   .bc-deck {
     @apply opacity-100;
-    @apply w-max;
-    @apply h-max;
-    @apply pt-16;
-    @apply m-10;
+    width: 100% !important;
+    height: auto !important;
+    padding-top: 0 !important;
+    margin: 0 !important;
+    page-break-after: avoid !important; // Prevent extra page after deck
 
     // Prevent last slide from breaking
     astro-slot astro-island:last-of-type div.bc-slide {
-      @apply break-after-auto !important;
+      @apply break-after-avoid !important; // Changed from auto to avoid
     }
   }
 }
