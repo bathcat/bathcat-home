@@ -461,7 +461,6 @@ svg[aria-roledescription='xychart'] {
   }
 }
 
-
 .bc-slide > .bc-slide-title,
 .bc-slide > astro-slot > .bc-slide-title {
   /* title styles */
@@ -484,15 +483,59 @@ svg[aria-roledescription='xychart'] {
   @page {
     margin: 1cm;
     padding: 2cm;
+    size: landscape; // Forces landscape orientation
   }
+
   header,
   footer {
     display: none;
   }
+
   .bc-slide {
-    @apply w-3/4;
-    @apply h-3/4;
-    @apply border-none;
+    // Use viewport units for consistent sizing
+    width: 90vw !important;
+    height: 90vh !important;
+    margin: 0 auto !important;
+    padding: 2rem !important;
+    break-inside: avoid; // Prevent slides from breaking across pages
+
+    // Ensure content fits within bounds
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  // Handle text wrapping and scaling
+  .bc-slide {
+    font-size: 3vmin !important; // Scale font size based on viewport
+
+    // Ensure lists wrap properly
+    ul,
+    ol {
+      max-width: 100% !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      padding-left: 2rem !important;
+    }
+
+    // Handle code blocks
+    div.expressive-code {
+      max-width: 100% !important;
+      overflow-x: auto !important;
+      font-size: 2.5vmin !important;
+    }
+
+    // Ensure tables fit
+    table {
+      max-width: 100% !important;
+      font-size: 2.5vmin !important;
+    }
+
+    // Handle images
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
   }
 
   .bc-deck {
@@ -501,6 +544,8 @@ svg[aria-roledescription='xychart'] {
     @apply h-max;
     @apply pt-16;
     @apply m-10;
+
+    // Prevent last slide from breaking
     astro-slot astro-island:last-of-type div.bc-slide {
       @apply break-after-auto !important;
     }
