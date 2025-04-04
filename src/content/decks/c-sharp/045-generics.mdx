@@ -1,9 +1,12 @@
 ---
 title: "Generics"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+description: "Brief introduction to generics in .NET, covering the problem they solve, how to use them, and how to create your own."
+status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
 
 # Generics
 
@@ -11,9 +14,9 @@ flavor: 'Deck'
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the problem that generics solve
+2. Describe how to use a generic type
+3. Explain covariance and contravariance
 
 ---
 
@@ -32,7 +35,39 @@ flavor: 'Deck'
 
 ---
 
+### Without Generics
+* All types in C# inherit from [System.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object)
+* Pre-generics collections stored everything as `object` references
+* Problems:
+  - No compile-time type checking
+  - Lots of explicit casting
+  - [Boxing/unboxing](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing) value types impacts performance
+  - Runtime errors instead of compile-time errors
+  - No IntelliSense for collection contents
 
+---
+
+### Example: ArrayList
+
+```csharp title="ArrayListExample.cs"
+// Non-generic collection requires casting
+ArrayList names = new ArrayList();
+names.Add("Alice");
+names.Add("Bob");
+names.Add("Charlie");
+
+// Must cast each item back to string
+foreach (object item in names) {
+    string name = (string)item;
+    Console.WriteLine(name.ToUpper());
+}
+
+// Runtime error if types don't match!
+names.Add(42); // Compiles fine
+string whoops = (string)names[3]; // throws InvalidCastException
+```
+
+---
 
 
 ### Overview
@@ -206,6 +241,91 @@ string name = First(nameList); // Type inference
 
 ---
 
+### Example: Result
+#### Motivation
+```csharp title="OutputParams.cs"
+// Without generics: Functions return one value
+// Output parameters work around this limitation
+bool success = int.TryParse("123", out int result);
+
+if (success) {
+    Console.WriteLine($"Parsed value: {result}");
+} else {
+    Console.WriteLine("Failed to parse");
+}
+
+// Limitations:
+// - Confusing syntax (what does 'out' mean?)
+// - Error-prone (forgetting to check success)
+// - Not composable in functional style
+```
+
+---
+
+### Solution: Result
+
+```csharp title="Result.cs"
+public class Result<T>
+{
+    private readonly T? _value;
+    private readonly string? _error;
+
+    public bool IsSuccess => _error is null;
+
+    public T Value => IsSuccess ? _value! : throw new InvalidOperationException("Result is a failure");
+    public string Error => !IsSuccess ? _error! : throw new InvalidOperationException("Result is a success");
+
+    private Result(T value, string? error = null)
+    {
+        _value = value;
+        _error = error;
+    }
+
+    public static Result<T> Success(T value) => new(value);
+    public static Result<T> Failure(string error) => new(default(T)!, error);
+}
+```
+
+---
+
+### Usage: ParseInt
+
+```csharp
+public static Result<int> ParseInt(string input){
+    return int.TryParse(input, out int result) 
+        ? Result<int>.Success(result) 
+        : Result<int>.Failure("Failed to parse input");
+}
+
+var result = ParseInt("123");
+if (result.IsSuccess){
+    Console.WriteLine(result.Value);
+} else {
+    Console.WriteLine(result.Error);
+}
+
+```
+---
+
+### Usage: ParseBool
+
+```csharp
+public static Result<bool> ParseBool(string input){
+    if (input == "true" || input == "Yes") return Result<bool>.Success(true);
+    if (input == "false" || input == "No") return Result<bool>.Success(false);
+    return Result<bool>.Failure("Invalid boolean input");
+}
+
+var result = ParseBool("true");
+if (result.IsSuccess){
+    Console.WriteLine(result.Value);
+} else {
+    Console.WriteLine(result.Error);
+}
+```
+
+---
+
 ### Generic Constraints
 
 * [Type constraints](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters) ensure type parameters meet requirements
@@ -283,6 +403,20 @@ Console.WriteLine(alice.Equals(people[0]));  // Uses IEquatable<T>
 
 ---
 
+### [Terminology](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/)
+
+* **Covariance** - Use of **more derived** types than originally specified
+  - `out` keyword for return types
+  - Example: `IEnumerable<Derived>` can be assigned to `IEnumerable<Base>`
+
+* **Contravariance** - Use of **more generic** types than originally specified
+  - `in` keyword for parameter types
+  - Example: `Action<Base>` can be assigned to `Action<Derived>`
+
+* _Only applies to reference types, not value types_
+
+---
+
 ### Motivation
 
 ```mermaid
@@ -311,31 +445,6 @@ classDiagram
 
 ---
 
-### In code
-* Compiler error [CS1715](https://learn.microsoft.com/en-us/dotnet/csharp/misc/cs1715): 'Type1': type must be 'Type2' to match overridden member 'MemberName'
-```csharp
-// Feathers
-public class Feather{}
-public class RedFeather : Feather{}
-public class BlackFeather : Feather{}
-
-// Birds
-public abstract class Bird{
-    public virtual required ICollection<Feather> Feathers { get; set; }
-}
-
-public class Crow : Bird{
-    public override required ICollection<BlackFeather> Feathers { get; set; }
-}
-
-public class Rooster : Bird{
-    public override required ICollection<RedFeather> Feathers { get; set; }
-}
-
-
-```
-
----
 
 ### Return Covariance
 
@@ -366,54 +475,20 @@ public class Rooster : Bird{
 }
 
 ```
----
 
-### Feather Covariance 
-{/* TODO: This doesn't actually compile */}
-```csharp title='FeatherCovariance.cs'
-// Define covariant interface with out keyword
-public interface IFeatherCollection<out T> where T : Feather {
-    IEnumerable<T> GetFeathers();
-    int Count { get; }
-}
-
-// Feathers
-public class Feather {}
-public class RedFeather : Feather {}
-public class BlackFeather : Feather {}
-
-// Birds with covariant collections
-public abstract class Bird {
-    public virtual required IFeatherCollection<Feather> Feathers { get; set; }
-}
-
-public class Crow : Bird {
-    // Now compiles - IFeatherCollection<BlackFeather> is assignment-compatible
-    // with IFeatherCollection<Feather> because of covariance (out keyword)
-    public override required IFeatherCollection<BlackFeather> Feathers { get; set; }
-}
-
-public class Rooster : Bird {
-    public override required IFeatherCollection<RedFeather> Feathers { get; set; }
-}
-```
 
 ---
 
 
-### [Terminology](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/)
 
-* **Covariance** - Use of **more derived** types than originally specified
-  - `out` keyword for return types
-  - Example: `IEnumerable<Derived>` can be assigned to `IEnumerable<Base>`
-
-* **Contravariance** - Use of **more generic** types than originally specified
-  - `in` keyword for parameter types
-  - Example: `Action<Base>` can be assigned to `Action<Derived>`
-
-* _Only applies to reference types, not value types_
+## Fin
 
 ---
 
-### Example: `out`
+### Goals
+
+1. Explain the problem that generics solve
+2. Describe how to use a generic type
+3. Explain covariance and contravariance
+
 

@@ -1,24 +1,37 @@
 ---
-title: "Collections"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+title: "Enumerables"
+description: "Overview of C# enumeration concepts, covering the iterator pattern, LINQ operations, collection types, and modern syntax features that enable efficient data processing and manipulation."
+status: 'Live'
 flavor: 'Deck'
 ---
 
-# Collections
+
+
+
+# Enumerables
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the iterator pattern
+2. Describe how to use the `yield` keyword
+3. Explain when to use arrays vs lists
+4. Describe the syntax of collection expressions
+
+---
+
+### Roadmap
+
+1. IEnumerable
+2. LINQ
+3. Keyword: `yield`
+4. Common Collections
 
 ---
 
 
-## Enumerable
+## IEnumerable
 
 ---
 
@@ -51,6 +64,18 @@ public interface IEnumerable<out T> : IEnumerable{
 // The non-generic version
 public interface IEnumerable{
     IEnumerator GetEnumerator();
+}
+
+// The IEnumerator generic interface
+public interface IEnumerator<out T> : IDisposable, IEnumerator{
+    T Current { get; }  // Returns current element
+}
+
+// The non-generic version
+public interface IEnumerator{
+    object? Current { get; }  // Returns current element as object
+    bool MoveNext();         // Advances to next element
+    void Reset();            // Resets position to before first element
 }
 ```
 
@@ -111,7 +136,7 @@ public class MyCollection<T> : IEnumerable<T>{
 
 ---
 
-### Extension Methods Defined
+### Extension Methods Refresher
 * Static methods that extend existing types
 * Introduced in C# 3.0
 * Declared with "this" parameter modifier
@@ -180,6 +205,7 @@ var methodChain = customers
 // Define query - nothing executes yet
 var query = numbers
     .Where(n => { Console.WriteLine($"Filtering {n}"); return n > 5; })
+    .Where(n => { Console.WriteLine($"Filtering {n}"); return (n % 2) == 0; })    
     .Select(n => { Console.WriteLine($"Mapping {n}"); return n * 2; });
 
 // Only executes when data is needed
@@ -189,6 +215,9 @@ foreach (var item in query) // Execution happens here
     Console.WriteLine($"Result: {item}");
 }
 ```
+
+---
+### Deferred Execution
 
 * LINQ uses [deferred execution](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example)
 * Operations chain like a [monad](https://en.wikipedia.org/wiki/Monad_(functional_programming))
@@ -201,7 +230,7 @@ foreach (var item in query) // Execution happens here
 ### Pitfalls
 
 * **Single-use enumerators**: Some [IEnumerable sources](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.range) can only be enumerated once
-* **Deferred execution**: Changes to source data [affect results](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example)
+* **Deferred execution**: Changes to source data [effect results](https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-example)
 * **Resource leaks**: Unclosed [database connections](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/managing-connections) or [file streams](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.openread)
 * **Hidden costs**: Some operations force [multiple passes](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/classification-of-standard-query-operators-by-manner-of-execution) over data
 * **Memory pressure**: Large sequences can cause [performance issues](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/performance-tips)
@@ -318,6 +347,20 @@ public static IEnumerable<int> Fibonacci() {
 
 ---
 
+### What to pick?
+* **Choose Array when:**
+  - [Size is fixed](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/arrays/#array-overview) and known at creation
+  - Maximum performance is critical
+  - Working with [interop scenarios](https://learn.microsoft.com/en-us/dotnet/framework/interop/marshaling-data-with-platform-invoke)
+
+* **Choose List when:**
+  - Collection [needs to grow](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.capacity) dynamically
+  - Random access by index is required
+  - Maintaining insertion order matters
+
+
+---
+
 ### Initialization
 
 ```csharp
@@ -336,6 +379,21 @@ var cats = new List<Cat> {
     new Cat("Whiskers"),
     new Cat("Mittens")
 };
+```
+
+---
+
+### New Hotness: Collection Expressions
+* Introduced in [C# 12/.NET 8](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12#collection-expressions)
+* [Uniform syntax](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions) for creating arrays, lists, and more
+* Syntax:
+  - Square brackets
+  - Spread operator `..`
+  - Infers the most appropriate collection type
+
+```csharp
+int[] array = [1, 2, 3];                      // Array creation
+List<string> combined = ["a", .. otherList];  // Combining collections
 ```
 
 ---
@@ -442,3 +500,17 @@ var middleItems = array[2..^2];  // All but first two and last two
 var extension = filename[^4..];  // Last four characters
 ```
 
+---
+
+
+
+## Fin
+
+---
+
+### Review
+
+1. Explain the iterator pattern
+2. Describe how to use the `yield` keyword
+3. Explain when to use arrays vs lists
+4. Describe the syntax of collection expressions

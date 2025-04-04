@@ -45,13 +45,20 @@ flavor: 'Deck'
   - Relationships are fixed at compile time
   - Difficult to reason about
 
+
 ---
 
-### Fatherly Advice
-* Use implementation inheritance sparingly
-* Prefer composition
-* Don't memorize inheritance rules
-* Look them up if you have to
+### Composition
+* [Composition](https://en.wikipedia.org/wiki/Object_composition) means including objects as members
+* Aka 'has-a' relationship
+* Benefits:
+  - Code reuse _without_ tight coupling
+  - Relationships can change at runtime
+  - Easier to test and modify
+* Example: `Car` has-a `Engine` instead of is-a `Engine`
+* **Slogan**: ["Favor composition over inheritance"](https://en.wikipedia.org/wiki/Composition_over_inheritance)
+
+
 
 ---
 
@@ -107,6 +114,14 @@ public class Button : Control{
 * Reuse `Control`'s implementation of `RequestRepaint`
 * Override `Paint` and `OnMouseDown` to customize behavior
 * Client code gets a uniform interface
+
+---
+
+### Fatherly Advice
+* Use implementation inheritance sparingly
+* Prefer composition
+* Don't memorize inheritance rules
+* Look them up if you have to
 
 ---
 
@@ -447,3 +462,20 @@ public class Person {
     }
 }
 ```
+
+
+---
+
+
+
+
+## Fin
+
+---
+
+### Review
+
+1. Explain the difference between inheritance and composition
+2. Describe the difference between `virtual` and `override`
+3. Define the concept of an `abstract` class
+4. Name 2 methods that every class has 

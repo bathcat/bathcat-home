@@ -1,18 +1,24 @@
 ---
 title: "Exceptions"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+description: "An overview of C# exception handling, covering how to throw, catch, and manage exceptions, with best practices for error handling and resource cleanup.."
+status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
+
 # Exceptions
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain when to throw exceptions versus using return values
+2. Describe the difference between `throw` and `throw ex`
+3. List three common exception types and when to use them
+4. Explain why catching `Exception` is generally discouraged
+5. Describe the purpose of the `finally` block
 
 ---
 
@@ -31,7 +37,7 @@ flavor: 'Deck'
 
 ---
 
-### Lorem Ipsum
+### More Takes
 
 
 <figure class='bc-framed-image pl-4' style='width:25%;height:auto;'>
@@ -271,6 +277,8 @@ public static int Main(string[] args){
 
 ```
 
+
+
 ---
 
 ### Exception Handling Best Practices
@@ -280,6 +288,17 @@ public static int Main(string[] args){
 * Avoid catching broad exceptions unless absolutely necessary
 * Use `finally` to clean up resources
 * Document exceptions in XML comments with `<exception>` tags
+
+---
+
+### Alternative Take: Gotta Catch 'Em All
+* From [Eric Lippert](https://ericlippert.com/2014/03/06/living-with-unchecked-exceptions-part-two/):
+> I think the whole notion of “handling” exceptions is a bit of a fool's game. I can probably 
+> count on the fingers of one hand the times where I've been able to catch a specific exception
+> and then do something intelligent with it. 99% of the time you should either catch everything 
+> or catch nothing. When an exception of any type occurs, rewind to a stable state and then 
+> either abort or continue.
+
 
 ---
 
@@ -297,3 +316,40 @@ public static int Main(string[] args){
 * Consider using [`using`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using) for `IDisposable` resources
 
 ---
+
+### Example: Finally
+
+```csharp title="ResourceCleanup.cs"
+public void ProcessFile(string path) {
+    FileStream? file = null;
+    try {
+        file = File.OpenRead(path);
+        // Process the file
+    }
+    catch (FileNotFoundException) {
+        Console.WriteLine("File not found");
+    }
+    finally {
+        // Always runs, even if an exception occurs
+        file?.Dispose();
+    }
+}
+
+```
+
+---
+
+
+
+
+## Fin
+
+---
+
+### Review
+
+1. Explain when to throw exceptions versus using return values
+2. Describe the difference between `throw` and `throw ex`
+3. List three common exception types and when to use them
+4. Explain why catching `Exception` is generally discouraged
+5. Describe the purpose of the `finally` block

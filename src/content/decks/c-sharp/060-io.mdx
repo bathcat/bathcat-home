@@ -1,20 +1,35 @@
 ---
 title: "IO"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+description: "An overview of C# I/O operations, covering file and directory manipulation, stream-based processing for efficient data handling, and HTTP client usage for web requests."
+status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
 # IO
 
 ---
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Explain the difference between `File` and `FileInfo`
+2. Explain the difference between `Directory` and `DirectoryInfo`
+2. Describe the benefits of using streams to process files
+4. Describe how to make HTTP requests using `HttpClient` (Optional)
 
 ---
+
+### Roadmap
+
+1. Files
+2. Streams
+3. HttpClient (Optional)
+
+---
+
+
+
 
 ## Files
 
@@ -109,6 +124,44 @@ dir.Create();
 
 ---
 
+### What's Blocking?
+
+* File operations shown so far are [blocking operations](https://learn.microsoft.com/en-us/dotnet/standard/io/asynchronous-file-i-o)
+* Blocking wastes [thread pool threads](https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool)
+* Most application time is spent waiting for I/O
+* [Asynchronous I/O](https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/) is better for scalability
+* Easier to reason about synchronous code
+* We'll explore async alternatives in more depth later
+
+---
+
+
+### Reading Lines
+
+* [`File.ReadLines`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.readlines) returns lines lazily
+* [`File.ReadAllLines`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.readalllines) reads all lines at once
+* Use `ReadLines` for large files
+* Use `ReadAllLines` for small files
+
+
+
+---
+
+### Example: Random Line
+
+```csharp title="RandomLine.cs"
+public string GetRandomLine(string filePath){
+    var lines = File.ReadAllLines(filePath);
+    var random = Random.Shared;
+    var index = random.Next(lines.Length);
+    return lines[index];
+}
+```
+
+---
+
+
+
 
 ## Streams
 
@@ -148,20 +201,31 @@ dir.Create();
 ### Example: Copy Directory Contents
 
 ```csharp
-private async void DoCopy()){
-  var sourceD = @"c:\Users\exampleuser\start";
-  var destD = @"c:\Users\exampleuser\end";
+    private static async void DoCopy(){
+        var sourceD = @"c:\Users\exampleuser\start";
+        var destD = @"c:\Users\exampleuser\end";
 
-  foreach (var path in Directory.EnumerateFiles(sourceD)){
-    using var source = File.Open(path, FileMode.Open);
-    using var dest = File.Create(destD 
-      + path.Substring(filename.LastIndexOf('\\'))
-    );
-        
-    await source.CopyToAsync(dest);
-  }
-}
+        foreach (var path in Directory.EnumerateFiles(sourceD)){
+            var source = File.Open(path, FileMode.Open);
+            var dest = File.Create(destD
+                + path.Substring(path.LastIndexOf('\\')
+            ));
+
+            source.CopyTo(dest);
+            source.Close();
+            dest.Close();
+        }
+    }
+
 ```
+
+---
+
+### Complaints
+
+* Code is still blocking despite async signature
+* Potential resource leaks if exceptions occur
+* We'll address both issues in upcoming sections
 
 ---
 
@@ -182,3 +246,84 @@ var data = reader.ReadToEnd();
 * You should ***always*** close streams when done
   - Leverage keyword [`using`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using) for automatic cleanup
   - Details discussed elsewhere
+
+
+---
+
+
+
+## [HttpClient](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient)
+
+---
+
+### History
+* `HttpClient` was introduced in .NET 4.5
+* Prior to that, people used `WebClient`
+* `WebClient` is now obsolete
+
+---
+
+### HttpClient
+* `System.Net.Http` namespace
+* Base class: [`System.Net.Http.HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient)
+* Key characteristics:
+  - Asynchronous operations
+  - Automatic resource management
+  - Built-in caching
+  - Handles cookies
+
+---
+
+### Example: Basic Usage
+
+```csharp title="IsUpChecker.cs"
+public bool IsUp(string url){
+    try{
+        var client = new HttpClient();
+        client.Timeout = TimeSpan.FromSeconds(5);
+        var response = client.GetAsync(url).Result;
+        bool isSuccess = response.IsSuccessStatusCode;
+        client.Dispose();
+        return isSuccess;
+    }
+    catch (Exception){
+        return false;
+    }
+}
+```
+
+---
+
+### Reminder: REST
+* REST is a style of web service
+* Key characteristics:
+  - Stateless
+  - Cacheable
+  - Layered
+  - Uniform interface
+  - Client-server
+
+---
+
+### Http Methods
+
+* [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) - Retrieve data
+* [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) - Create new resource
+* [PUT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT) - Update existing resource
+* [DELETE](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE) - Remove resource
+* Other methods include PATCH, HEAD, OPTIONS, and more
+
+---
+
+
+## Fin
+
+---
+
+
+### Review
+
+1. Explain the difference between `File` and `FileInfo`
+2. Explain the difference between `Directory` and `DirectoryInfo`
+2. Describe the benefits of using streams to process files
+4. Describe how to make HTTP requests using `HttpClient` (Optional)

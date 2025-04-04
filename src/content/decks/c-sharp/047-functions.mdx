@@ -1,7 +1,7 @@
 ---
 title: "Functions"
 description: "Covers C#'s function-related features: extension methods, local functions, lambdas, and delegates provide different approaches to code organization and functional programming patterns."
-status: 'Draft'
+status: 'Live'
 flavor: 'Deck'
 ---
 
@@ -11,9 +11,10 @@ flavor: 'Deck'
 
 ### Goals
 
-1. Lorem
-2. Ipsum
-3. Sic
+1. Describe the syntax for writing an extension method
+2. Distinguish between `IFunc` and `Action`
+3. Define the term "higher-order function"
+4. Explain how to create a simple lambda expression
 
 ---
 
@@ -40,6 +41,60 @@ flavor: 'Deck'
 * Declared with "this" parameter modifier
 * [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/) is built on extension methods
 * Extend types without modifying original source code
+
+---
+
+### Motivations
+```csharp {8,9}
+public static class StringHelper{
+    public static char GetInitial(string name)
+        => return name[0] ?? '';
+
+    public static string AddDot(char initial)
+        => initial == ' ' ? "" : $"{initial}. ";
+}
+
+public static string FormatName(string first, string last){
+    // Kind of ugly to use
+    var initial = StringHelper.AddDot(StringHelper.GetInitial(first));
+    return $"{initial}{last}";
+}
+
+```
+
+---
+
+### Example: FormatName
+
+```csharp
+public static class StringExtensions{
+    // Notice `this`
+    public static char GetInitial(this string name)
+        => name[0] ?? '';
+
+    // Here too
+    public static string AddDot(this char initial)
+        => initial == ' ' ? "" : $"{initial}. ";
+}
+
+public static string FormatName(string first, string last)
+    => $"{first.GetInitial().AddDot()}{last}";
+
+```
+
+
+---
+
+### What's the Point?
+* **Ergonomics** 
+    - Calling instance-like methods feels natural
+    - Better discoverability via IntelliSense
+    - Enables fluent interfaces with method chaining
+* **Flexibility** 
+    - "Extends" types you can't modify (sealed classes, types from other libraries)
+    - Keeps related functionality grouped together
+* **No actual magic** 
+    - Just static methods with syntactic sugar
 
 ---
 
@@ -92,8 +147,21 @@ internal class Program{
 }
 ```
 
+
+
+
 ---
 
+### [Best Practices](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/extension-methods)
+* [**Prefer** static classes](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods#extending-predefined-types) for extension methods
+* Think about the [namespace](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces):
+    - Consider a dedicated namespace like `MyLibrary.Routing`
+    - Consider using the same namespace as the type you're extending
+* Avoid signature duplication
+* Avoid extension methods on `System.Object`
+
+
+---
 
 
 
@@ -176,7 +244,7 @@ static int Main(){
 
 ---
 
-### Func and Action
+### Typing: Func and Action
 
 * [`Action`](https://learn.microsoft.com/en-us/dotnet/api/system.action-1): Takes 0 or more arguments, returns nothing
 * [`Func`](https://learn.microsoft.com/en-us/dotnet/api/system.func-2): Takes 0 or more aguments, returns something
@@ -488,3 +556,14 @@ internal class Program{
 ---
 
 
+
+## Fin
+
+---
+
+### Review
+
+1. Describe the syntax for writing an extension method
+2. Distinguish between `IFunc` and `Action`
+3. Define the term "higher-order function"
+4. Explain how to create a simple lambda expression
