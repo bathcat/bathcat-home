@@ -1,9 +1,13 @@
 ---
 title: "Async"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Draft'
+status: 'Live'
 flavor: 'Deck'
 ---
+
+
+
+
 # Async
 
 ---
@@ -16,7 +20,24 @@ flavor: 'Deck'
 
 ---
 
+
+
+
+
 ## Asynchrony
+
+---
+
+
+### What's 'Blocking' IO?
+
+* Operations that pause thread execution until completed
+* **Examples:** network requests, file operations, database queries
+* **Problems**
+  - Consumes a [thread pool thread](https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool) unnecessarily
+  - Can lead to [thread pool starvation](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/debug-threadpool-starvation)
+  - In UI applications, blocking the main thread freezes the interface
+* **Modern alternative:** [asynchronous programming](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/) with Tasks
 
 ---
 
@@ -162,6 +183,9 @@ static async Task void Main(string[] args)
 ---
 
 
+
+
+
 ## Tasks
 
 ---
@@ -266,11 +290,65 @@ public static async Task RunAsync(string[] args){
 }
 ```
 
-### Reflection
-* [Reflection](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection) provides runtime type information
-* Inspect types and members at runtime
-* Create instances dynamically
-* Access private members
-* Used in dependency injection and serialization
-* Slower than direct access
-* Cache results when possible
+---
+
+### Example: IsUp, HttpClient
+
+```csharp
+// Create as a singleton/static instance for better performance
+private static readonly HttpClient _client = new HttpClient();
+
+public static async Task<bool> IsUpAsync(string url){
+    try{
+        var response = await _client.GetAsync(url);
+        
+        // EnsureSuccessStatusCode throws if not 2xx status
+        response.EnsureSuccessStatusCode();
+        return true;
+    }
+    catch (HttpRequestException){}
+    return false;
+}
+
+public static async Task RunAsync(){
+    Console.WriteLine("Is Google Up?");
+    var isUp = await IsUpAsync("https://www.google.com");
+    Console.WriteLine(isUp ? "Yes" : "No");
+}
+```
+
+
+---
+
+
+
+## Recipes
+
+---
+
+### Overview
+* Usually you'll be using Tasks from libraries
+* Create your own when you need to
+  - Fake async operations
+  - Wrap blocking APIs
+  - Unblock UI threads
+
+---
+
+
+### Recipe: Fake Async
+
+```csharp
+public static async Task FakeAsync(){
+    await Task.Delay(1000);
+}
+```
+
+
+
+---
+
+### Recipe: Wrap Blocking APIs
+
+```csharp 
+```

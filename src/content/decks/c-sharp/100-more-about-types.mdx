@@ -1,0 +1,480 @@
+---
+title: "More AboutTypes"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
+status: 'Live'
+flavor: 'Deck'
+---
+# More About Types
+
+---
+
+### Goals
+
+1. Lorem
+2. Ipsum
+3. Sic
+
+---
+
+
+## System.Struct
+
+
+---
+
+
+### Refresher
+
+* [**Value types**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types) (structs, enums) are allocated inline
+  - Pass by value, assignment by value
+  - Destroyed when out of scope
+* [**Reference types**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types) (classes, interfaces) are allocated on the heap
+  - Reference types store a pointer to the data, pass by reference
+  - Pass by reference, assignment by reference
+  - Garbage collected
+
+
+---
+
+### System.Struct
+* [System.Struct](https://learn.microsoft.com/en-us/dotnet/api/system.struct) is the base class for all value types
+* Details
+  - Implicitly sealed, cannot be inherited
+  - Cannot have a destructor
+  - Cannot have an explicit parameterless constructor
+* Use `struct` for small, simple types that are not reference types
+  - e.g. `Point`, `Color`, `Date`, `Time`
+
+---
+
+### Examples
+
+```csharp
+public struct Point2D{
+  public int X {get; set;}
+  public int Y {get; set;}
+}
+
+public struct Point3D{
+  public int X {get; set;}
+  public int Y {get; set;}
+  public int Z {get; set;}
+}
+
+public struct Color{
+  public byte R {get; set;}
+  public byte G {get; set;}
+  public byte B {get; set;}
+}
+```
+
+---
+
+### Takeaways
+* For a custom type, you **almost always want to use a class**
+* Use `struct` when
+  - It's very simple
+  - It's immutable
+  - ___There's some compelling reason___
+
+
+---
+
+
+
+
+## Enumerations
+
+---
+
+### [Overview](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum)
+
+* [Enumeration type](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum) maps labels to integral values
+* Provides type safety over magic numbers/strings
+* Can be [signed or unsigned](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
+* Supports [bit flags](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) with `[Flags]` attribute
+* Values can be [explicitly specified](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
+* Best practice: Use for fixed sets of related values
+
+---
+
+### Motivating Example #1
+* Booleans aren't extensible
+
+```csharp {3}
+public class Login{
+    string username = "";
+    bool isActive = false; // TODO: Support Paused / Suspended
+}
+```
+
+---
+
+### Motivating Example #2
+
+* Magic constants are easy to forget, easy to mess up
+```csharp {3}
+public class Login{
+    string username = "";
+    int statusCode = 22; //What's this?
+}
+```
+
+
+---
+
+### Example
+
+```csharp {8}
+enum Status{
+  Active,
+  Paused,
+  Suspended
+}
+public class Login{
+    string username = "";
+    Status MyStatus = Status.Active;
+}
+```
+
+---
+
+### Example 2: Colors
+
+```csharp title='ColorWavelengths.cs'
+enum ColorWavelength {
+    Red = 700,
+    Orange = 600,
+    Yellow = 580,
+    Green = 550,
+    Blue = 470,
+    Violet = 400
+}
+
+public string GetColorInfo(ColorWavelength color) =>
+    $"{color} light has a wavelength of {(int)color}nm";
+
+```
+
+---
+
+### Flags
+
+* Use [`[Flags]` attribute](https://learn.microsoft.com/en-us/dotnet/api/system.flagsattribute) for enums that represent bit fields
+* Flag values must be powers of 2 for bitwise operations
+* Enables [combining multiple values](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) with bitwise OR (`|`)
+* Perfect for permission systems, settings, or option combinations
+* Use plural names for flag enums (e.g., `Permissions`, `Options`)
+* [`Enum.HasFlag()`](https://learn.microsoft.com/en-us/dotnet/api/system.enum.hasflag) tests if a specific flag is set
+
+---
+
+### Example
+
+```csharp title='DaysOfWeek.cs'
+[Flags]
+public enum DaysOfWeek
+{
+    None      = 0,
+    Sunday    = 1,
+    Monday    = 2,
+    Tuesday   = 4,
+    Wednesday = 8,
+    Thursday  = 16,
+    Friday    = 32,
+    Saturday  = 64,
+    Weekdays  = Monday | Tuesday | Wednesday | Thursday | Friday,
+    Weekend   = Saturday | Sunday,
+    AllDays   = Weekdays | Weekend
+}
+```
+
+---
+
+### Using Flags
+
+```csharp title='ScheduledEvent.cs'
+public class ScheduledEvent
+{
+    public string Name { get; set; }
+    public DaysOfWeek Schedule { get; set; }
+    
+    public bool IsScheduledOn(DaysOfWeek day) => 
+        Schedule.HasFlag(day);
+    
+    public void AddDay(DaysOfWeek day) => 
+        Schedule |= day;
+        
+    public void RemoveDay(DaysOfWeek day) => 
+        Schedule &= ~day;
+}
+
+// Usage example
+var meetup = new ScheduledEvent { 
+    Name = "Team Meeting",
+    Schedule = DaysOfWeek.Monday | DaysOfWeek.Wednesday | DaysOfWeek.Friday
+};
+
+```
+
+---
+
+### Framework Examples
+
+* [`FileAttributes`](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileattributes) - File and directory attributes
+* [`ConsoleModifiers`](https://learn.microsoft.com/en-us/dotnet/api/system.consolemodifiers) - Keyboard modifier keys 
+* [`BindingFlags`](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.bindingflags) - Reflection binding options
+* [`RegexOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regexoptions) - Regular expression behavior
+* [`DateTimeStyles`](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) - DateTime parsing options
+* [`AttributeTargets`](https://learn.microsoft.com/en-us/dotnet/api/system.attributetargets) - Where attributes can be applied
+
+---
+
+### Best Practices
+
+* Default enum value is 0, [always define it meaningfully](https://learn.microsoft.com/en-us/dotnet/api/system.enum)
+* Use [PascalCase](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions#naming-enums) for enum names and members
+* Use singular names for most enums, plural for [Flags](https://learn.microsoft.com/en-us/dotnet/api/system.flagsattribute)
+* Avoid using enum as a [bit mask](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) unless you need combinable options
+* Prefer enums over magic numbers or magic strings
+* Consider using [string representations](https://learn.microsoft.com/en-us/dotnet/api/system.enum.getname) for serialization/display
+
+---
+
+
+
+
+
+## Tuples
+
+---
+
+### Overview
+* [Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) are lightweight containers for multiple values
+* Like a list:
+  - Members aren't necessarily named
+* Like a class:
+  - Members _can_ be [named](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#tuple-field-names)
+  - Members are statically typed
+  - Value equality is built-in
+
+---
+
+### Example 1: 
+
+```csharp
+// Tuple with anonymous members
+var person = (30, "John");
+Console.WriteLine("PersonID"+person.Item1);
+
+// Tuple with named members
+var point = (x: 10, y: 20);
+Console.WriteLine("PointX"+point.x);
+```
+
+---
+
+### Example 2: Multiple Return Values
+
+```csharp
+public (bool Success, string Name) TryGetPersonName(int id){
+  if(id == 1){
+    return (Success: true, Name: "John");
+  }
+  return (Success: false, Name: "Not found");
+}
+
+var (success, name) = TryGetPersonName(1);
+if(success){
+  Console.WriteLine("Name"+name);
+}
+
+
+---
+
+Example 3: Min/Max
+
+```csharp
+public (int, int) GetMinMax(int[] numbers){
+  return (numbers.Min(), numbers.Max());
+}
+
+```
+
+
+
+
+---
+### Pros and Cons
+* **Pros**: Convenient, lightweight, support deconstruction
+* **Cons**: Limited semantics, names not preserved in metadata
+
+---
+
+### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
+
+* Modern [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple) (C# 7.0+):
+  - Value type (stack-allocated)
+  - Mutable structure
+  - Uses fields (`tuple.Item1`)
+  - Better performance
+  
+* Legacy [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple) class:
+  - Reference type (heap-allocated)
+  - Immutable object
+  - Uses properties (`tuple.Item1`)
+  - Higher allocation cost
+
+
+---
+
+### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
+
+| Feature               | [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple)                       | [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple)                          |
+|:----------------------|:-------------------------------------|:---------------------------------------------|
+| **Type**              | Reference type                       | Value type                                   |
+| **Immutable**         | <span style="color:green">✓</span>   | <span className='text-red-500'>✗</span>   |                     |
+| **Performance**       | Adds GC pressure                     | Lightweight                                  |
+| **Syntax sugar**      | <span className='text-red-500'>✗</span>                 | <span style="color:green">✓</span>  |
+| **Field Access**      | Properties                           | Fields     |
+| **Named Elements**    | <span className='text-red-500'>✗</span>   | <span style="color:green">✓</span>          |
+| **Equality Semantics**| Reference equality                   | Value equality                     |
+
+
+---
+
+
+
+
+
+## Records
+
+---
+
+### Overview
+* Introduced by C# 9, refined by C# 10
+* Terse syntax for encapsulating data
+* Usually [immutable](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#immutability)
+* Freebies
+  - Value equality
+  - `GetHashCode`
+  - Sensible default for `ToString`
+
+---
+
+### Motivating Example
+
+```csharp
+
+public class DayOfYear{
+  public int Month {get;set;} = 1;
+  public int Day {get;set;} = 1;
+
+  public bool Equals(object o){
+    o is DayOfYear other && other.Month = this.Month && other.Day==this.Day;
+  }
+  //TODO: Implement GetHashCode too
+}
+
+```
+---
+
+### Keyword `record` to the Rescue!
+
+```csharp
+public record DayOfYear{
+  public required int Month {get;init;};
+  public required int Day {get;init;};
+}
+
+```
+
+---
+
+### Even Terser Syntax
+* Known as a 'primary constructor'
+* Creates read-only properties for each argument
+```csharp
+public record DayOfYear(int Month, int Day);
+```
+
+---
+
+### On Immutability
+* Advantages: 
+  - Easier to reason about
+  - Harder to screw up-- especially when sharing state
+* Disadvantages:
+  - No built-in constructs (in the old days, at least)
+  - Replacing mutation with copying adds memory churn
+
+---
+
+### Keyword: `with`
+* Enables ['nondestructive mutation'](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#nondestructive-mutation)
+* In reality, a fancy way to copy Records
+
+```csharp
+public record Login(string ID, string Name, bool isActive, DateTime? DisabledOn);
+
+public static LoginManager{
+  public static Login Disable(Login login)
+    => login with{
+        IsActive = false,
+        DisabledOn = DateTime.UtcNow
+      };
+}
+
+```
+
+---
+
+### Keyword: [`required`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required)
+
+> The required modifier indicates that the field or property it's applied to must be initialized by an object 
+> initializer. Any expression that initializes a new instance of the type must initialize all required members. 
+> The required modifier is available beginning with C# 11. The required modifier enables developers to create
+> types where properties or fields must be properly initialized, yet still allow initialization using object 
+> initializers. 
+
+
+---
+
+### Deconstruction
+
+* Records automatically support [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#positional-syntax-for-property-definition)
+* Breaks a record into its component parts
+* Works with [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching)
+* Position order matches constructor parameter order
+* Can be used with `var` or explicit types
+* Custom types can support deconstruction with `Deconstruct` method
+
+---
+
+### Deconstruction Example
+
+```csharp title='Deconstruction.cs'
+public record Person(string FirstName, string LastName, int Age);
+
+// Create a record
+var developer = new Person("Ada", "Lovelace", 36);
+
+// Deconstruct into separate variables
+var (first, last, years) = developer;
+Console.WriteLine($"{first} {last} is {years} years old");
+
+// Deconstruct in a switch expression
+string GetLifeStage(Person person) => person switch {
+    (_, _, < 18) => "Child",
+    (_, _, < 65) => "Adult",
+    _ => "Senior"
+};
+
+// Ignore parts you don't need
+var (firstName, _, _) = developer;
+```
+
+
+
+
+

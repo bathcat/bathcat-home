@@ -16,6 +16,9 @@ flavor: 'Deck'
 
 ---
 
+
+
+
 ## Expresion Bodies
 
 ---
@@ -136,100 +139,6 @@ namespace Acme{
 ---
 
 
-
-
-## Records
-
----
-
-### Overview
-* Introduced by C# 9, refined by C# 10
-* Terse syntax for encapsulating data
-* Usually [immutable](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#immutability)
-* Freebies
-  - Value equality
-  - `GetHashCode`
-  - Sensible default for `ToString`
-
----
-
-### Motivating Example
-
-```csharp
-
-public class DayOfYear{
-  public int Month {get;set;} = 1;
-  public int Day {get;set;} = 1;
-
-  public bool Equals(object o){
-    o is DayOfYear other && other.Month = this.Month && other.Day==this.Day;
-  }
-  //TODO: Implement GetHashCode too
-}
-
-```
----
-
-### Keyword `record` to the Rescue!
-
-```csharp
-public record DayOfYear{
-  public required int Month {get;init;};
-  public required int Day {get;init;};
-}
-
-```
-
----
-
-### Even Terser Syntax
-* Known as a 'primary constructor'
-* Creates read-only properties for each argument
-```csharp
-public record DayOfYear(int Month, int Day);
-```
-
----
-
-### On Immutability
-* Advantages: 
-  - Easier to reason about
-  - Harder to screw up-- especially when sharing state
-* Disadvantages:
-  - No built-in constructs (in the old days, at least)
-  - Replacing mutation with copying adds memory churn
-
----
-
-### Keyword: `with`
-* Enables ['nondestructive mutation'](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#nondestructive-mutation)
-* In reality, a fancy way to copy Records
-
-```csharp
-public record Login(string ID, string Name, bool isActive, DateTime? DisabledOn);
-
-public static LoginManager{
-  public static Login Disable(Login login)
-    => login with{
-        IsActive = false,
-        DisabledOn = DateTime.UtcNow
-      };
-}
-
-```
-
----
-
-### Keyword: [`required`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required)
-
-> The required modifier indicates that the field or property it's applied to must be initialized by an object 
-> initializer. Any expression that initializes a new instance of the type must initialize all required members. 
-> The required modifier is available beginning with C# 11. The required modifier enables developers to create
-> types where properties or fields must be properly initialized, yet still allow initialization using object 
-> initializers. 
-
-
----
 
 
 

@@ -87,9 +87,9 @@ flavor: 'Deck'
 ---
 
 ### Overview
-* Throw exceptions when
-  - There's a problem
-  - There's nothing you can do about it
+* Throw exceptions when there's
+  - A problem
+  - Nothing you can do about it
 * Keyword: [`throw`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-throw-statement)
 * Guidelines
   - Don't be shy
@@ -277,7 +277,41 @@ public static int Main(string[] args){
 
 ```
 
+---
 
+### Rethrowing
+
+* Rethrow when you need to log, perform partial recovery, or add context
+* Use `throw;` to [preserve the original stack trace](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#rethrowing-exceptions)
+* Using `throw ex;` resets the stack trace, making debugging harder
+* Consider wrapping exceptions (`throw new WrapperException("...", ex);`) to add context
+* `throw;` is generally preferred unless wrapping is necessary
+---
+
+### Example: Rethrowing
+
+```csharp title='RethrownExceptions.cs'
+public void Method1(){
+    try {
+      throw new ArgumentException("Original error");
+    }
+    catch (Exception ex) {
+        // Bad: Resets stack trace, loses original throw location
+        throw ex;
+    }
+}
+
+public void Method2(){
+    try {
+        // Some code that might throw
+        throw new ArgumentException("Original error");
+    }
+    catch (Exception) {
+        // Good: Preserves full stack trace
+        throw;
+    }
+}
+```
 
 ---
 
@@ -293,7 +327,7 @@ public static int Main(string[] args){
 
 ### Alternative Take: Gotta Catch 'Em All
 * From [Eric Lippert](https://ericlippert.com/2014/03/06/living-with-unchecked-exceptions-part-two/):
-> I think the whole notion of “handling” exceptions is a bit of a fool's game. I can probably 
+> I think the whole notion of "handling" exceptions is a bit of a fool's game. I can probably 
 > count on the fingers of one hand the times where I've been able to catch a specific exception
 > and then do something intelligent with it. 99% of the time you should either catch everything 
 > or catch nothing. When an exception of any type occurs, rewind to a stable state and then 
