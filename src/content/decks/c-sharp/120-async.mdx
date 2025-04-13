@@ -1,7 +1,7 @@
 ---
 title: "Async"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dapibus consectetur nisl, non ultrices metus pulvinar ut. Nullam hendrerit, magna et congue ullamcorper, mauris risus pulvinar ante, quis consequat mi sapien porttitor massa."
-status: 'Live'
+status: 'Draft'
 flavor: 'Deck'
 ---
 
@@ -337,6 +337,10 @@ public static async Task RunAsync(){
 
 
 ### Recipe: Fake Async
+* [Task.Delay](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.delay) is the non-blocking equivalent of Thread.Sleep
+* Doesn't tie up thread pool threads while waiting
+* Returns a [Task](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task) that completes after specified time
+
 
 ```csharp
 public static async Task FakeAsync(){
@@ -344,11 +348,7 @@ public static async Task FakeAsync(){
 }
 ```
 
-
-
 ---
 
 ### Recipe: Wrap Blocking APIs
 
-```csharp 
-```
