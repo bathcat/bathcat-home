@@ -22,7 +22,7 @@ flavor: 'Deck'
 ---
 
 ### Outline
-
+1. [Overview](#overview)
 1. [System.Struct](#systemstruct)
 2. [Enumerations](#enumerations)
 3. [Tuples](#tuples)
@@ -31,13 +31,12 @@ flavor: 'Deck'
 ---
 
 
-## System.Struct
 
+## Overview
 
 ---
 
-
-### Refresher
+### Refresher: Value vs Reference Types
 
 * [**Value types**](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types) (structs, enums) are allocated inline
   - Pass by value, assignment by value
@@ -47,16 +46,133 @@ flavor: 'Deck'
   - Pass by reference, assignment by reference
   - Garbage collected
 
+
+---
+
+### Motivating Example
+```csharp
+using System.Collections;
+
+// Avoid ArrayList! Use List<T> instead.
+var mixedList = new ArrayList();
+mixedList.Add(42);          // Boxing int
+mixedList.Add("World");
+
+// Requires type checking and casting
+if (mixedList[0] is int number) {
+    Console.WriteLine($"Number: {number}");
+}
+if (mixedList[1] is string text) {
+    Console.WriteLine($"Text: {text.ToUpper()}");
+}
+
+// Direct casting needed, can cause errors
+int num = (int)mixedList[0];
+string str = (string)mixedList[1];
+```
+
+---
+
+### Refresher: [ArrayList](https://learn.microsoft.com/en-us/dotnet/api/system.collections.arraylist)
+* [Legacy collection](https://learn.microsoft.com/en-us/dotnet/api/system.collections.arraylist) (pre-.NET 2.0 generics).
+* Stores elements as [`object`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/reference-types#the-object-type)
+* Problems 
+  - losing compile-time type safety.
+  - Requires explicit casting when retrieving items.
+  - Causes [boxing/unboxing](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing) for value types (performance cost).
+* Pre-generic alternative: custom type-specific collections.
+
+---
+
+### What's boxing?
+* [Boxing](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing) is converting a **value type** (like `int`, `struct`) to a reference type (`object` or an interface).
+* The runtime allocates a "box" object on the **heap** and copies the value type's data into it.
+* **Why it matters:**
+    *   Adds **performance overhead** (heap allocation, copy).
+    *   Increases **memory usage** and GC pressure.
+    *   Can happen implicitly, especially with older non-generic collections like `ArrayList`.
+* [Unboxing](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing) (extracting the value) also has type-checking and copying costs.
+
+---
+
+### Example 1: Variables and Parameters
+```csharp
+int number = 42;
+object obj = number; // Boxing
+IConvertible convertible = number; // Boxing!
+int unboxed = (int)obj; // Unboxing
+
+public void PrintValue(object value){
+  Console.WriteLine(value);
+}
+PrintValue(number); // Boxing
+
+```
+
+---
+
+### Example 2: Data Members
+
+```csharp
+public class Holder{
+  public Object Held;
+}
+
+var holder = new Holder{
+  Held = 42 // Boxing
+};
+
+// Make it generic to avoid boxing!
+public class GenericHolder<T>{
+  public T Held;
+}
+
+var genericHolder = new GenericHolder<int>{
+  Held = 42 // No boxing
+};
+
+```
+
+
+---
+
+### Takeaways
+* Remember 2 things:  
+  - Boxing occurs when a value type is assigned to a variable, parameter, or field of type `object` or an interface type.
+  - Boxing is expensive
+* Solutions
+  - **Use [Generics](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/generics)** 
+  - Don't worry too much. **Avoid premature optimization**
+
+---
+
+
+
+
+
+
+## System.Struct
+
 ---
 
 ### System.Struct
-* [System.Struct](https://learn.microsoft.com/en-us/dotnet/api/system.struct) is the base class for all value types
-* Details
-  - Implicitly sealed, cannot be inherited
-  - Cannot have a destructor
-  - Cannot have an explicit parameterless constructor
+* [System.Struct](https://learn.microsoft.com/en-us/dotnet/api/system.struct) is the base type for all value types
+* Works like a class... with some differences
 * Use `struct` for small, simple types that are not reference types
   - e.g. `Point`, `Color`, `Date`, `Time`
+* In practice, you'll almost always use `class`
+
+---
+
+### Structs You've Met
+*   Most built-in ["primitive" types](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types) are structs:
+    *   [`int`](https://learn.microsoft.com/en-us/dotnet/api/system.int32) (`System.Int32`)
+    *   [`double`](https://learn.microsoft.com/en-us/dotnet/api/system.double) (`System.Double`)
+    *   [`bool`](https://learn.microsoft.com/en-us/dotnet/api/system.boolean) (`System.Boolean`)
+    *   [`decimal`](https://learn.microsoft.com/en-us/dotnet/api/system.decimal) (`System.Decimal`)
+*   Other common value types:
+    *   [`DateTime`](https://learn.microsoft.com/en-us/dotnet/api/system.datetime)
+    *   [`Guid`](https://learn.microsoft.com/en-us/dotnet/api/system.guid)
 
 ---
 
@@ -85,10 +201,9 @@ public struct Color{
 
 ### Takeaways
 * For a custom type, you **almost always want to use a class**
-* Use `struct` when
-  - It's very simple
-  - It's immutable
-  - ___There's some compelling reason___
+* Use `struct` when your type is
+  - Logically represents a single value e.g. `Point`, `Color`, `Date`
+  - ___There's some compelling reason___ like performance
 
 
 ---
@@ -104,7 +219,6 @@ public struct Color{
 
 * [Enumeration type](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum) maps labels to integral values
 * Provides type safety over magic numbers/strings
-* Can be [signed or unsigned](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
 * Supports [bit flags](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) with `[Flags]` attribute
 * Values can be [explicitly specified](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags)
 * Best practice: Use for fixed sets of related values
@@ -155,6 +269,7 @@ public class Login{
 ### Example 2: Colors
 
 ```csharp title='ColorWavelengths.cs'
+// Use an enum as a named set of constants
 enum ColorWavelength {
     Red = 700,
     Orange = 600,
@@ -239,7 +354,6 @@ var meetup = new ScheduledEvent {
 * [`BindingFlags`](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.bindingflags) - Reflection binding options
 * [`RegexOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regexoptions) - Regular expression behavior
 * [`DateTimeStyles`](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) - DateTime parsing options
-* [`AttributeTargets`](https://learn.microsoft.com/en-us/dotnet/api/system.attributetargets) - Where attributes can be applied
 
 ---
 
@@ -248,7 +362,6 @@ var meetup = new ScheduledEvent {
 * Default enum value is 0, [always define it meaningfully](https://learn.microsoft.com/en-us/dotnet/api/system.enum)
 * Use [PascalCase](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions#naming-enums) for enum names and members
 * Use singular names for most enums, plural for [Flags](https://learn.microsoft.com/en-us/dotnet/api/system.flagsattribute)
-* Avoid using enum as a [bit mask](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum#enumeration-types-as-bit-flags) unless you need combinable options
 * Prefer enums over magic numbers or magic strings
 * Consider using [string representations](https://learn.microsoft.com/en-us/dotnet/api/system.enum.getname) for serialization/display
 
@@ -265,10 +378,11 @@ var meetup = new ScheduledEvent {
 ### Overview
 * [Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) are lightweight containers for multiple values
 * Like a list:
+  - Members are sequential
   - Members aren't necessarily named
 * Like a class:
   - Members _can_ be [named](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#tuple-field-names)
-  - Members are statically typed
+  - Members are statically typed and heterogeneous
   - Value equality is built-in
 
 ---
@@ -297,15 +411,16 @@ public (bool Success, string Name) TryGetPersonName(int id){
   return (Success: false, Name: "Not found");
 }
 
+// Tuples can use 'destructuring assignment'
 var (success, name) = TryGetPersonName(1);
 if(success){
   Console.WriteLine("Name"+name);
 }
-
+```
 
 ---
 
-Example 3: Min/Max
+### Example 3: Min/Max
 
 ```csharp
 public (int, int) GetMinMax(int[] numbers){
@@ -318,40 +433,19 @@ public (int, int) GetMinMax(int[] numbers){
 
 
 ---
+
 ### Pros and Cons
 * **Pros**: Convenient, lightweight, support deconstruction
-* **Cons**: Limited semantics, names not preserved in metadata
-
----
-
-### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
-
-* Modern [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple) (C# 7.0+):
-  - Value type (stack-allocated)
-  - Mutable structure
-  - Uses fields (`tuple.Item1`)
-  - Better performance
-  
-* Legacy [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple) class:
-  - Reference type (heap-allocated)
-  - Immutable object
-  - Uses properties (`tuple.Item1`)
-  - Higher allocation cost
+* **Cons**: Limited functionality, no built-in methods
 
 
 ---
 
-### [Value Tuples vs Reference Tuples](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples#value-tuples-vs-tuples)
-
-| Feature               | [`Tuple`](https://learn.microsoft.com/en-us/dotnet/api/system.tuple)                       | [`ValueTuple`](https://learn.microsoft.com/en-us/dotnet/api/system.valuetuple)                          |
-|:----------------------|:-------------------------------------|:---------------------------------------------|
-| **Type**              | Reference type                       | Value type                                   |
-| **Immutable**         | <span style="color:green">✓</span>   | <span className='text-red-500'>✗</span>   |                     |
-| **Performance**       | Adds GC pressure                     | Lightweight                                  |
-| **Syntax sugar**      | <span className='text-red-500'>✗</span>                 | <span style="color:green">✓</span>  |
-| **Field Access**      | Properties                           | Fields     |
-| **Named Elements**    | <span className='text-red-500'>✗</span>   | <span style="color:green">✓</span>          |
-| **Equality Semantics**| Reference equality                   | Value equality                     |
+### Takeaways
+* Great for lightweight grouping, especially multiple return values from methods.
+* Prefer named members for readability: `(bool Success, string Message)`
+* Use a `class` or `record` for more complex data structures.
+* Modern tuples (`ValueTuple`) are value types, good for performance.
 
 
 ---
@@ -367,6 +461,8 @@ public (int, int) GetMinMax(int[] numbers){
 ### Overview
 * Introduced by C# 9, refined by C# 10
 * Terse syntax for encapsulating data
+  - Great for DTOs
+  - Just a class under the hood
 * Usually [immutable](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#immutability)
 * Freebies
   - Value equality
@@ -390,21 +486,10 @@ public class DayOfYear{
 }
 
 ```
+
 ---
 
 ### Keyword `record` to the Rescue!
-
-```csharp
-public record DayOfYear{
-  public required int Month {get;init;};
-  public required int Day {get;init;};
-}
-
-```
-
----
-
-### Even Terser Syntax
 * Known as a 'primary constructor'
 * Creates read-only properties for each argument
 ```csharp
@@ -413,12 +498,24 @@ public record DayOfYear(int Month, int Day);
 
 ---
 
+### Slightly More Explicit
+
+```csharp
+public record DayOfYear{
+  public required int Month {get;init;}
+  public required int Day {get;init;}
+}
+
+```
+
+
+---
+
 ### On Immutability
-* Advantages: 
+* **Advantages:** 
   - Easier to reason about
   - Harder to screw up-- especially when sharing state
-* Disadvantages:
-  - No built-in constructs (in the old days, at least)
+* **Disadvantages:**
   - Replacing mutation with copying adds memory churn
 
 ---
@@ -440,27 +537,8 @@ public static LoginManager{
 
 ```
 
----
-
-### Keyword: [`required`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required)
-
-> The required modifier indicates that the field or property it's applied to must be initialized by an object 
-> initializer. Any expression that initializes a new instance of the type must initialize all required members. 
-> The required modifier is available beginning with C# 11. The required modifier enables developers to create
-> types where properties or fields must be properly initialized, yet still allow initialization using object 
-> initializers. 
 
 
----
-
-### Deconstruction
-
-* Records automatically support [deconstruction](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#positional-syntax-for-property-definition)
-* Breaks a record into its component parts
-* Works with [pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching)
-* Position order matches constructor parameter order
-* Can be used with `var` or explicit types
-* Custom types can support deconstruction with `Deconstruct` method
 
 ---
 
@@ -487,6 +565,14 @@ string GetLifeStage(Person person) => person switch {
 var (firstName, _, _) = developer;
 ```
 
+---
+
+### Takeaways
+*   Excellent for [immutable data containers](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#immutability) (like DTOs).
+*   Use concise **positional syntax**: `public record Person(string Name, int Age);`
+*   Provides **value-based equality**, `ToString`, `GetHashCode` automatically.
+*   Use [`with`-expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#nondestructive-mutation) for easy copying and modification.
+*   Default is `record class`; [`record struct`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#record-structs) also exists for value types.
 
 ---
 

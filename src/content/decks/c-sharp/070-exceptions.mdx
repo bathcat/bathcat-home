@@ -15,7 +15,6 @@ flavor: 'Deck'
 ### Goals
 
 1. Explain when to throw exceptions versus using return values
-2. Describe the difference between `throw` and `throw ex`
 3. List three common exception types and when to use them
 4. Explain why catching `Exception` is generally discouraged
 5. Describe the purpose of the `finally` block
@@ -25,7 +24,7 @@ flavor: 'Deck'
 
 ### Outline
 
-1. [Motivations](#motivations)
+1. [Overview](#overview)
 2. [Syntax: Throwing](#syntax-throwing)
 3. [Syntax: Catching](#syntax-catching)
 4. [Syntax: Finally](#syntax-finally)
@@ -35,12 +34,12 @@ flavor: 'Deck'
 
 
 
-## Motivations
+## Overview
 
 ---
 
 
-### Overview
+### What's an Exception?
 #### From [Microsoft:](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/)
 > The C# language's exception handling features help you deal with any unexpected or
 > exceptional situations that occur when a program is running. Exception handling uses 
@@ -50,47 +49,55 @@ flavor: 'Deck'
 
 ---
 
-### More Takes
+### More Intuitive Explanation
 
+*   Think of exceptions as **alarms** for unexpected problems
+*   They signal something went wrong, stopping normal program flow
+*   Use them for **_exceptional_** situations, not routine checks
+*   C# provides tools (`try`, `catch`, `finally`) to manage these alarms
 
-<figure class='bc-framed-image pl-4' style='width:25%;height:auto;'>
-![Image sans description.](assets/portrait.joel-spolsky.jpg)
-<figcaption>By Katie Chan - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=160622475</figcaption>
-</figure>
+---
 
-* Not every one likes them. 
-* Joel Spolsky [says](https://www.joelonsoftware.com/2003/10/13/13/):
+### Keywords 
+* **Keyword [`try`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-try-statement)** for code that might throw an exception
+* **Keyword [`catch`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-try-catch-statement)** for code to execute if an exception occurs
+* **Keyword [`finally`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-try-finally-statement)** for code that executes no matter what
 
-> A better alternative is to have your functions return error values when things
-> go wrong, and to deal with these explicitly, no matter how verbose it might be.
-> It is true that what should be a simple 3 line program often blossoms to 48 lines 
-> when you put in good error checking, but that's life.
+---
+
+### Example
+
+```csharp
+try{// --- Code that might fail ---
+    int[] numbers = { 1 };
+    Console.WriteLine(numbers[5]); // Throws IndexOutOfRangeException
+}
+catch (IndexOutOfRangeException ex){
+    Console.WriteLine("Error: Index was out of bounds.");
+}
+finally{
+    // Optional: Code that always runs
+    Console.WriteLine("Cleanup or final steps here.");
+}
+Console.WriteLine("Execution continues...");
+```
 
 ---
 
 ### Exceptions in C#
 * All exceptions inherit from [System.Exception](https://learn.microsoft.com/en-us/dotnet/api/system.exception)
 * Exception objects contain details about the error
-* Framework provides [many built-in exceptions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-use-the-try-catch-block-to-catch-exceptions)
+* Framework provides many built-in exceptions
+  * [`ArgumentOutOfRangeException`](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception)
+  * [`NullReferenceException`](https://learn.microsoft.com/en-us/dotnet/api/system.nullreferenceexception)
+  * [`InvalidOperationException`](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception)
+  * [`HttpRequestException`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestexception)
+
+
 
 ---
 
 
-### Keywords 
-* **Keyword `try`** for code that might throw an exception
-* **Keyword `catch`** for code to execute if an exception occurs
-* **Keyword `finally`** for code that executes no matter what
-
----
-
-### Exceptions and Performance
-* Exceptions are for exceptional cases, not normal flow
-* Stack unwinding is expensive - requires capturing and restoring state
-* [Performance impact](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions#performance-considerations) is significant
-* Use return values or `out` parameters for expected conditions
-* Consider [`TryParse`](https://learn.microsoft.com/en-us/dotnet/api/system.int32.tryparse) pattern for validation
-
----
 
 
 
@@ -105,9 +112,9 @@ flavor: 'Deck'
   - Nothing you can do about it
 * Keyword: [`throw`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-throw-statement)
 * Guidelines
-  - Don't be shy
-  - Don't use for ***expected*** problems
-  - Prefer the type system
+  - Don't be shy - Exceptions are better than a bad workaround
+  - Avoid using for ***expected*** problems
+  - Prefer the type system -- Make invalid states unrepresentable
 
 ---
 
@@ -115,12 +122,12 @@ flavor: 'Deck'
 * The `throw` statement immediately stops execution
 * Supply meaningful error messages and parameter names
 
-```csharp title='Math.cs' {3}
-public float Divide(int numerator, int denominator) {
-  if (denominator == 0) {
-      throw new ArgumentException("Denominator can't be 0.");
+```csharp title='OrderLine.cs' {3}
+public void SetQuantity(int quantity) {
+  if (quantity < 1) {
+      throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be at least 1.");
   }
-  return numerator / denominator;    
+  this.Quantity = quantity;
 }
 ```
 
@@ -134,6 +141,7 @@ public class ApiAdapter : IChatCompletionAdapter{
    private readonly IClientFactory clientFactory;
 
    public ApiAdapter(IClientFactory factory, ILogger<ApiAdapter> logger){
+      // Fail early! Prevent a NullReferenceException later
       if (factory == null)
          throw new ArgumentNullException(nameof(factory));
 
@@ -220,6 +228,18 @@ public void ProcessOrder(Order order) {
 
 ---
 
+### Exceptions and Performance
+* Exceptions are for exceptional cases, not normal flow
+* [Performance impact](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions#performance-considerations) is significant
+  - Requires capturing and restoring state
+  - BUT you only pay for it when an exception occurs
+* Use return values or `out` parameters for expected conditions
+* Consider [`TryParse`](https://learn.microsoft.com/en-us/dotnet/api/system.int32.tryparse) pattern for validation
+
+
+
+---
+
 ### Exception Best Practices
 
 * Only throw for [exceptional conditions](https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions), not normal flow
@@ -227,7 +247,6 @@ public void ProcessOrder(Order order) {
 * Include detailed information to help diagnose the problem
 * Re-throw with `throw;` to preserve the stack trace
 * Document exceptions in XML comments with [`<exception>`](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#exception) tags
-* Custom exceptions should have serializable constructors
 
 ---
 
@@ -240,9 +259,9 @@ public void ProcessOrder(Order order) {
 
 
 ### Catch Scenarios
-1. When you can do something to remedy the situation
-1. When you have no remedy, but you want to log or something
-1. As a final backstop in your `Main` method.
+1. **When you can do something to remedy the situation** - e.g. retry the operation, or reset to a known state
+1. **When you have no remedy, but you want to log or something** 
+1. **As a final backstop in your `Main` method** 
 
 ---
 
@@ -277,8 +296,8 @@ public static class Program{
 ```csharp {3-6}
 public static int Main(string[] args){
   try{/* ... */ }
-  catch(OutOfMemoryException e){
-    Console.WriteLine("Out of memory. Close stuff and try again.");
+  catch(FileNotFoundException e){
+    Console.WriteLine("File not found. Try again.");
     return 2;
   }
   catch(Exception e){
@@ -379,6 +398,8 @@ public void ProcessFile(string path) {
     finally {
         // Always runs, even if an exception occurs
         file?.Dispose();
+        // BTW, `using` is a better construct and it's coming 
+        // up next
     }
 }
 
