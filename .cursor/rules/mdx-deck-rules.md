@@ -15,6 +15,7 @@ This rule applies to MDX files with `flavor: 'Deck'` in the frontmatter.
 
    - Maximum of 7 bullets per slide
    - Maximum of 12 words per bullet
+   - Use exactly one space after the bullet point marker (`*` or `-`).
    - Each bullet must be concise and meaningful
 
 2. **Code Samples**:
@@ -143,9 +144,6 @@ public class Example {
 ```
 
 ---
-
-
-
 
 ## Subsection Title
 
