@@ -174,12 +174,22 @@ public class Person {
 
 ---
 
+### Philosophy: Fail Fast
+
+* **Core Idea**: Identify and report errors as soon as they occur.
+* **In Practice**: Check inputs (arguments, state) immediately, as shown in previous examples.
+* **Benefit**: Stops invalid data/state from causing complex, hidden bugs later.
+* **Avoids**: Problems surfacing far from their origin, making debugging difficult.
+
+---
+
 ### Commonly-Thrown Exceptions
 * [ArgumentNull](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) - To avoid null references later on
 * [ArgumentOutOfRange](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) - When an argument is outside the valid range of values
 * [NotImplemented](https://learn.microsoft.com/en-us/dotnet/api/system.notimplementedexception) - Often used to stub-out an implementation that's not done yet
 * [InvalidOperation](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) - When a method call is invalid in the object's current state
 * [FormatException](https://learn.microsoft.com/en-us/dotnet/api/system.formatexception) - When the format of an argument doesn't meet the parameter specifications
+
 
 ---
 

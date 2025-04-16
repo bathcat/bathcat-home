@@ -44,14 +44,17 @@ flavor: 'Deck'
 ---
 
 ### [What's _Not_ GCed](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#workstation-and-server-garbage-collection)
-* **Reference types** (classes, interfaces) stored on **managed heap**
-  - Subject to garbage collection
-  - Only reference stored on stack, actual data on heap
-* **Value types** (structs, primitives) stored on **stack**
-  - Not subject to garbage collection
-  - Automatically cleaned up when stack frame pops
+*   **Value types** (structs, primitives) often live on the **stack**.
+    *   Stack memory is cleaned automatically when a method exits (stack unwinds) - **this is _not_ GC**.
+*   **Neither GC nor stack cleanup** handle **unmanaged resources** like:
+    *   File Handles (e.g., `FileStream`)
+    *   Database Connections (e.g., `SqlConnection`)
+    *   Network Sockets (e.g., `Socket`, `NetworkStream`)
+    *   Window Handles, COM Objects, raw memory pointers (interop)
+*   These unmanaged resources require **explicit cleanup** (usually via `IDisposable` and `using`).
 
 ---
+
 
 
 
@@ -65,6 +68,25 @@ flavor: 'Deck'
 * Non-deterministic GC is **insufficient** for these resources
   - Critical resources might remain open too long
   - Can lead to resource exhaustion (file handle limits, connection pools)
+
+---
+
+### Partial Leaks
+* Some built-in types (like `SqlConnection`, `FileStream`) wrap unmanaged resources.
+  - **Usually have finalizers** as a safety net.
+  - If you forget `Dispose()`, the finalizer **might eventually** run during GC and release the resource
+* **Problem:** This is **non-deterministic**! Scarce resources stay open!
+
+---
+
+### Total Leaks
+* **If**
+  - *Your* class directly holds a raw handle (e.g., from P/Invoke, COM interop) 
+  - **And** you forget `Dispose()`
+* ***It will _leak_*** unless you also implement a finalizer (which is complex and rare).
+* The Garbage Collector **doesn't see** these non-.NET resources.
+  - The resource is **never released** (a "total" leak).
+  - Unlike built-in types, there's often no finalizer safety net here.
 
 ---
 
@@ -105,7 +127,7 @@ byte[] GetFirstTenBytes(string file){
 ---
 
 ### Remember Exceptions
-* When an exception is throw, execution stops
+* When an exception is thrown, execution stops
 * So the rest of the function doesn't run
 * Does the stream _ever_ get closed?
 
@@ -117,7 +139,7 @@ byte[] GetFirstTenBytes(string file){
 ```csharp title='ExplicitDisposal.cs'
 byte[] GetFirstTenBytes(string file){
   byte[] data = new byte[10];
-  FileStream fs;
+  FileStream? fs = null;
   try{
     fs = new FileStream(file, FileMode.Open);
     fs.Read(data, 0, data.Length);
@@ -232,19 +254,157 @@ public class FileLogger : IDisposable{
 
 ---
 
-### Finalizers
-* Last-resort cleanup is the [finalizer](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/finalizers)
-  - Looks like a C++ destructor
-* Syntax: `~ClassName() { /* cleanup code */ }`
-* **Non-deterministic** 
-  - Called by GC before object reclamation
-  - Usually runs in response to memory pressure
-* Significant [performance implications](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals#finalizers)
-* **Rarely needed!** Only for resources that are not `IDisposable`
+### Goofy Pattern: Guard Clause
+* [`IDisposable`](https://learn.microsoft.com/en-us/dotnet/api/system.idisposable) isn't just for files/connections; it can guard **application state**.
+* Recipe: 
+  - Constructor *changes* some global setting (e.g., logging level).
+  - `Dispose` *restores* the original setting.
+* [`using` statement](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using) guarantees the state is reset, even if errors occur.
+* Robust way to temporarily alter and reliably restore shared state
 
 ---
 
-### Dispose Pattern Recipe
+### Motivation
+
+```csharp title="Sloppy.cs"
+
+public static void DoStuffWithoutLogging(){
+    Logger.Instance.Level = LogLevel.None;
+    // Do stuff. It won't be logged. 
+    Logger.Instance.Level = LogLevel.Normal;
+}
+
+```
+
+```csharp title="LessSloppy.cs"
+
+public static void DoStuffWithoutLogging(){
+    Logger.Instance.Level = LogLevel.None;
+    try{
+        // Do stuff. It won't be logged. 
+    }
+    finally{
+        Logger.Instance.Level = LogLevel.Normal;
+    }
+}
+
+```
+
+---
+
+### Guard Clause Example
+
+```csharp title="GuardClauseExample.cs"
+public class NoLogGuard : IDisposable{
+    private readonly LogLevel originalLevel;
+
+    public NoLogGuard(){
+        // Logger.Instance is the singleton accessor
+
+        // Save the original log level
+        originalLevel = Logger.Instance.Level;
+
+        // Set the log level to 0 (no logging)
+        Logger.Instance.Level = LogLevel.None;
+    }
+
+    public void Dispose()
+        => Logger.Instance.Level = originalLevel;
+}
+```
+
+---
+
+### Guard Clause Example
+
+```csharp title="GuardClauseExample.cs"
+
+public static void DoStuffWithoutLogging(){
+    var guard = new NoLogGuard();
+    // Do stuff. It won't be logged. 
+    // BUT the log level gets set back to normal on dispose!
+}
+
+```
+
+
+
+
+
+---
+
+
+
+## Finalizers
+
+---
+
+
+### Finalize
+* Last-resort cleanup is the [finalizer](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/finalizers)
+* Syntax: `~ClassName() { /* cleanup code */ }`
+* **Non-deterministic** 
+  - Called by GC before object reclamation
+* **Rarely needed!** Only for class members that are not `IDisposable`
+
+---
+
+### Dispose ain't Finalize
+* [`Dispose()`](https://learn.microsoft.com/en-us/dotnet/api/system.idisposable.dispose): 
+  - **You** call it 
+  - Explicitly or `using`
+  - Deterministic cleanup
+* [`~ClassName()`](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/finalizers): 
+  - **GC** calls it
+  - Non-deterministic safety net
+* **Theme:** Resource cleanup. Different triggers, different guarantees.
+
+
+---
+
+
+### Partial Leak Explained
+* Most .NET classes that implement `IDisposable` also have a finalizer
+  - e.g. `Stream`, `SqlConnection`, `HttpClient`
+* So even if you forget to dispose, the finalizer will eventually run
+* This is why it's called a "partial leak"
+
+---
+
+### Implement a Finalizer When...
+
+* **Rarely needed!** You usually don't need to write a [finalizer (`~ClassName`)](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/finalizers).
+* **Only** if your class *directly* holds **unmanaged resources** (raw handles, native memory, COM objects).
+* This typically happens with [Platform Invoke (P/Invoke)](https://learn.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke) or [COM Interop](https://learn.microsoft.com/en-us/dotnet/standard/native-interop/com-interoperability).
+* **NOT** when your class only holds *managed* `IDisposable` objects (like `FileStream`, `SqlConnection`).
+* These base classes often have their *own* finalizers as a safety net.
+
+---
+
+
+### Syntax Example
+
+```csharp title="ComAdapter.cs"
+public class Enfarculator {
+
+  // Finalizer:Called by GC before object reclamation
+  // NOTE:
+  //   - No access modifier
+  //   - No parameters
+  //   - No calling convention
+  ~Enfarculator() {
+    // Cleanup code
+  }
+}
+
+```
+
+
+
+
+---
+
+### Dispose Pattern Recipe (Full)
 * Implement both `Dispose()` and `Dispose(bool)` methods
 * Use `protected virtual` for `Dispose(bool)` to allow inheritance
 * Call `Dispose(true)` from `Dispose()` and finalizer
