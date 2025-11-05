@@ -12,14 +12,12 @@ This rule applies to MDX files with `flavor: 'Deck'` in the frontmatter.
 ## Content Rules
 
 1. **Bullet Points**:
-
    - Maximum of 7 bullets per slide
    - Maximum of 12 words per bullet
    - Use exactly one space after the bullet point marker (`*` or `-`).
    - Each bullet must be concise and meaningful
 
 2. **Code Samples**:
-
    - If a code sample exceeds 5 lines, the slide should not contain bullet points
    - Limit code samples to no more than 15 lines per slide
    - Code samples should include language identifier (e.g., ```csharp)
@@ -29,7 +27,6 @@ This rule applies to MDX files with `flavor: 'Deck'` in the frontmatter.
    - Follow C# naming conventions and standard formatting practices
 
 3. **Documentation**:
-
    - Include links to official documentation where appropriate
    - Use markdown link syntax: `[Link Text](URL)`
    - Prefer Microsoft documentation for .NET/C# topics
@@ -42,7 +39,6 @@ This rule applies to MDX files with `flavor: 'Deck'` in the frontmatter.
 ## Flow Rules
 
 1. **Progressive Disclosure**:
-
    - Begin with overview/introduction slides
    - Follow logical progression of concepts
    - End with summary or practical application

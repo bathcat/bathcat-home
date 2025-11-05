@@ -1,6 +1,5 @@
 import { useTabContext } from './use-tab-context';
 
-
 interface TabContentProps {
   tabID: string;
   children: React.ReactNode;

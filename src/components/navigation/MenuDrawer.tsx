@@ -23,7 +23,9 @@ export const MenuDrawer = ({ isOpen, setIsOpen }: Props) => {
       <div
         className={
           'flex flex-col z-50 max-w-xs absolute top-0 right-0 p4 bg-white h-screen shadow-xl opacity-95 dark:bg-gray-900 delay-400 duration-500 ease-in-out transition-all transform' +
-          (isOpen ? ' transform translate-x-0' : 'hidden transform translate-x-full')
+          (isOpen
+            ? ' transform translate-x-0'
+            : 'hidden transform translate-x-full')
         }
       >
         <CloseButton

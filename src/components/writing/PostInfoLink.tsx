@@ -1,6 +1,5 @@
-import type { PostInfo } from "../../content-posts";
-import { PrettyDate } from "../PrettyDate";
-
+import type { PostInfo } from '../../content-posts';
+import { PrettyDate } from '../PrettyDate';
 
 interface Props {
   post: PostInfo;

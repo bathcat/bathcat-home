@@ -30,7 +30,7 @@ const toDeckCollectionInfo = (
 ): DeckCollectionInfo => ({
   title: deck.data.title,
   description: deck.data.description,
-  heroImage:deck.data.heroImage,
+  heroImage: deck.data.heroImage,
   pubDate: deck.data.pubDate,
   updatedDate: deck.data.updatedDate,
   id: deck.id,

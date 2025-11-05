@@ -8,7 +8,7 @@ interface TabState
     activeTabID?: string;
   }> {}
 
-export const tabState = atom<TabState>({activeTabID:'1'});
+export const tabState = atom<TabState>({ activeTabID: '1' });
 
 export interface TabContext {
   activeTabID?: string;
