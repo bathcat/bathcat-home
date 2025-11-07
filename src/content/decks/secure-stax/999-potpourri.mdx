@@ -497,7 +497,7 @@ done
 
 ### [IDOR](https://owasp.org/www-community/attacks/Insecure_Direct_Object_References)
 
-```csharp
+```csharp title="CustomerController.cs"
 [Authorize(Roles = "Customer,Admin")]
 [HttpGet("{id}")]
 public async Task<Customer> GetCustomer(Guid id) 
@@ -517,7 +517,7 @@ public async Task<Customer> GetCustomer(Guid id)
 public static async Task<Review> GetReview(IReviewService service, Guid id) 
     => await service.FindAsync(id);
 
-public sealed class Review {
+public sealed class Review { // Review _entity_
     public Guid Id { get; set; }
     public Guid PilotId { get; set; }
     public Rating Rating { get; set; }
@@ -526,7 +526,7 @@ public sealed class Review {
 ```
 
 * Returning entity directly leaks internal references
-* Reviews are public; `CustomerId` is not
+* Reviews are public; `CustomerId`s are not
 * _Not catastrophic by itself_
 
 ---
@@ -550,7 +550,7 @@ GET /customers/{harvested-id} → steal customer info
 
 ### [Mass Assignment](https://owasp.org/www-community/vulnerabilities/Mass_Assignment) (aka Over-posting)
 
-```csharp
+```csharp title="ReviewEndpoint.cs"
 public static async Task<Created> CreateReview(
     IReviewService service, ICurrentUser current, Review request) {
     
@@ -568,25 +568,43 @@ public static async Task<Created> CreateReview(
 
 ---
 
-### The Fix: Context-Specific DTOs
+### The Fix: Admin-Specific DTO
 
-```csharp
+```csharp title="ReviewEndpoint.cs"
 public static async Task<Created> CreateReview(
     IReviewService service, CreateReviewRequest request) {
-    var id = await service.CreateReview(request.PilotId, request.Rating, request.CustomerId);
+    var id = await service.CreateReview(
+      request.PilotId, 
+      request.Rating, 
+      current.CustomerId
+    );
     return TypedResults.Created($"/reviews/{id}");
 }
-
-public record CreateReviewRequest(Guid PilotId, Rating Rating, Guid CustomerId);
 ```
+```csharp title="CreateReviewRequest.cs"
+public record CreateReviewRequest(
+  Guid PilotId, 
+  Rating Rating, 
+  Guid CustomerId
+);
+```
+---
 
-```csharp
+### The Fix (II): Customer-Specific DTO
+```csharp title="ReviewEndpoint.cs"
 public static async Task<Created> CreateMyReview(
-    IReviewService service, ICurrentUser current, CreateMyReviewRequest request) {
-    var id = await service.CreateReview(request.PilotId, request.Rating, current.CustomerId);
+    IReviewService service, ICurrentUser current, CreateMyReviewRequest request
+    ) {
+    var id = await service.CreateReview(
+      request.PilotId, 
+      request.Rating, 
+      current.CustomerId
+    );
     return TypedResults.Created($"/my-reviews/{id}");
 }
+```
 
+```csharp title="CreateMyReviewRequest.cs"
 public record CreateMyReviewRequest(Guid PilotId, Rating Rating);
 ```
 
@@ -604,11 +622,12 @@ public record CreateMyReviewRequest(Guid PilotId, Rating Rating);
 
 ### Manual Mapper Class
 
-```csharp
+```csharp title="IMapper.cs"
 public interface IMapper<TSource, TDestination> {
     TDestination Map(TSource source);
 }
-
+```
+```csharp
 public class ReviewMapper : IMapper<Review, ReviewDto> {
     public ReviewDto Map(Review source) 
         => new ReviewDto {
