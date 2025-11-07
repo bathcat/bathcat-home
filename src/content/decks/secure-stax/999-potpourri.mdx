@@ -498,31 +498,35 @@ done
 ### [IDOR](https://owasp.org/www-community/attacks/Insecure_Direct_Object_References)
 
 ```csharp
+[Authorize(Roles = "Customer,Admin")]
 [HttpGet("{id}")]
 public async Task<Customer> GetCustomer(Guid id) 
     => await _db.Customers.FindAsync(id);
 
 ```
 * **<u>I</u>nsecure <u>D</u>irect <u>O</u>bject <u>R</u>eference**
-* Relies on IDs being unguessable
-* Attacker can access any customer if they know the GUID
+* Authentication works, but resource authorization is missing
+* Any authenticated customer can access any other customer's data
 * _Not catastrophic by itself_
 
 ---
 
 ### Information Disclosure
 
-```csharp {5}
-public sealed record DeliveryReviewDto {
-    public required Guid Id { get; init; }
-    public required Guid PilotId { get; init; }
-    public required Rating Rating { get; init; }
-    public required Guid CustomerId { get; init; }
+```csharp
+public static async Task<Review> GetReview(IReviewService service, Guid id) 
+    => await service.FindAsync(id);
+
+public sealed class Review {
+    public Guid Id { get; set; }
+    public Guid PilotId { get; set; }
+    public Rating Rating { get; set; }
+    public Guid CustomerId { get; set; }
 }
 ```
-* ***This is a DTO failure!***
+
+* Returning entity directly leaks internal references
 * Reviews are public; `CustomerId` is not
-* Leaks internal references that enable exploitation
 * _Not catastrophic by itself_
 
 ---
@@ -547,46 +551,43 @@ GET /customers/{harvested-id} → steal customer info
 ### [Mass Assignment](https://owasp.org/www-community/vulnerabilities/Mass_Assignment) (aka Over-posting)
 
 ```csharp
-public static async Task<Created<DeliveryReviewDto>> CreateReview(
-    IReviewService service,ICurrentUser current,DeliveryReviewDto request) {
+public static async Task<Created> CreateReview(
+    IReviewService service, ICurrentUser current, Review request) {
     
     if(request.CustomerId == Guid.Empty){
         request.CustomerId = current.CustomerId;
     }
-    var saved = await service.CreateReview(request);
-    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}");
+    var id = await service.CreateReview(request);
+    return TypedResults.Created($"/reviews/{id}");
 }
 ```
 
-* Attacker supplies `CustomerId` in request body to impersonate others
-* **Failure:** Dto includes more properties than users should control
+* Binding directly to entity accepts all properties from user input
+* Attacker supplies `CustomerId` to impersonate others
+* **Failure:** No boundary protection between wire and entity
 
 ---
 
-### The Fix: One More DTOs
+### The Fix: Context-Specific DTOs
 
 ```csharp
-public sealed record CreateReviewRequest {
-    public required Guid PilotId { get; init; }
-    public required Rating Rating { get; init; }
+public static async Task<Created> CreateReview(
+    IReviewService service, CreateReviewRequest request) {
+    var id = await service.CreateReview(request.PilotId, request.Rating, request.CustomerId);
+    return TypedResults.Created($"/reviews/{id}");
 }
+
+public record CreateReviewRequest(Guid PilotId, Rating Rating, Guid CustomerId);
 ```
----
 
-### Manual Mapping 
 ```csharp
-public static async Task<Created<DeliveryReviewDto>> CreateReview(
-    IReviewService service,ICurrentUser current,CreateReviewRequest request) {
-    
-    var review = new DeliveryReview {
-        PilotId = request.PilotId,
-        Rating = request.Rating,
-        CustomerId = current.CustomerId
-    };
-    
-    var saved = await service.CreateReview(review);
-    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}");
+public static async Task<Created> CreateMyReview(
+    IReviewService service, ICurrentUser current, CreateMyReviewRequest request) {
+    var id = await service.CreateReview(request.PilotId, request.Rating, current.CustomerId);
+    return TypedResults.Created($"/my-reviews/{id}");
 }
+
+public record CreateMyReviewRequest(Guid PilotId, Rating Rating);
 ```
 
 ---
@@ -608,10 +609,9 @@ public interface IMapper<TSource, TDestination> {
     TDestination Map(TSource source);
 }
 
-public class DeliveryReviewMapper : IMapper<DeliveryReview, DeliveryReviewDto> {
-    
-    public DeliveryReviewDto Map(DeliveryReview source) 
-        => new DeliveryReviewDto {
+public class ReviewMapper : IMapper<Review, ReviewDto> {
+    public ReviewDto Map(Review source) 
+        => new ReviewDto {
             Id = source.Id,
             PilotId = source.PilotId,
             Rating = source.Rating,
@@ -619,6 +619,8 @@ public class DeliveryReviewMapper : IMapper<DeliveryReview, DeliveryReviewDto> {
             CreatedAt = source.CreatedAt
         };   
 }
+
+public record ReviewDto(Guid Id, Guid PilotId, Rating Rating, string Notes, DateTime CreatedAt);
 ```
 
 ---
@@ -626,22 +628,19 @@ public class DeliveryReviewMapper : IMapper<DeliveryReview, DeliveryReviewDto> {
 ### Using the Mapper
 
 ```csharp
-public static async Task<Created<DeliveryReviewDto>> CreateReview(
-    IReviewService service,
-    ICurrentUser current,
-    IMapper<DeliveryReview, DeliveryReviewDto> mapper,
-    CreateReviewRequest request) {
+public async Task<Ok<ReviewDto>> GetReview(
+    IReviewService service, 
+    IMapper<Review, ReviewDto> mapper, 
+    Guid id) {
     
-    var review = new DeliveryReview {
-        PilotId = request.PilotId,
-        Rating = request.Rating,
-        CustomerId = current.CustomerId
-    };
-    
-    var saved = await service.CreateReview(review);
-    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}", mapper.Map(saved));
+    var review = await service.GetReviewAsync(id);
+    return TypedResults.Ok(mapper.Map(review));
 }
 ```
+
+* Entity stays internal with all fields including `CustomerId`
+* DTO exposes only what public API should return
+* Explicit mapping with compiler enforcement
 
 ---
 
