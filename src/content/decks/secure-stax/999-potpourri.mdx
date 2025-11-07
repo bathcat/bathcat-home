@@ -464,3 +464,195 @@ done
 * Monitor, alert, and respond to anomalies
 
 
+---
+
+## DTOs and Security
+
+---
+
+### Two Levels of Security
+
+| Level | What You Protect | How You Protect It |
+|-------|------------------|-------------------|
+| **Entities** | Who can access resources | Authorization policies |
+| **Fields** | What data is exposed | DTOs and mapping |
+
+<br/>
+
+* Defense in depth requires both
+* Authorization without DTOs leaks sensitive data
+
+---
+
+### [What's a DTO?](https://martinfowler.com/bliki/LocalDTO.html)
+
+* **<u>D</u>ata <u>T</u>ransfer <u>O</u>bject** - shapes data for wire transfer
+* **Benefits**
+  - Serialization control - Entities don't need JSON attributes
+  - API versioning - Multiple DTOs can map to same entity
+  - Contract stability - Entity changes don't break API
+  - **Security** - Explicit about what's exposed
+
+---
+
+### [IDOR](https://owasp.org/www-community/attacks/Insecure_Direct_Object_References)
+
+```csharp
+[HttpGet("{id}")]
+public async Task<Customer> GetCustomer(Guid id) 
+    => await _db.Customers.FindAsync(id);
+
+```
+* **<u>I</u>nsecure <u>D</u>irect <u>O</u>bject <u>R</u>eference**
+* Relies on IDs being unguessable
+* Attacker can access any customer if they know the GUID
+* _Not catastrophic by itself_
+
+---
+
+### Information Disclosure
+
+```csharp {5}
+public sealed record DeliveryReviewDto {
+    public required Guid Id { get; init; }
+    public required Guid PilotId { get; init; }
+    public required Rating Rating { get; init; }
+    public required Guid CustomerId { get; init; }
+}
+```
+* ***This is a DTO failure!***
+* Reviews are public; `CustomerId` is not
+* Leaks internal references that enable exploitation
+* _Not catastrophic by itself_
+
+---
+
+### Chained Attack: Enumeration
+
+**Step 1:** Harvest CustomerIds 
+```bash
+GET /reviews → collect all CustomerId values
+```
+
+**Step 2:** Exploit IDOR to access customer data
+```bash
+GET /customers/{harvested-id} → steal customer info
+```
+
+* Information disclosure + IDOR = devastating combination
+* **Defense in depth failure:** two weaknesses compound
+
+---
+
+### [Mass Assignment](https://owasp.org/www-community/vulnerabilities/Mass_Assignment) (aka Over-posting)
+
+```csharp
+public static async Task<Created<DeliveryReviewDto>> CreateReview(
+    IReviewService service,ICurrentUser current,DeliveryReviewDto request) {
+    
+    if(request.CustomerId == Guid.Empty){
+        request.CustomerId = current.CustomerId;
+    }
+    var saved = await service.CreateReview(request);
+    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}");
+}
+```
+
+* Attacker supplies `CustomerId` in request body to impersonate others
+* **Failure:** Dto includes more properties than users should control
+
+---
+
+### The Fix: One More DTOs
+
+```csharp
+public sealed record CreateReviewRequest {
+    public required Guid PilotId { get; init; }
+    public required Rating Rating { get; init; }
+}
+```
+---
+
+### Manual Mapping 
+```csharp
+public static async Task<Created<DeliveryReviewDto>> CreateReview(
+    IReviewService service,ICurrentUser current,CreateReviewRequest request) {
+    
+    var review = new DeliveryReview {
+        PilotId = request.PilotId,
+        Rating = request.Rating,
+        CustomerId = current.CustomerId
+    };
+    
+    var saved = await service.CreateReview(review);
+    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}");
+}
+```
+
+---
+
+### Mapping Tools
+
+| Approach | Examples | AOT Compatible | Pros | Cons |
+|----------|----------|----------------|------|------|
+| **Reflection-based** | AutoMapper, Mapster | No | Less boilerplate | Runtime overhead, magic |
+| **Source generation** | Mapperly, MapsterSourceGen | Yes | Performance, AOT | Setup complexity |
+| **Manual mapping** | Custom classes | Yes | Full control, compiler help | More code |
+
+---
+
+### Manual Mapper Class
+
+```csharp
+public interface IMapper<TSource, TDestination> {
+    TDestination Map(TSource source);
+}
+
+public class DeliveryReviewMapper : IMapper<DeliveryReview, DeliveryReviewDto> {
+    
+    public DeliveryReviewDto Map(DeliveryReview source) 
+        => new DeliveryReviewDto {
+            Id = source.Id,
+            PilotId = source.PilotId,
+            Rating = source.Rating,
+            Notes = source.Notes,
+            CreatedAt = source.CreatedAt
+        };   
+}
+```
+
+---
+
+### Using the Mapper
+
+```csharp
+public static async Task<Created<DeliveryReviewDto>> CreateReview(
+    IReviewService service,
+    ICurrentUser current,
+    IMapper<DeliveryReview, DeliveryReviewDto> mapper,
+    CreateReviewRequest request) {
+    
+    var review = new DeliveryReview {
+        PilotId = request.PilotId,
+        Rating = request.Rating,
+        CustomerId = current.CustomerId
+    };
+    
+    var saved = await service.CreateReview(review);
+    return TypedResults.Created($"{ApiRoutes.Reviews}/{saved.Id}", mapper.Map(saved));
+}
+```
+
+---
+
+### Manual Mapping: Why It Works
+
+* Compiler enforces all `required` properties are set
+* Easy to write with AI assistance
+* Explicit and auditable
+* No magic or runtime reflection
+* AOT-compatible
+
+---
+
+
