@@ -2,9 +2,8 @@ import { useDeck } from './use-deck';
 import { Expand, Compress } from '../FlowbiteIcons';
 import { IconButton } from './IconButton';
 
-interface FullscreenTogglerProps {}
 
-export const FullscreenToggler: React.FC<FullscreenTogglerProps> = () => {
+export const FullscreenToggler = () => {
   const deck = useDeck();
 
   return (

@@ -342,6 +342,20 @@ svg[aria-roledescription='xychart'] {
     @apply text-left;
   }
 
+  ul {
+    @apply list-disc;
+
+    ul {
+      list-style-type: circle;
+      font-size: 90%;
+
+      ul {
+        list-style-type: square;
+        font-size: 81%;
+      }
+    }
+  }
+
   div.expressive-code {
     @apply max-w-7xl;
     @apply pl-2;
@@ -455,7 +469,8 @@ svg[aria-roledescription='xychart'] {
       padding: 1rem;
       font-size: x-large;
       font-weight: 800;
-      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+      font-family:
+        'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
         'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     }
   }

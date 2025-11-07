@@ -3,10 +3,9 @@ import { useStore } from '@nanostores/react';
 
 // This is a hack. It can't support multiple tab controls.
 
-interface TabState
-  extends Readonly<{
-    activeTabID?: string;
-  }> {}
+interface TabState{
+  readonly activeTabID?: string;
+}
 
 export const tabState = atom<TabState>({ activeTabID: '1' });
 

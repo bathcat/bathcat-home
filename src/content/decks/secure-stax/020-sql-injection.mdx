@@ -1,0 +1,346 @@
+---
+title: "Sql Injection"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# SQL Injection
+
+---
+
+
+### Goals
+* Explain how SQL injection attacks work
+* List 3 techniques to mitigate
+
+
+
+---
+
+
+
+
+
+## Basics
+
+---
+
+### SQL Injection Defined 
+* Code injection technique 
+* Attacks data-driven applications
+* Run malicious SQL statements through user input
+
+
+---
+
+### Example: [Exploits of a Mom](https://xkcd.com/327/)
+<figure  style='width:80%;height:auto;margin-left:5rem;'>
+![Exploits of a Mom](./assets/exploits_of_a_mom.png)
+</figure>
+
+---
+
+### [Details](https://codecurmudgeon.com/wp/sql-injection-hall-of-shame/)
+* It's been around [forever](https://www.vice.com/en_us/article/aekzez/the-history-of-sql-injection-the-hack-that-will-never-go-away)
+* Still happening all the time 
+* Very Popular
+
+
+---
+
+### SQL Injection is Popular
+1. Lots of vulnerable applications
+2. Databases make attractive targets
+
+
+---
+
+### Injection Flavors
+* Scary Input
+  - Break stuff
+* Exfiltrate information
+  - Error messages
+  - Blind Attacks
+
+
+
+
+---
+
+### [Recent SQL Injection Victims](https://nakedsecurity.sophos.com/2018/02/19/hackers-sentenced-for-sql-injections-that-cost-300-million/)
+* Bulgarian Revenue Agency
+* United Nations Internet Governance Forum
+* Johns Hopkins University
+
+
+---
+
+### Good News Everyone!
+* It's easy to avoid
+* Never combine user input with Entity SQL command text
+* Don't
+  - Trust user input
+  - Concatenate SQL strings
+* Choose an ORM
+
+
+---
+
+### Dumb Example
+Don't do this:
+```csharp
+statement = "SELECT * FROM users WHERE name = '" + userName + "';"
+```
+Because of this:
+```csharp
+a';DROP TABLE users; SELECT * FROM userinfo WHERE 't';--
+```
+
+
+
+
+
+---
+
+
+
+### EF Core Review
+* DbContext
+* DbSet
+* Entity Framework Core
+
+
+---
+
+### No ADO.NET Required
+* Even though EF Core exposes familiar classes like:
+  * [SqlCommand](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand)
+  * [SqlCommandBuilder](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommandbuilder) 
+  * [SqlConnection](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection)
+* Ideally, everything happens through the [DbContext](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.dbcontext)
+
+
+
+---
+
+### But You Can Still Execute SQL 
+* Which means SQL Injection is still possible
+* Two extension methods on `DbSet`:
+  * [`FromSqlRaw`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.relationalqueryableextensions.fromsqlraw)
+  * [`FromSqlInterpolated`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.relationalqueryableextensions.fromsqlinterpolated)
+
+
+---
+
+### Example [`FromSqlRaw`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.relationalqueryableextensions.fromsqlraw)
+```csharp
+var user = getUserName();
+var blogs = context.Blogs
+    .FromSqlRaw("SELECT * FROM dbo.Blogs where userName = '" + user + "';")
+    .ToList();
+```
+#### Bad Idea!
+
+
+---
+
+### Good News About `DbSet` Methods
+* Results are still typed
+* Can only be used on query roots
+* One statement at a time
+
+
+---
+
+### Even Scarier: [DatabaseFacade](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.infrastructure.databasefacade)
+* Provides database-level functionality
+* Exposes `ExecuteSqlRaw`
+
+
+---
+
+### Example
+```csharp
+            var query = "INSERT dbo.Snake(ID, Name, meannessLevel) VALUES(";
+            query += "'" + toCreate.ID.ToString() + "', ";
+            query += "'" + toCreate.Name + "', ";
+            query += toCreate.MeannessLevel.ToString();
+            query += ");";
+
+            int result = this.context.Database.ExecuteSqlRaw(query);
+            return this.Snakes.FirstOrDefault(s => s.ID == toCreate.ID);
+```
+
+
+---
+
+### Why would you use a raw query?
+* Performance - LINQ-generated SQL isn't always efficient 
+* Expressiveness - LINQ and SQL aren't 100% equivalent
+* Stupid database tricks
+  * Table-valued function
+
+
+---
+
+
+
+
+
+
+## Mitigation
+
+
+---
+
+### Options (In Order)
+1. Do everything with LINQ
+1. Paramaterize/Interpolate queries
+1. Use stored procedures
+1. Sanitize by hand (Yikes!)
+1. One weird trick
+
+
+---
+
+### Technique #1
+
+#### No Direct SQL Execution in C# #
+* Do everything with LINQ
+* Benefits
+  - Most programmers aren't very good at SQL anyway
+  - Less tightly coupled to persistance mechanism
+
+
+---
+
+### Example
+```csharp
+var user = getUserName();
+var blogs = context.Blogs
+    .Where(b=>b.UserName == user)
+    .Where(b=>b.Age > 10)    
+    .ToList();
+```
+* `IQueryable` is technically a **monad** 
+* Generates better SQL than you'd think
+
+---
+
+### Technique #2
+
+#### Paramaterize your queries
+* `FromSqlRaw` has an overload to pass parameters
+* It looks like string interpolation 
+* Actually gets turned into a DbParameter object
+
+
+---
+
+### Example
+```csharp
+var user = getUserName();
+var blogs = context.Blogs
+    .FromSqlRaw("SELECT * FROM dbo.Blogs where userName = {0}", user)
+    .ToList();
+```
+
+
+---
+
+### Technique #2 Variation
+
+#### Interpolate your queries
+* `FromSqlInterpolated` works like `FromSqlRaw`
+* Allows interpolation syntax
+* Effectively the same
+
+
+---
+
+### Example
+```csharp
+var user = getUserName();
+var blogs = context.Blogs
+    .FromSqlInterpolated("SELECT * FROM dbo.Blogs where userName = {user}")
+    .ToList();
+```
+
+
+
+---
+
+### Technique #3: Stored Procedures
+* Not 100% safe
+  * Dynamic SQL in the sproc is still vulnerable
+* But it forces parameterization
+* Drawbacks
+  - Tight vendor coupling
+  - DBA turnaround
+  - Blunt instrument
+
+
+
+---
+
+### Example
+```csharp
+var user = new SqlParameter("user", "johndoe");
+
+var blogs = context.Blogs
+    .FromSqlRaw("EXECUTE dbo.GetMostPopularBlogsForUser @user", user)
+    .ToList();
+```
+
+
+---
+
+### Technique #4: Sanitize At Your Peril
+* Escape possibly dangerous strings 
+* Not an exact science
+* Often possible to hack
+
+```csharp
+string SanitizeForDatabase(string input)=>
+  => input.replace("@","")
+          .replace("--", "")
+          .replace("DROP TABLE","");
+
+```
+
+---
+
+### Better Example
+* Avoid explicit, programmatic sanitization
+* Prefer higher-level abstractions
+* But use a library if you must
+
+<br/>
+
+```csharp
+Encoder oe = new OracleEncoder();
+String query = "SELECT user_id FROM user_data WHERE user_name = '" 
++ oe.encode( req.getParameter("userID")) + "' and user_password = '" 
++ oe.encode( req.getParameter("pwd")) +"'";
+```
+
+
+
+---
+
+### One Weird Trick
+#### Table-Valued Parameters
+* Enable the passing in of 'arrays'
+* Advantages:
+  * Single trip to the well
+  * No dynamic sql generation
+
+```csharp
+var cmd = new SqlCommand("usp_FilterAssets", connection);  
+cmd.CommandType = CommandType.StoredProcedure;  
+var param = cmd.Parameters.AddWithValue("@conditions", conditions);  
+param.SqlDbType = SqlDbType.Structured; 
+```
+
+

@@ -1,0 +1,250 @@
+---
+title: "Xss"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# XSS
+
+---
+
+### Goals
+* Name 2 flavors of XSS attack
+* Describe how to mitigate
+
+
+
+---
+
+## Basics
+
+
+---
+
+### What is [<u>C</u>ross-<u>S</u>ite <u>S</u>cripting](https://owasp.org/www-community/attacks/xss/)?
+* Attacker sneaks a malicious script into a web app
+* Script runs on other users when they run the app<sup>*</sup>
+* Attacker can access
+  * Cookies
+  * Session tokens
+  * Misc Data
+Note: 
+- https://www.acunetix.com/websitesecurity/cross-site-scripting/
+
+
+
+---
+
+### What's the Worst that Can Happen?
+* The malicious script has access to everything on the web app
+* Arbitrarily manipulate the DOM
+
+
+---
+
+### Possibly Worse
+* Impersonate the user in interacting with Web APIs
+  * Access sensitive data
+  * Break stuff
+* Access [HTML5 APIs](https://developer.mozilla.org/en-US/docs/Web/API):
+  * [Geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
+  * [Webcam / mic](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
+Note:
+- https://www.dionach.com/en-us/blog/the-real-impact-of-cross-site-scripting/
+
+
+
+---
+
+### Famous Examples
+* [Samy](https://en.wikipedia.org/wiki/Samy_(computer_worm)) broke MySpace in 2005
+* [Lots more](https://www.exploit-db.com/?type=webapps&tag=8)
+
+
+
+---
+
+### XSS Flavors
+1. **Reflected** - Non-persistent
+4. **Self-XSS** - User tricked into pasting malicious code into the console
+2. **Server-side** - aka 'persistant' Sneak content into a database
+3. **DOM-Based** - Exploits SPA vulnerabilities
+
+
+
+
+---
+
+### Reflected XSS
+* Old-school
+* Usually manipulates a query string
+* Popular for phishing
+* **Solution**: Don't trust query parameters
+
+
+---
+
+### Reflected XSS Vulnerability
+```html
+  <body>
+    <h1>Welcome Home, <span id='greeting'>Loading...</span></h1>
+  </body>
+  <script>
+    const queryString = location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const userName = urlParams.get('user');
+    document.getElementById('userName').innerHtml= userName || 'Anonymous';
+  </script>
+```
+
+
+
+---
+
+### Not Just `<script>` Elements
+* Injected script elements are often blocked by the browser
+* Malformed tags can work better:
+  * `<IMG SRC="javascript:alert('pwned');">`
+* Also events: 
+  * `<img src='http://example.com' onload='alert("pwned")'>`
+Note:
+-https://owasp.org/www-community/xss-filter-evasion-cheatsheet
+
+
+
+---
+
+### Variation: Self-XSS
+#### Trick user into pasting something into the console
+
+<a href='https://www.youtube.com/watch?v=pVIxO4Z_rYU'>
+  <figure  style='width:25%;height:auto;right:0;bottom:0;'>
+  ![Self-XSS](./assets/self-xss.png)
+  </figure>
+</a>
+
+
+
+---
+
+
+
+
+## Server-Side XSS
+
+---
+
+### Details
+* Happens with apps containing user-generated content:
+  * Forums
+  * Content Management Systems
+* Most dangerous because the script runs on everyone's browser
+* SPAs are affected too!
+
+
+
+---
+
+### Server-side Example
+<figure  style='width:65%;height:auto;margin-top:2rem;margin-right:8rem;'>
+![XSS-diagram](./assets/XSS-diagram.png)
+</figure>
+
+---
+
+### XSS Mitigation 
+* Encode output data
+* Razor engine does this automatically
+* Angular does too
+* _But this is still possible to screw up_
+
+
+
+---
+
+
+
+
+## DOM-Based XSS
+
+---
+
+### Basics
+* Doesn't involve trip to server
+* Exploits vulnerabilities in
+  * SPA Frameworks
+  * Your app
+* Filter potentially scary user input
+
+
+---
+
+### Angular's XSS Approach
+* Trusts no input
+* Automatically sanitizes and escapes untrusted values
+* Opt-out with [DOMSanitizer](https://angular.io/api/platform-browser/DomSanitizer)
+Note:
+-https://angular.io/guide/security
+-TODO: Angular is a good example, but broaden the conversation.
+
+
+---
+
+### Example: LoginComponent
+```ts
+export class LoginInfoComponent  {
+  @Input()
+  contents='<img src="assets/duck.jpg" onload="alert(\'SN8KED\')">';
+}
+```
+
+
+---
+
+### Sanitized: Template Expressions
+```ts
+  <h2>Template Expression:</h2>
+  <div>{{contents}}</div>
+```
+
+
+---
+
+### Escaped: InnerHTML
+* DOMSanitizer runs automatically
+```html
+<h2>InnerHTML binding:</h2>
+<div [innerHTML]='contents'></div>
+```
+
+
+---
+
+
+
+
+### Demo: Bad Sanitation
+
+
+---
+
+### Use Case For Opting Out
+* Dynamic Font Imports
+Note:
+- TODO: Find example snippet
+
+
+
+---
+
+### Best Practices
+* Keep current with Angular releases
+* Don't modify your copy of Angular
+* Avoid Angular APIs marked in the documentation as *Security Risk.*
+* Avoid raw DOM manipulation
+
+
+
+
+

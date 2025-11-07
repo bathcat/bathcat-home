@@ -1,5 +1,4 @@
 import type { DeckInfo } from '../content-decks';
-import { PrettyDate } from './PrettyDate';
 
 interface Props {
   info: DeckInfo;

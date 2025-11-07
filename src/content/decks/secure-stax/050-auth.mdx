@@ -1,0 +1,616 @@
+---
+title: "Auth"
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+status: 'Live'
+flavor: 'Deck'
+---
+
+# Authorization, Authentication
+
+---
+
+### Goals
+* Compare roles and claims
+* Define CSRF
+* Explain why .NET allows different authorization policies
+
+
+
+---
+
+## Overview
+
+
+---
+
+### Definitions _Review_
+* ___Authentication___ confirms a user identity
+* ___Authorization___  decides what that user can do
+
+
+---
+
+### Good News Everyone
+* Security is like everything else
+* Combination of 
+  * Injectable services
+  * Middleware
+  * Controller attributes
+
+
+
+---
+
+
+
+
+
+
+
+## Authentication
+
+
+---
+
+### Options
+* Forms - i.e. username/password
+* Single Sign On 
+  - Windows Authentication
+  - Jwt
+* External Provider
+  - Oauth, Google, Facebook
+* Mix and match
+
+
+
+---
+
+### ASP.NET Core Identity
+* Includes UI for
+  * End users
+  * Management
+* Lots of features to manage 
+  - Users, Profiles
+  - Passwords
+  - Roles, Claims, Tokens
+
+
+---
+
+### Popular: Windows Authentication
+* Great for intranet apps
+* Supported by
+  * IIS 
+  * HTTP.sys
+  * Kestrel _No NTLM option_
+* No Windows Requirement
+
+
+---
+
+### `launchSetting.json`
+```json
+"iisSettings": {
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+}
+```
+
+
+---
+
+### Schemes and Handlers
+* ___Authentication Handler___ does the actual work
+* ___Authentication Scheme___ 
+  * Configures the handler instance
+  * Functions as a handle for other components to reference
+
+
+---
+
+### Key Player: [Identity Server](https://identityserver.io/)
+* Microsoft's Open ID Implementation
+* Authentication as a microservice
+
+
+---
+
+### Step 1: Configure Services
+```csharp
+	services.AddDefaultIdentity<SnakesUser>()
+	        .AddEntityFrameworkStores<SnakesDbContext>();
+
+	services.AddAuthentication()
+	        .AddIdentityServerJwt();	        
+```
+
+
+---
+
+### Variation
+```csharp
+services
+  .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+  .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options => Configuration.Bind("JwtSettings", options))
+  .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => Configuration.Bind("CookieSettings", options));
+```
+
+
+
+
+---
+
+### Step 2: Consume Services
+```csharp
+  app.UseAuthentication();
+```
+
+
+
+
+---
+
+## Authorization
+
+
+---
+
+### Overview
+* Easy things are easy
+  * e.g. Group membership 
+* Sophistication is possible
+  * Granular claims
+  * Complex combinations
+
+
+---
+
+### Step 1: Define a Policy
+```csharp
+public static class AdministratorAuthorizationPolicy 
+{
+    public static string Name => "SnakesAdministrators";
+ 
+    public static void Build(AuthorizationPolicyBuilder policy) =>
+        policy.RequireClaim("groups", "c5038c6f-c5bc-43d5-93f5-44ec607d62dc");    
+}
+```
+
+
+---
+
+### Step 2: Configure Services
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy(AdministratorAuthorizationPolicy.Name, 
+                          AdministratorAuthorizationPolicy.Build);
+    });
+    // ...
+}
+```
+
+
+---
+
+### Step 3: Consume
+```csharp {17}
+    public static void MapSnakeEndpoints(this WebApplication app){
+        ArgumentNullException.ThrowIfNull(app);
+
+        var snakesGroup = app.MapGroup(ApiRoutes.Snakes)
+            .WithTags("Snakes");
+
+        snakesGroup.MapGet("/", GetSnakes)
+            .WithName("GetSnakes")
+            .Produces<Page<SnakeDto>>(StatusCodes.Status200OK)
+            .WithDescription("Retrieves a paginated list of snakes.");
+
+        snakesGroup.MapPost("/", CreateSnake)
+            .WithName("CreateSnake")
+            .Produces<SnakeDto>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .WithDescription("Creates a new snake.")
+            .RequireAuthorization(policy => policy.RequireRole(UserRoles.Administrator));
+    }
+```
+
+
+---
+
+### Alternative: Claims-Based
+* Canonical example: Buying beer
+* Bartenders don't care who you are
+* They just want evidence you're > 21
+
+
+---
+
+### It's all Middleware
+```csharp
+public static class Over21AuthorizationPolicy 
+{
+    public static string Name => "Over21";
+ 
+    public static void Build(AuthorizationPolicyBuilder policy) {
+		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+		policy.RequireAuthenticatedUser();
+		policy.Requirements.Add(new MinimumAgeRequirement());
+    }
+}
+
+```
+
+
+
+---
+
+
+
+
+
+
+## Angular Routing
+
+Note:
+* Figure out what to do with this
+* Maybe call it client-side or something
+
+---
+
+### Angular _'Security'_
+* Real work happens on the server
+* Angular uses routing to--
+  * Improve user experience
+  * Prevent information leaks
+
+
+---
+
+### If You Need Secure **Content**
+* **SPA** means everyone gets everything
+* People can look at the source
+* For sensititve content, consider separate applications
+* User experience can be seamless
+
+
+---
+
+### Review: Angular Modules
+* Not necessarily a depoyable unit
+* Facilitate 
+  * Organization
+  * Lazy loading
+  * Tree-shaking
+
+
+---
+
+### Setting up the Angular Client
+```ts
+RouterModule.forRoot([
+  { path: 'login', component: LoginComponent },
+  { 
+  	path: 'snakes-administration', 
+  	component: SnakesAdministrationComponent, 
+  	canActivate: [AdministratorGuard],
+  },
+])
+```
+
+
+---
+
+### Example
+```ts
+@Injectable()
+export class AdministratorGuard implements CanActivate {
+
+  constructor(private _service: AuthService, private _router: Router) {}
+
+  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    if (this._authService.isAuthenticated()) {
+        return true;
+    }
+    this._router.navigate(['/login']);
+    return false;
+  }
+}
+```
+
+
+---
+
+
+
+## Resource-based Authorization
+
+
+---
+
+### The Problem with Pure RBAC
+* Real authorization often depends on **relationship to a resource**
+* Example: Amazon order access
+* Who can view order #12345?
+  - Administrator ✓
+  - Customer who placed the order ✓
+  - Assigned delivery driver ✓
+  - Warehouse supervisor for shipping site ✓
+* Role membership alone isn't enough
+
+---
+
+### Anti-pattern: Inline Logic
+```csharp
+public async Task<Page<Delivery>> GetByCustomer(Guid customerId, int skip, int take)
+{
+    return await _deliveryStore.GetByCustomerId(customerId, skip, take);
+}
+```
+
+**Problems:**
+* No authorization check at all
+* Anyone can query any customer's deliveries
+* Easy to forget and hard to catch in review
+* Security bug waiting to happen
+
+---
+
+### Pattern: Split by Role
+```csharp
+public async Task<Page<Delivery>> GetByCurrentCustomer(int skip, int take)
+{
+    _authorizationService.ThrowIfUnauthorized([UserRoles.Customer]);
+    
+    var customerId = _currentUser.CustomerId
+        ?? throw new InvalidOperationException("Customer ID not found for current user");
+    
+    return await _deliveryStore.GetByCustomerId(customerId, skip, take);
+}
+
+public async Task<Page<Delivery>> GetByCustomer(Guid customerId, int skip, int take)
+{
+    _authorizationService.ThrowIfUnauthorized([UserRoles.Administrator]);
+    return await _deliveryStore.GetByCustomerId(customerId, skip, take);
+}
+```
+
+**Better**, but doesn't scale with complex role hierarchies
+
+---
+
+### Reality Check
+* **Authentication**, **Authorization**, and **Business Logic** seem orthogonal
+* True for RBAC: "Is user an admin?"
+* **False for resource authorization**: "Does user own this order?"
+* Resource authorization **is** business logic
+* Can't separate them cleanly
+
+---
+
+### Architectural Decision: Where?
+* **Option 1: Endpoints/Controllers**
+  - ✓ Clear security boundary
+  - ✓ Easy to audit
+  - ✗ Must duplicate for WebSockets, BFF, gRPC, etc.
+* **Option 2: Service Layer**
+  - ✓ Single source of truth
+  - ✓ Reusable across APIs
+  - ✗ Blurs business logic boundaries
+
+**Recommendation**: Services layer when authorization is business logic
+
+---
+
+### Imperative Style: Explicit Checks
+```csharp
+public async Task<Result> BookDelivery(Guid customerId, DeliveryRequest request)
+{
+    _authorizationService.ThrowIfUnauthorized([UserRoles.Customer, UserRoles.Administrator]);
+    
+    if (!_currentUser.IsInRole(UserRoles.Administrator) &&
+        _currentUser.CustomerId != customerId)
+    {
+        throw new UnauthorizedAccessException("Customers can only book deliveries for themselves.");
+    }
+    
+    return await _deliveryService.BookDelivery(customerId, request);
+}
+```
+
+---
+
+### Imperative Style Evaluated
+**Strengths:**
+* Explicit and easy to understand
+* No magic or abstraction
+* IDE autocomplete works well
+* Easy to debug
+
+**Weaknesses:**
+* Verbose and repetitive
+* Hard to test in isolation
+* Authorization scattered across codebase
+* Difficult to audit globally
+
+---
+
+### Declarative Style: Authorization Handlers
+* Microsoft's `IAuthorizationHandler<TRequirement, TResource>`
+* Separates authorization policy from business logic
+* Testable and reusable
+* [Microsoft Docs: Resource-based authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased)
+
+---
+### Example
+
+```csharp
+public class DeliveryAuthorizationHandler 
+    : AuthorizationHandler<OperationAuthorizationRequirement, Delivery>{
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        OperationAuthorizationRequirement requirement,
+        Delivery resource)
+    {
+        if (requirement.Name == "Read" && CanReadDelivery(context.User, resource)){
+            context.Succeed(requirement);
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private bool CanReadDelivery(ClaimsPrincipal user, Delivery delivery) =>
+        user.IsInRole(UserRoles.Administrator) ||
+        user.GetCustomerId() == delivery.CustomerId ||
+        user.GetDriverId() == delivery.AssignedDriverId;
+}
+```
+
+---
+
+### Using Authorization Handlers
+```csharp
+public async Task<Result<Delivery>> GetDelivery(Guid deliveryId)
+{
+    var delivery = await _deliveryStore.GetById(deliveryId);
+    if (delivery is null)
+    {
+        return Result.NotFound();
+    }
+    
+    var authResult = await _authorizationService.AuthorizeAsync(
+        _currentUser, 
+        delivery, 
+        Operations.Read);
+    
+    if (!authResult.Succeeded)
+    {
+        return Result.Forbidden();
+    }
+    
+    return Result.Success(delivery);
+}
+```
+
+---
+
+### Performance Considerations
+**Problem**: Loading entire resource just to check authorization
+
+```csharp
+var order = await _context.Orders
+    .Include(o => o.LineItems)
+    .Include(o => o.Customer)
+    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+if (order.CustomerId != currentUser.CustomerId)
+{
+    throw new UnauthorizedAccessException();
+}
+```
+---
+
+### Performance Considerations (II)
+**Better**: Authorization queries
+
+```csharp
+var canAccess = await _context.Orders
+    .Where(o => o.Id == orderId)
+    .AnyAsync(o => o.CustomerId == currentUser.CustomerId);
+
+if (!canAccess)
+{
+    throw new UnauthorizedAccessException();
+}
+
+var order = await _context.Orders
+    .Include(o => o.LineItems)
+    .Include(o => o.Customer)
+    .FirstOrDefaultAsync(o => o.Id == orderId);
+```
+
+---
+
+### Query Filtering vs Throwing
+**Throwing (403 Forbidden):**
+```csharp
+var order = await _orderStore.GetById(orderId);
+if (order.CustomerId != currentUser.CustomerId)
+{
+    throw new UnauthorizedAccessException();
+}
+```
+
+**Filtering (empty results):**
+```csharp
+var orders = await _context.Orders
+    .Where(o => o.CustomerId == currentUser.CustomerId)
+    .ToListAsync();
+```
+
+**Choose based on UX**: Does user know resource exists?
+
+---
+
+### Common Patterns
+* **Ownership**
+  - Very common
+  - Check `resource.OwnerId == currentUser.Id`
+
+* **Multi-tenancy**
+  - Resource-based auth in disguise
+  - Check `resource.TenantId == currentUser.TenantId`
+
+* **Hierarchical Access**
+  - Manager sees team's resources
+  - Check relationships in organization hierarchy
+
+* **Time-based**
+  - Access expires after deadline
+  - Check `resource.ExpiresAt > DateTime.UtcNow`
+
+---
+
+### Testing Resource Authorization
+```csharp
+[Fact]
+public async Task Customer_CannotAccess_OtherCustomerDeliveries(){
+    var customer1 = TestUsers.Customer1;
+    var customer2 = TestUsers.Customer2;
+    var delivery = await CreateDelivery(customer2.Id);
+    
+    _currentUser.SetUser(customer1);
+    
+    await Assert.ThrowsAsync<UnauthorizedAccessException>(
+        () => _deliveryService.GetDelivery(delivery.Id));
+}
+```
+---
+
+### Example (II)
+```csharp
+[Fact]
+public async Task Administrator_CanAccess_AllDeliveries(){
+    var customer = TestUsers.Customer1;
+    var admin = TestUsers.Administrator;
+    var delivery = await CreateDelivery(customer.Id);
+    
+    _currentUser.SetUser(admin);
+    
+    var result = await _deliveryService.GetDelivery(delivery.Id);
+    
+    Assert.NotNull(result);
+    Assert.Equal(delivery.Id, result.Id);
+}
+```
+
+
+
+
+
+
+
+
+

@@ -5,7 +5,7 @@ interface IconProps {
   className?: string;
 }
 
-export const ArrowUp = ({ className }: IconProps) => (
+export const ArrowUp = () => (
   <svg
     className='w-6 h-6 text-gray-800 dark:text-white'
     aria-hidden='true'
@@ -25,7 +25,7 @@ export const ArrowUp = ({ className }: IconProps) => (
   </svg>
 );
 
-export const ForwardStep = ({ className }: IconProps) => (
+export const ForwardStep = () => (
   <svg
     className='w-6 h-6 text-gray-800 dark:text-white'
     aria-hidden='true'
@@ -45,7 +45,7 @@ export const ForwardStep = ({ className }: IconProps) => (
   </svg>
 );
 
-export const BackwardStep = ({ className }: IconProps) => (
+export const BackwardStep = () => (
   <svg
     className='w-6 h-6 text-gray-800 dark:text-white'
     aria-hidden='true'

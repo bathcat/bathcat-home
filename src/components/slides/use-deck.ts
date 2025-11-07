@@ -31,12 +31,11 @@ const updateHashForSlide = (slideIndex: number): void => {
 
 type DisplayMode = 'Normal' | 'FullScreen';
 
-interface DeckState
-  extends Readonly<{
-    currentSlide: number;
-    slideCount: number;
-    mode: DisplayMode;
-  }> {}
+interface DeckState{
+    readonly currentSlide: number;
+    readonly slideCount: number;
+    readonly mode: DisplayMode;
+}
 
 export const deckState = atom<DeckState>({
   currentSlide: 0,
