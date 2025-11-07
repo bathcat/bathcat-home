@@ -438,6 +438,25 @@ svg[aria-roledescription='xychart'] {
     float: right;
   }
 
+  figure.bc-figure-float {
+    float: right;
+    position: relative;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  figure.bc-figure-centered {
+    float: none;
+    display: block;
+    margin: 2rem auto;
+    max-width: 95%;
+    
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
   // TODO: This is pretty sleazy.
   //   * Put these back into slides.scss
   //   * Or maybe just on the components themselves.
