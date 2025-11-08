@@ -78,6 +78,15 @@
       }
     }
   }
+
+  figure.bc-figure-hero-diagram svg[aria-roledescription='mindmap'] {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    transform: scale(1.5) !important;
+    transform-origin: center center !important;
+  }
 }
 
 // Main Slide Content Styles
@@ -99,7 +108,7 @@
 
   div.expressive-code .ec-line {
     @apply text-left;
-    font-size: 1.2em;
+    font-size: 1.6em;
   }
 
   ul,
@@ -167,10 +176,9 @@
     font-size: 1.6em;
     text-align: left;
     padding-left: 1rem;
-    margin-bottom: 1rem;
     background-color: rgb(226 232 240);
     font-weight: 600;
-    padding-bottom: 0.5rem;
+
     color: rgb(15 23 42); /* slate-900 for light mode */
 
     @media (prefers-color-scheme: dark) {
@@ -250,7 +258,7 @@
     }
 
     > * {
-      transform: scale(2.2);
+      transform: scale(1.75);
       transform-origin: center center;
     }
   }
@@ -307,10 +315,7 @@
   }
 }
 
-.bc-slide > .bc-slide-title,
-.bc-slide > astro-slot > .bc-slide-title {
-  @apply p-4;
-}
+
 
 .bc-slide > astro-slot > *:not(.bc-slide-title) {
   @apply m-4;
