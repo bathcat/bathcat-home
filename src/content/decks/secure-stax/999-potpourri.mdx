@@ -643,7 +643,7 @@ public record ReviewDto(Guid Id, Guid PilotId, Rating Rating, string Notes, Date
 
 ### Using the Mapper
 
-```csharp title='ReviewEndpoints.cs'
+```csharp title='ReviewEndpoints.cs' {7}
 public async Task<Ok<ReviewDto>> GetReview(
     IReviewService service, 
     IMapper<Review, ReviewDto> mapper, 
