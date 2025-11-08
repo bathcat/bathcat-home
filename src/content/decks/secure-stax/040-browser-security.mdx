@@ -76,7 +76,7 @@ flavor: 'Deck'
 ### SOP Defined
 * Browser-based security mechanism
 * Restricts a script from one 'origin' getting resources from another
-
+{/* TODO: Update this to a modern mermaid diagram */}
 <figure  style='width:40%;height:auto;'>
 ![Cross-blocked](./assets/cross-blocked.jpg)
 </figure>
@@ -97,8 +97,9 @@ flavor: 'Deck'
 ---
 
 ### Same Origin is Easy
+{/* TODO: Update this to a modern mermaid diagram */}
 <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS' target='_blank'>
-<figure  style='width:40%;height:auto;margin-right:20rem;'>
+<figure  style='width:60%;height:auto;margin-right:20rem;'>
 ![CORS-principle](./assets/CORS_principle.png)
 </figure>
 </a>
@@ -263,11 +264,25 @@ Origin: https://foo.example
 ---
 
 ### Pre-Flight Flow
-{/* TODO: Update this to a modern mermaid diagram */}
-<figure  style='width:60%;height:auto;margin-right:20rem;'>
-![CORS-flow](./assets/cors_flow.png)
-</figure>
+<div style="transform: scale(1.45); transform-origin: top center; margin-left: 15rem;">
+```mermaid
+sequenceDiagram
+    participant JS as JavaScript Code
+    participant Browser
+    participant Server
 
+    JS->>Browser: xhr.send()
+    
+
+    Browser->>Server: OPTIONS request<br/>(preflight request)
+    Server-->>Browser: Preflight response<br/>(Access-Control-* headers)
+    
+    Browser->>Server: Actual request
+    Server-->>Browser: Actual response
+    
+    Browser->>JS: Fire onload() or onerror()
+```
+</div>
 
 
 
@@ -284,6 +299,7 @@ Note:
 ---
 
 ### ASP.NET Core Review 
+{/* TODO: Update this to a modern (not startup) */}
 * What's Middleware?
 * What's Startup.cs?
 
@@ -509,10 +525,10 @@ Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted-c
 
 | Feature | Header-Based | Meta Tag |
 |---------|--------------|----------|
-| **Full directive support** | Yes | Limited |
-| **Violation reporting** | Yes | No |
-| **Report-only mode** | Yes | No |
-| **Server control required** | Yes | No |
+| **Full directive support** | ✅ | Limited |
+| **Violation reporting** | ✅ | ❌ |
+| **Report-only mode** | ✅ | ❌ |
+| **Server control required** | ✅ | ❌ |
 | **Per-page flexibility** | With config | Built-in |
 
 **Prefer headers** when possible for maximum protection
