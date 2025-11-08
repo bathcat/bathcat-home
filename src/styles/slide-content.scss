@@ -1,0 +1,312 @@
+// Slide Content Styling
+//
+// This file contains all styling for content that appears inside .bc-slide elements.
+// This includes: typography, lists, images, code blocks, tables, diagrams, and print styles.
+//
+// Rationale: Slide deck content has unique styling requirements that differ from the rest
+// of the site. Keeping these styles separate makes the slide deck portable and easier to maintain.
+
+// Image Utilities
+//
+
+.bc-framed-image {
+  border-image-source: url('@assets/fancy-frame.png');
+  padding: 1rem 1.5rem 1rem 1.5rem;
+  border-image-slice: 15% 20% fill;
+  border-width: 2.25rem 1.5rem 2.25rem 1.5rem;
+  margin-left: 1.5rem;
+  margin-right: 2rem;
+  opacity: 100%;
+}
+
+// Mermaid Diagrams
+//
+
+.bc-slide {
+  svg.classDiagram {
+    width: 90% !important;
+    max-width: 90% !important;
+    height: auto !important;
+    max-height: 70vh !important;
+    margin: 0 auto !important;
+    display: block !important;
+    transform: scale(0.8) !important;
+    transform-origin: top center !important;
+
+    .node {
+      .basic.label-container {
+        min-width: 220px !important;
+      }
+      width: 29rem !important;
+
+      foreignObject {
+        width: auto !important;
+        overflow: visible !important;
+        min-width: 240px !important;
+      }
+
+      div[xmlns] {
+        white-space: normal !important;
+        overflow: visible !important;
+        width: 210px !important;
+        max-width: none !important;
+      }
+    }
+
+    .nodes {
+      transform: scale(0.9) !important;
+    }
+
+    .edgePaths,
+    .edgeLabels {
+      transform: scale(0.9) !important;
+    }
+
+    .nodeLabel {
+      white-space: nowrap !important;
+      overflow: visible !important;
+      width: 210px !important;
+    }
+
+    .node.undefined {
+      .basic.label-container {
+        min-width: 250px !important;
+      }
+
+      div[xmlns] {
+        width: 240px !important;
+      }
+    }
+  }
+}
+
+// Main Slide Content Styles
+//
+
+.bc-slide {
+  @apply overflow-hidden;
+  @apply list-inside;
+  font-size: 5vmin;
+
+  width: 90%;
+  aspect-ratio: 16 / 9;
+
+  div.expressive-code .ec-line {
+    @apply text-left;
+    font-size: 2.2vmin;
+  }
+
+  ul,
+  ol {
+    padding-left: 1em;
+  }
+
+  ol {
+    @apply list-decimal;
+    @apply text-left;
+  }
+
+  ul {
+    @apply list-disc;
+
+    ul {
+      list-style-type: circle;
+      font-size: 90%;
+
+      ul {
+        list-style-type: square;
+        font-size: 81%;
+      }
+    }
+  }
+
+  div.expressive-code {
+    @apply max-w-7xl;
+    @apply pl-2;
+  }
+
+  div.expressive-code > code {
+    @apply text-sm;
+  }
+
+  figure {
+    position: relative;
+    display: inline-block;
+  }
+
+  figure figcaption:not(.header) {
+    @apply text-sm;
+    visibility: hidden;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  figure:hover figcaption {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .bc-slide-title {
+    font-size: 8vmin;
+  }
+
+  table {
+    @apply min-w-full;
+    font-size: 90%;
+    border-spacing: 1.5rem 0;
+    border-collapse: separate;
+  }
+
+  h4 {
+    font-size: 6vmin;
+    padding-left: 1em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+  }
+
+  .bc-slide-title {
+    & a {
+      font-size: 100%;
+      @apply no-underline;
+      transition: all 0.5s ease;
+    }
+
+    & a:hover {
+      transition: all 0.5s ease;
+      @apply underline;
+      @apply brightness-90;
+    }
+  }
+
+  figure {
+    float: right;
+  }
+
+  figure.bc-figure-float {
+    float: right;
+    position: relative;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  figure.bc-figure-centered {
+    float: none;
+    display: block;
+    margin: 2rem auto;
+    max-width: 95%;
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  div.n-overview > * {
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+  }
+
+  div.n-overview {
+    @apply w-3/4;
+    display: inline-grid;
+    grid-template-columns: 1fr 4fr;
+    position: relative;
+    z-index: 500;
+
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+
+    font-size: 150% !important;
+    float: left;
+
+    box-shadow: 0.1rem 0.25rem 0.75rem rgba(0, 0, 0, 0.5);
+
+    .n-o-value {
+      padding: 0.5rem;
+      @apply text-xl;
+    }
+    .n-o-label {
+      padding: 1rem;
+      font-size: x-large;
+      font-weight: 800;
+      font-family:
+        'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+        'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+  }
+}
+
+.bc-slide > .bc-slide-title,
+.bc-slide > astro-slot > .bc-slide-title {
+  @apply p-4;
+}
+
+.bc-slide > astro-slot > *:not(.bc-slide-title) {
+  @apply m-4;
+}
+
+// Print Styles
+//
+
+@media print {
+  @page {
+    margin: 0;
+    padding: 0;
+    size: landscape;
+  }
+
+  header,
+  footer,
+  .site-footer,
+  [data-footer],
+  footer[role='contentinfo'] {
+    display: none !important;
+    height: 0 !important;
+    visibility: hidden !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .bc-slide {
+    width: 90vw !important;
+    height: 90vh !important;
+    margin: 1cm auto !important;
+    padding: 1.5rem !important;
+    break-inside: avoid;
+
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .bc-slide {
+    font-size: 3vmin !important;
+  }
+
+  .bc-deck {
+    @apply opacity-100;
+    width: 100% !important;
+    height: auto !important;
+    padding-top: 0 !important;
+    margin: 0 !important;
+    page-break-after: avoid !important;
+
+    astro-slot astro-island:last-of-type div.bc-slide {
+      @apply break-after-avoid !important;
+    }
+  }
+}
