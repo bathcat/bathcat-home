@@ -34,7 +34,7 @@ flavor: 'Deck'
   - Real site processes request and sends response
 
 
-```html
+```html title='index.html'
 <h1>You Are a Winner!</h1>
   <form action="http://example.com/api/account" method="post">
     <input type="hidden" name="Transaction" value="withdraw" />
@@ -86,6 +86,7 @@ public void ConfigureServices(IServiceCollection services){
 ---
 
 ### Mitigation #3: `SameSite` Cookie Attribute
+{/* TODO: Add example */}
 * Set the `SameSite` attribute on the cookie
 
 
@@ -121,7 +122,7 @@ public void ConfigureServices(IServiceCollection services){
 
 ### How does JWT work?
 
-<div style="transform: scale(1.3); transform-origin: top center; margin-left: 15rem;"
+<div style="transform: scale(1.15); transform-origin: top center; margin-left: 15rem;"
 >
 
 
@@ -148,7 +149,7 @@ sequenceDiagram
 
 ### Jwt in .NET
 
-```csharp
+```csharp title='ApplicationBuilderExtensions.cs'
 
 public static IHostApplicationBuilder AddAuthentication(this IHostApplicationBuilder builder){
     var jwtSettings = builder.GetJwtSettings();
@@ -242,7 +243,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 ### The Root Problem
 {/* TODO: Style tables in globals.scss */}
 | Attack Type | Control Characters | Root Cause |
-|-------------|-------------------|------------|
+|------------:|-------------------|:------------|
 | **SQL Injection** | `'`, `--`, `;` | Mixing data with SQL commands |
 | **XSS** | `<script>`, `"`, `>` | Mixing data with HTML/JS |
 | **Path Traversal** | `..`, `/`, `\` | Mixing data with filesystem paths |

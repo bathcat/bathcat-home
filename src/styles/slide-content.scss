@@ -188,10 +188,64 @@
   }
 
   table {
-    @apply min-w-full;
+    width: 95%;
     font-size: 95%;
-    border-spacing: 1.5rem 0;
     border-collapse: separate;
+    border-spacing: 0;
+    background-color: rgb(249 250 251);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+    thead {
+      background-color: rgb(156 163 175);
+
+      th {
+        @apply font-semibold;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        color: white;
+        border-bottom: 2px solid rgb(107 114 128);
+        border-right: 1px solid rgb(229 231 235);
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid rgb(229 231 235);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background-color: rgb(243 244 246);
+        }
+      }
+
+      td {
+        padding: 0.75rem 1rem;
+        background-color: rgb(249 250 251);
+        border-right: 1px solid rgb(229 231 235);
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+
+    th:first-child,
+    td:first-child {
+      padding-left: 1.25rem;
+    }
+
+    th:last-child,
+    td:last-child {
+      padding-right: 1.25rem;
+    }
   }
 
   h4 {
@@ -314,8 +368,6 @@
     }
   }
 }
-
-
 
 .bc-slide > astro-slot > *:not(.bc-slide-title) {
   @apply m-4;
