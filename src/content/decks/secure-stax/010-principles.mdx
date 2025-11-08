@@ -204,13 +204,14 @@ flavor: 'Deck'
 
 ### [Vogen](https://TODO_Vogen_link.com)
 * Code generator for generating value objects
-* Example:
-```csharp
+```csharp title='SanitizedString.cs'
 using Vogen;
 
 [ValueObject<string>()]
 public partial struct SanitizedString{}
+```
 
+```csharp title='UserProfile.cs'
 public sealed record UserProfile
 {
   public Guid Id { get; init; }

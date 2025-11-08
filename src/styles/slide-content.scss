@@ -35,20 +35,20 @@
 
     .node {
       .basic.label-container {
-        min-width: 220px !important;
+        min-width: 15em !important;
       }
-      width: 29rem !important;
+      width: 20em !important;
 
       foreignObject {
         width: auto !important;
         overflow: visible !important;
-        min-width: 240px !important;
+        min-width: 16em !important;
       }
 
       div[xmlns] {
         white-space: normal !important;
         overflow: visible !important;
-        width: 210px !important;
+        width: 14em !important;
         max-width: none !important;
       }
     }
@@ -65,16 +65,16 @@
     .nodeLabel {
       white-space: nowrap !important;
       overflow: visible !important;
-      width: 210px !important;
+      width: 14em !important;
     }
 
     .node.undefined {
       .basic.label-container {
-        min-width: 250px !important;
+        min-width: 16.5em !important;
       }
 
       div[xmlns] {
-        width: 240px !important;
+        width: 16em !important;
       }
     }
   }
@@ -86,14 +86,20 @@
 .bc-slide {
   @apply overflow-hidden;
   @apply list-inside;
-  font-size: 5vmin;
+  @apply border;
+  @apply bg-white;
+  @apply bg-opacity-100;
+  @apply transition-opacity;
+  @apply duration-500;
+  @apply absolute;
+  font-size: clamp(18px, 4.5vw, 42px);
 
   width: 90%;
   aspect-ratio: 16 / 9;
 
   div.expressive-code .ec-line {
     @apply text-left;
-    font-size: 2.2vmin;
+    font-size: 1.2em;
   }
 
   ul,
@@ -111,11 +117,11 @@
 
     ul {
       list-style-type: circle;
-      font-size: 90%;
+      font-size: 95%;
 
       ul {
         list-style-type: square;
-        font-size: 81%;
+        font-size: 90%;
       }
     }
   }
@@ -126,7 +132,7 @@
   }
 
   div.expressive-code > code {
-    @apply text-sm;
+    @apply text-base;
   }
 
   figure {
@@ -135,7 +141,7 @@
   }
 
   figure figcaption:not(.header) {
-    @apply text-sm;
+    @apply text-base;
     visibility: hidden;
     width: 200px;
     background-color: rgba(0, 0, 0, 0.8);
@@ -158,18 +164,30 @@
   }
 
   .bc-slide-title {
-    font-size: 8vmin;
+    font-size: 1.6em;
+    text-align: left;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    background-color: rgb(226 232 240);
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    color: rgb(15 23 42); /* slate-900 for light mode */
+
+    @media (prefers-color-scheme: dark) {
+      color: white;
+      background-color: rgb(51 65 85); /* slate-600 for dark mode */
+    }
   }
 
   table {
     @apply min-w-full;
-    font-size: 90%;
+    font-size: 95%;
     border-spacing: 1.5rem 0;
     border-collapse: separate;
   }
 
   h4 {
-    font-size: 6vmin;
+    font-size: 1.2em;
     padding-left: 1em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
@@ -205,7 +223,7 @@
     display: block;
     margin: 2rem auto;
     max-width: 95%;
-    
+
     img {
       width: 100%;
       height: auto;
@@ -220,17 +238,17 @@
     margin: 1rem auto;
     width: 95%;
     max-width: 95%;
-    min-height: 70vh;
+    min-height: 50vh;
     overflow: visible;
-    
+
     img {
       max-width: 100%;
-      max-height: 70vh;
+      max-height: 50vh;
       width: auto;
       height: auto;
       object-fit: contain;
     }
-    
+
     > * {
       transform: scale(2.2);
       transform-origin: center center;
@@ -245,11 +263,11 @@
     margin: 1rem auto;
     width: 95%;
     max-width: 95%;
-    min-height: 70vh;
+    min-height: 60vh;
     overflow: visible;
-    
+
     > * {
-      transform: scale(4.5);
+      transform: scale(2.8);
       transform-origin: center center;
     }
   }
@@ -272,11 +290,11 @@
     font-size: 150% !important;
     float: left;
 
-    box-shadow: 0.1rem 0.25rem 0.75rem rgba(0, 0, 0, 0.5);
+    box-shadow: 0.1em 0.25em 0.75em rgba(0, 0, 0, 0.5);
 
     .n-o-value {
       padding: 0.5rem;
-      @apply text-xl;
+      font-size: 1.25em;
     }
     .n-o-label {
       padding: 1rem;
