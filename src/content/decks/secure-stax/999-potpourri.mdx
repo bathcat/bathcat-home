@@ -257,19 +257,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 ---
 
 ### The Vulnerability
-```csharp
+```csharp title='ImageUploadService.cs'
 private async Task<ImageUploadResult> SaveImageCore(
     ReadOnlyMemory<byte> imageData,string fileName,string storageRoot){
         
     var extension = _path.GetExtension(fileName).ToLowerInvariant();
-    if (!_options.AllowedExtensions.Contains(extension)){
+    if (!_options.AllowedExtensions.Contains(extension))
         return ImageUploadResult.FailureResult($"Extension not allowed");
-    }
     
     var mimeType = MimeTypes.GetMimeType(imageData.Span);
-    if (mimeType is null){
+    if (mimeType is null)
         return ImageUploadResult.FailureResult("Invalid image");
-    }
     
     var physicalPath = _path.Combine(storageRoot, fileName);
     using (var fileStream = _fileStreamFactory.New(physicalPath, FileMode.Create)){
@@ -309,22 +307,20 @@ if (fileName.Contains("..") ||
 ### Mitigation #2: Type Safety
 * Avoid primitive obsession
 * Use value object or branded type for filenames
-```csharp
+```csharp title='SafeFileName.cs'
 public sealed class SafeFileName{
-    private readonly string _value;
-    
-    private SafeFileName(string value) => _value = value;
-    
+    public string Value { get; private set; }
+        
     public static Result<SafeFileName> Create(string input){
         if (string.IsNullOrWhiteSpace(input) ||
             input.Contains("..") ||
             input.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0){
             return Result.Failure<SafeFileName>("Invalid filename");
         }
-        return Result.Success(new SafeFileName(input));
+        return Result.Success(new SafeFileName{Value= input});
     }
     
-    public override string ToString() => _value;
+    public override string ToString() => Value;
 }
 ```
 
@@ -413,7 +409,7 @@ public static IServiceCollection AddRateLimit(this IServiceCollection services)
 ---
 
 ### Dumb Example: Why Rate Limiting Works
-```bash
+```bash title='attack.sh'
 while true; do
     curl https://example.com/pilots/
     sleep 0.01
@@ -436,7 +432,7 @@ done
   - [Complex regex patterns (ReDoS)](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
   - Wildcard database searches
   - Heavy computations
-* **Historical example**: Node.js process crashes
+* **Historical example**: Node.js process crashes {/* TODO: Find source */}
   - Crash took ~1 second to restart
   - Continuous crashes = indefinite downtime
 
@@ -613,11 +609,11 @@ public record CreateMyReviewRequest(Guid PilotId, Rating Rating);
 
 ### Mapping Tools
 
-| Approach | Examples | AOT Compatible | Pros | Cons |
+| Approach | Examples | AOT? | Pros | Cons |
 |----------|----------|----------------|------|------|
-| **Reflection-based** | AutoMapper, Mapster | No | Less boilerplate | Runtime overhead, magic |
-| **Source generation** | Mapperly, MapsterSourceGen | Yes | Performance, AOT | Setup complexity |
-| **Manual mapping** | Custom classes | Yes | Full control, compiler help | More code |
+| **Reflection-based** | AutoMapper, Mapster | ❌ | Less boilerplate | Runtime overhead, magic |
+| **Source generation** | Mapperly, MapsterSourceGen | ✅ | AOT | Setup complexity |
+| **Manual mapping** | Custom classes | ✅ | Full control, compiler help | More code |
 
 ---
 

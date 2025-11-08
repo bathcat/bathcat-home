@@ -230,6 +230,7 @@
         padding: 0.75rem 1rem;
         background-color: rgb(249 250 251);
         border-right: 1px solid rgb(229 231 235);
+        font-size: 90%;
 
         &:last-child {
           border-right: none;
@@ -239,12 +240,12 @@
 
     th:first-child,
     td:first-child {
-      padding-left: 1.25rem;
+      padding-left: .5em;
     }
 
     th:last-child,
     td:last-child {
-      padding-right: 1.25rem;
+      padding-right: .5em;
     }
   }
 
