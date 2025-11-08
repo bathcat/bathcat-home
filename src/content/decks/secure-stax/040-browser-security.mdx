@@ -195,7 +195,7 @@ Origin: https://foo.example
 ---
 
 ### Response
-```http
+```http {4}
 HTTP/1.1 200 OK
 Date: Mon, 01 Dec 2008 00:23:53 GMT
 Server: Apache/2
@@ -213,7 +213,7 @@ Content-Type: application/xml
 ---
 
 ### Access Control Headers
-#### From the API:
+##### From the API:
 ```http
 Access-Control-Allow-Origin: https://example.com
 Access-Control-Allow-Methods: POST, GET, OPTIONS
@@ -222,9 +222,7 @@ Access-Control-Allow-Headers: Content-Type
 Access-Control-Max-Age: 86400
 ```
 
-<br/>
-
-#### For preflight:
+##### For preflight:
 ```http
 Access-Control-Request-Headers: Content-Type
 Access-Control-Request-Method: POST
@@ -251,7 +249,7 @@ Origin: https://foo.example
 
 ---
 
-### Pre-Flight
+### [Pre-Flight](https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request)
 * Affects potentially dangerous verbs:
   * DELETE
   * PUT
@@ -259,22 +257,18 @@ Origin: https://foo.example
   1. Send an HTTP OPTIONS request 
   2. Examine the access control headers
   3. Proceed if possible
-Note: 
-- https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
-- https://livebook.manning.com/book/cors-in-action/chapter-4/14
-
 
 
 
 ---
 
 ### Pre-Flight Flow
+{/* TODO: Update this to a modern mermaid diagram */}
 <figure  style='width:60%;height:auto;margin-right:20rem;'>
 ![CORS-flow](./assets/cors_flow.png)
 </figure>
 
-Note:
--https://www.html5rocks.com/en/tutorials/cors/
+
 
 
 
@@ -306,24 +300,20 @@ Note:
 
 ### Step 1: Create a Policy
 
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddCors(options =>
-    {
-        options.AddDefaultPolicy(builder =>
-        {
+```csharp title='ServiceCollectionExtensions.cs'
+public static void AddCorsPolicies(this IServiceCollection services)
+    => services.AddCors(options =>{
+
+        options.AddDefaultPolicy(builder =>{
             builder.AllowAnyOrigin().AllowAnyHeader();
         });
 
-        options.AddPolicy("BetaTesterPolicy", builder =>
-        {
+        options.AddPolicy("BetaTesterPolicy", builder =>{
             builder.WithOrigins("http://example.com")
                    .AllowAnyHeader();
         });
     });
-    //...
-}
+
 
 ```
 
@@ -503,7 +493,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted-c
 
 ### Meta Tag CSP
 
-```html
+```html title='index.html'
 <meta http-equiv="Content-Security-Policy" 
       content="default-src 'self'; script-src 'self' https://trusted-cdn.com">
 ```
@@ -533,7 +523,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted-c
 
 * Configure in `angular.json` under `architect.build.options`:
 
-```json
+```json title='angular.json'
 "headers": {
   "Content-Security-Policy": "default-src 'self'; script-src 'self'"
 }
@@ -578,7 +568,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted-c
 
 ### The Problem: DOM XSS
 
-```javascript
+```javascript title='app.component.ts'
 const username = new URLSearchParams(location.search).get('name');
 document.getElementById('greeting').innerHTML = `Hello ${username}!`;
 ```

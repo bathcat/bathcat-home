@@ -47,10 +47,12 @@ flavor: 'Deck'
 
 ### The Core Tension
 * You will have dependencies (Angular, TypeScript, Microsoft.Extensions.*)
-* **Problem #1**: Updates can break things
-* **Problem #2**: You need security patches immediately
+* Problems:
+  - Updates can break things
+  - You need security patches immediately
 * These two needs **directly conflict**
 * No perfect solution exists
+* There is a tension between stability and security
 
 ---
 
@@ -119,7 +121,7 @@ flavor: 'Deck'
 * Wait for unstable releases to get fixed
 * **Bun**: [`minimumReleaseAge`](https://bun.com/docs/runtime/bunfig#install-minimumreleaseage) config setting
 
-```toml
+```toml title='bunfig.toml'
 [install]
 # Only install package versions published at least 3 days ago
 minimumReleaseAge = 259200
@@ -224,7 +226,7 @@ Fast Updates ←→ Stability
 
 ### Example: package-lock.json
 
-```json
+```json title='package-lock.json'
 "@angular-devkit/build-angular": {
   "version": "0.803.24",
   "resolved": "https://registry.npmjs.org/@angular-devkit/build-angular/-/build-angular-0.803.24.tgz",
@@ -268,7 +270,7 @@ npm audit fix --force
 * Security updates flagged as critical
 * Configurable update schedule
 
-```yaml
+```yaml title='dependabot.yml'
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -285,7 +287,7 @@ updates:
 * Grouping updates
 * Custom rules per dependency
 
-```json
+```json title='renovate.json'
 {
   "extends": ["config:base"],
   "stabilityDays": 7,

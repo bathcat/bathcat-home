@@ -89,7 +89,7 @@ flavor: 'Deck'
 
 ### Dumb Example
 Don't do this:
-```csharp
+```csharp title='UserRepository.cs'
 statement = "SELECT * FROM users WHERE name = '" + userName + "';"
 ```
 Because of this:
@@ -134,7 +134,7 @@ a';DROP TABLE users; SELECT * FROM userinfo WHERE 't';--
 ---
 
 ### Example [`FromSqlRaw`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.relationalqueryableextensions.fromsqlraw)
-```csharp
+```csharp title='BlogRepository.cs'
 var user = getUserName();
 var blogs = context.Blogs
     .FromSqlRaw("SELECT * FROM dbo.Blogs where userName = '" + user + "';")
@@ -161,7 +161,7 @@ var blogs = context.Blogs
 ---
 
 ### Example
-```csharp
+```csharp title='SnakeRepository.cs'
             var query = "INSERT dbo.Snake(ID, Name, meannessLevel) VALUES(";
             query += "'" + toCreate.ID.ToString() + "', ";
             query += "'" + toCreate.Name + "', ";
@@ -216,7 +216,7 @@ var blogs = context.Blogs
 ---
 
 ### Example
-```csharp
+```csharp title='BlogRepository.cs'
 var user = getUserName();
 var blogs = context.Blogs
     .Where(b=>b.UserName == user)
@@ -239,7 +239,7 @@ var blogs = context.Blogs
 ---
 
 ### Example
-```csharp
+```csharp title='BlogRepository.cs'
 var user = getUserName();
 var blogs = context.Blogs
     .FromSqlRaw("SELECT * FROM dbo.Blogs where userName = {0}", user)
@@ -260,7 +260,7 @@ var blogs = context.Blogs
 ---
 
 ### Example
-```csharp
+```csharp title='BlogRepository.cs'
 var user = getUserName();
 var blogs = context.Blogs
     .FromSqlInterpolated("SELECT * FROM dbo.Blogs where userName = {user}")
@@ -285,7 +285,7 @@ var blogs = context.Blogs
 ---
 
 ### Example
-```csharp
+```csharp title='BlogRepository.cs'
 var user = new SqlParameter("user", "johndoe");
 
 var blogs = context.Blogs
@@ -301,7 +301,7 @@ var blogs = context.Blogs
 * Not an exact science
 * Often possible to hack
 
-```csharp
+```csharp title='MyCustomSanitizer.cs'
 string SanitizeForDatabase(string input)=>
   => input.replace("@","")
           .replace("--", "")
@@ -336,7 +336,7 @@ String query = "SELECT user_id FROM user_data WHERE user_name = '"
   * Single trip to the well
   * No dynamic sql generation
 
-```csharp
+```csharp title='BlogRepository.cs'
 var cmd = new SqlCommand("usp_FilterAssets", connection);  
 cmd.CommandType = CommandType.StoredProcedure;  
 var param = cmd.Parameters.AddWithValue("@conditions", conditions);  

@@ -101,7 +101,7 @@
   @apply transition-opacity;
   @apply duration-500;
   @apply absolute;
-  font-size: clamp(18px, 4.5vw, 42px);
+  font-size: clamp(18px, 4.75vw, 42px);
 
   width: 90%;
   aspect-ratio: 16 / 9;
