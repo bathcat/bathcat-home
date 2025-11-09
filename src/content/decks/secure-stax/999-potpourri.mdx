@@ -671,3 +671,179 @@ public async Task<Ok<ReviewDto>> GetReview(
 ---
 
 
+
+## Secrets Management
+
+---
+
+### What Are Secrets?
+
+* **Secrets**: Long-lived credentials with elevated privileges, not user-specific
+* Examples: 
+  - JWT signing keys, 
+  - Database connection strings, 
+  - API keys
+* [Uber breach (2016)](https://www.ftc.gov/news-events/news/press-releases/2018/09/uber-pays-148-million-settle-data-breach-coverup)
+  - AWS credentials in private GitHub repo
+  - 57 million records stolen
+
+---
+
+### Client-Side Reality Check
+
+* **Web browsers**: Nothing is secret (DevTools exposes everything)
+* **Mobile apps**: Reverse engineering extracts embedded keys
+* **Solution**: Design assuming client secrets will be compromised
+  - Use short-lived tokens, not long-lived API keys
+  - Backend validates all permissions
+  - Client never makes authorization decisions
+
+---
+
+### The Landscape
+
+| Approach | Developer Experience | Security | Typical Use |
+|----------|:-------------------:|:--------:|:------------|
+| **appsettings.json** | ⭐⭐⭐ | ❌ | Local dev only |
+| **Environment variables** | ⭐⭐ | ⚠️ | Containers, CI/CD |
+| **Azure Key Vault** | ⭐ | ✅ | Production |
+
+<br/>
+
+* Trade-off is real: convenience vs. protection
+* No perfect solution; choose based on environment and risk
+
+
+
+---
+
+### Approach #1: Configuration Files
+
+```csharp
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=prod;Database=app;User=sa;Password=SuperSecret123"
+  },
+  "JwtSettings": {
+    "Secret": "my-super-secret-key-that-should-not-be-here"
+  }
+}
+```
+
+**Vulnerabilities:**
+* Path traversal attacks can expose files
+* Accidentally committed to source control
+* Visible in deployed artifacts and backups
+
+---
+
+### Approach #2: Environment Variables
+
+**Strengths:**
+* Not stored in source control
+* Standard across platforms (Docker, Kubernetes, Azure, AWS)
+* Easy to rotate without code changes
+
+**Weaknesses:**
+* Unencrypted in memory
+* Visible in process listings (`ps aux`, Task Manager)
+* Often logged in deployment pipelines
+* Insider threat: anyone with server access can read them
+
+---
+
+### Approach #3: Secrets Manager Pattern
+
+```csharp
+var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+```
+
+**Key insight:** App code is agnostic to storage implementation
+
+* `IConfiguration` abstraction decouples retrieval from storage
+* Dev environment: dotnet user-secrets (encrypted local file)
+* Production: Azure Key Vault (centralized cloud service)
+* Same API, different backing store per environment
+
+---
+
+### [Local Dev: `dotnet user-secrets`](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
+
+```bash
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;..."
+dotnet user-secrets set "JwtSettings:Secret" "dev-only-key-12345"
+dotnet user-secrets list
+```
+
+**How it works:**
+* Stored outside project directory (never in source control)
+* Encrypted on local machine at `%APPDATA%\Microsoft\UserSecrets`
+* Per-project isolation via unique ID in `.csproj`
+
+---
+
+### Production: Azure Key Vault
+
+```csharp
+builder.Configuration.AddAzureKeyVault(
+    new Uri($"https://{keyVaultName}.vault.azure.net/"),
+    new DefaultAzureCredential()
+);
+```
+
+**Strengths:**
+* Centralized, encrypted storage with audit trails
+* Fine-grained access policies per secret
+* Rotation without redeployment
+
+**Weaknesses:**
+* Developer onboarding friction (every dev needs access configured)
+* External dependency (network latency, availability)
+* Cost scales with access frequency
+
+---
+
+### Common Vulnerabilities: Privileged Access
+
+* **All approaches** remain vulnerable to privileged insiders:
+  - Ops/DevOps engineers with deployment access
+  - Cloud provider support staff
+  - Database administrators with production access
+  - Platform engineers managing infrastructure
+
+**Reality:**
+* These roles need access to do their jobs
+* Trust is unavoidable, but audit trails help
+* Principle of least privilege reduces exposure
+
+---
+
+### Common Vulnerabilities: Inadvertent Exposure
+
+* Third-party services with broad access:
+  - Log aggregators (Datadog, Splunk) ingesting secrets from logs
+  - APM tools (New Relic, Application Insights) capturing request details
+  - CI/CD platforms storing secrets in build logs
+  - Support ticket systems where devs paste error messages
+
+**The problem:**
+* Each integration multiplies attack surface
+* One misconfigured integration bypasses all your careful work
+* Example: `logger.Info($"Using connection: {connectionString}")`
+
+---
+
+### Architecture: Limiting Blast Radius
+
+* **Principle**: Each service gets only what it needs
+* **Example #1**: 
+  - Token-issuing service: private signing key
+  - Resource APIs: public verification key only
+* **Example #2**:
+  - Each business service: connection string to its own database
+  - No service has credentials for all databases
+* [Principle of least privilege](https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices#lower-exposure-of-privileged-accounts) at the service level
+* Works great for microservices, doesn't help a monolith
+
