@@ -847,3 +847,40 @@ builder.Configuration.AddAzureKeyVault(
 * [Principle of least privilege](https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices#lower-exposure-of-privileged-accounts) at the service level
 * Works great for microservices, doesn't help a monolith
 
+---
+
+
+
+## Drift
+
+---
+
+### [British Airways Breach](https://www.bbc.com/news/technology-54568784) (2018)
+
+* 400,000+ payment card details stolen
+* [Magecart attack](https://en.wikipedia.org/wiki/Magecart) injected malicious JavaScript into payment page
+* **Contributing factor**: Extensive debug logging left enabled in production
+* Logs captured sensitive data that shouldn't have been recorded
+* Combined failures:
+  - No Content Security Policy
+  - Compromised third-party script
+  - Debug configuration in production
+* Fine: £20 million (reduced from £183 million)
+
+---
+
+### Dev vs. Prod: Configuration as Attack Surface
+
+* **Anti-pattern**: Optimize for dev experience, forget to harden for production
+* **Examples**:
+  - Verbose logging → PII/secrets in logs
+  - `appsettings.json` secrets → deployed to production
+  - Debug endpoints → exposed to internet
+  - Detailed error messages → information disclosure
+
+**Mitigations:**
+* Environment-specific configuration (build-time or runtime)
+* Deployment checklists and automated validation
+* "Secure by default" - require explicit flags to enable debug features
+
+---
