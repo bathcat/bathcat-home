@@ -22,6 +22,22 @@ flavor: 'Deck'
 
 ---
 
+### Evolution of Browser Security
+
+```mermaid
+timeline
+    2005 : XMLHttpRequest widely adopted
+         : Same Origin Policy solidified
+    2009 : CORS specification begins (W3C)
+    2013 : CORS supported by all major browsers
+    2012 : Content Security Policy 1.0
+    2014 : CSP widely adopted by major sites
+    2019 : Trusted Types API introduced (Chrome)
+    2023 : Trusted Types in major frameworks
+```
+
+---
+
 ### The Early Web: 2005
 
 * Browsers had minimal cross-site protections
@@ -76,10 +92,22 @@ flavor: 'Deck'
 ### SOP Defined
 * Browser-based security mechanism
 * Restricts a script from one 'origin' getting resources from another
-{/* TODO: Update this to a modern mermaid diagram */}
-<figure  style='width:40%;height:auto;'>
-![Cross-blocked](./assets/cross-blocked.jpg)
-</figure>
+
+<div style="transform: scale(1.35); transform-origin: top center; margin-left: 10em;">
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant site-a.com
+    participant site-b.com
+    
+    Browser->>site-a.com: GET page with JavaScript
+    site-a.com-->>Browser: ✓ Page loaded
+    
+    Browser->>site-b.com: XHR request from site-a script
+    site-b.com-->>Browser: ❌ Blocked by SOP
+```
+</div>
 
 
 ---
@@ -90,20 +118,6 @@ flavor: 'Deck'
 3. Port
 
 #### Remember: SOP = DPP
-
-
-
-
----
-
-### Same Origin is Easy
-{/* TODO: Update this to a modern mermaid diagram */}
-<a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS' target='_blank'>
-<figure  style='width:60%;height:auto;margin-right:20rem;'>
-![CORS-principle](./assets/CORS_principle.png)
-</figure>
-</a>
-
 
 ---
 
@@ -125,8 +139,10 @@ flavor: 'Deck'
 
 ---
 
-## Cross-Origin Resource Sharing
 
+
+
+## Cross-Origin Resource Sharing
 
 ---
 
@@ -140,16 +156,13 @@ flavor: 'Deck'
 
 ---
 
-### What's CORS?
-> Cross-Origin Resource Sharing (CORS) is a mechanism that 
-> uses additional HTTP headers to tell browsers to give a web 
-> application running at one origin, access to selected resources 
-> from a different origin. A web application executes a 
-> cross-origin HTTP request when it requests a resource that has a different origin
-> (domain, protocol, or port) from its own.
-Note: 
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-- https://www.w3.org/TR/cors/
+### What's [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)?
+
+* Browser mechanism for controlled cross-origin resource sharing
+* Server opts-in via HTTP headers to allow specific origins
+* Enables legitimate cross-origin requests (APIs, CDNs, widgets)
+* Enforced by browsers, not servers
+* **Not authentication or authorization** - separate security concern
 
 
 ---
@@ -161,21 +174,23 @@ Note:
   - Your javascript doesn't have to care
 * A determined hacker 
   - Can modify his browser's source code
-  - Or just use `curl` or something
+  - Or just use `curl` 
 
 
 
 ---
 
 ### What requests use CORS?
-* `XMLHttpRequest`
-* `Fetch` APIs
-* Web Fonts 
-* WebGL textures.
-* Images/video frames drawn to a canvas using drawImage().
-* CSS Shapes from images.
-
-
+#### CORS
+* Requests from `XMLHttpRequest`, `fetch`
+* GET requests for
+  - Web Fonts 
+  - WebGL textures
+  - Images/video frames drawn to a canvas using drawImage().
+  - CSS Shapes from images.
+#### Non-CORS
+* Form POSTs
+* Resource fetch via html attributes e.g. `<img src="...">`
 
 ---
 
@@ -191,6 +206,7 @@ Connection: keep-alive
 Origin: https://foo.example
 
 ```
+
 
 
 ---
@@ -219,16 +235,18 @@ Content-Type: application/xml
 Access-Control-Allow-Origin: https://example.com
 Access-Control-Allow-Methods: POST, GET, OPTIONS
 Access-Control-Allow-Credentials: *
-Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Headers: Content-Type, Authorization
 Access-Control-Max-Age: 86400
 ```
 
 ##### For preflight:
 ```http
-Access-Control-Request-Headers: Content-Type
+Access-Control-Request-Headers: Content-Type, Authorization
 Access-Control-Request-Method: POST
 Origin: https://foo.example
 ```
+
+**Note:** With JWT bearer tokens, every authenticated GET triggers preflight. Higher `Max-Age` values (86400+ seconds) cache preflight responses and improve performance.
 
 ---
 
@@ -251,9 +269,9 @@ Origin: https://foo.example
 ---
 
 ### [Pre-Flight](https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request)
-* Affects potentially dangerous verbs:
-  * DELETE
-  * PUT
+* Affects 
+  - Potentially dangerous verbs `DELETE`, `PUT`, `POST`, etc.
+  - `GET` requests with custom headers
 * Preflighted requests:
   1. Send an HTTP OPTIONS request 
   2. Examine the access control headers
@@ -286,78 +304,58 @@ sequenceDiagram
 
 
 
+---
+
+### Custom Headers Trigger Preflight
+
+
+* `Authorization: Bearer {token}` is a custom header
+* Even GET requests require preflight with custom headers
+* Browser sends OPTIONS first to check permissions
+* Adds latency to every authenticated request
+* `Access-Control-Max-Age` becomes critical for performance
+
 
 
 
 ---
 
-## ASP.NET Core Configuration
-Note: 
--https://docs.microsoft.com/en-us/aspnet/core/security/cors
+## [ASP.NET Core Configuration](https://learn.microsoft.com/en-us/aspnet/core/security/cors)
+
 
 
 ---
 
 ### ASP.NET Core Review 
-{/* TODO: Update this to a modern (not startup) */}
-* What's Middleware?
-* What's Startup.cs?
+* What's [Middleware](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/)?
+* What's Program.cs?
 
 
 ---
 
-### Setup Steps:
-1. Create a default policy
-2. Set up the policy in `ConfigureServices`
-3. Reference the policy in `Configure`
+### CORS Configuration in Program.cs
 
+```csharp title='Program.cs' {3-11, 16}
+var builder = WebApplication.CreateBuilder(args);
 
----
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(policy => 
+        policy.AllowAnyOrigin().AllowAnyHeader();
+    );
 
-### Step 1: Create a Policy
+    options.AddPolicy("BetaTesterPolicy", policy => 
+        policy.WithOrigins("http://example.com").AllowAnyHeader();
+    );
+});
 
-```csharp title='ServiceCollectionExtensions.cs'
-public static void AddCorsPolicies(this IServiceCollection services)
-    => services.AddCors(options =>{
+var app = builder.Build();
 
-        options.AddDefaultPolicy(builder =>{
-            builder.AllowAnyOrigin().AllowAnyHeader();
-        });
+app.UseRouting();
+app.UseCors();
 
-        options.AddPolicy("BetaTesterPolicy", builder =>{
-            builder.WithOrigins("http://example.com")
-                   .AllowAnyHeader();
-        });
-    });
-
-
+app.MapControllers();
+app.Run();
 ```
-
-
----
-
-### Step 2: Apply Policy 
-```csharp
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-{
-    //...
-    app.UseRouting();
-
-    app.UseCors();
-    //app.UseCors("BetaTesterPolicy");
-
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapControllers();
-    });
-
-    //...
-}
-```
-Note: 
-- Why does the order matter?
-
-
 
 ---
 
@@ -380,16 +378,16 @@ Note:
 ---
 
 ### Alternative: CORS Attributes
-* Apply [EnableCorsAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.cors.enablecorsattribute?view=aspnetcore-3.1)
-* More flexibility
+* Apply [EnableCorsAttribute](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.cors.enablecorsattribute) to controllers/actions
+* More flexibility per endpoint
 
 
 
 ---
 
 ### Attribute Example
-{/* TODO: Update this to a minimal api */}
-```csharp
+
+```csharp title='EnfarculatorController.cs' {5,10}
 [Route("api/[controller]")]
 [ApiController]
 public class EnfarculatorController : ControllerBase
@@ -408,6 +406,60 @@ public class EnfarculatorController : ControllerBase
 ```
 
 
+
+
+---
+
+### CORS Configuration Patterns
+
+**BFF + SPA Pattern:**
+```csharp
+options.AddPolicy("SpaPolicy", builder => {
+    builder.WithOrigins("https://myapp.example.com")
+           .AllowAnyHeader()
+           .AllowAnyMethod()
+           .AllowCredentials();
+});
+```
+
+* Specific origin (your SPA domain)
+* Any header (supports Authorization, custom headers)
+* Any method (GET, POST, PUT, DELETE)
+* Credentials allowed (cookies, auth headers)
+
+
+---
+
+### CORS with [Minimal API Groups](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/route-handlers#route-groups)
+
+```csharp title='SnakeEndpoints.cs' {5}
+public static void MapSnakeEndpoints(this WebApplication app){
+
+    var snakesGroup = app.MapGroup("/snakes")
+        .RequireAuthorization()
+        .RequireCors("SpaPolicy")
+        .WithTags("Snakes");
+
+    snakesGroup.MapGet("/", GetSnakes)
+        .WithName("GetSnakes")
+        .Produces<IEnumerable<Snake>>(StatusCodes.Status200OK)
+        .WithDescription("Gets snakes.");
+}
+```
+
+* Apply CORS policy to entire [endpoint group](https://learn.microsoft.com/en-us/aspnet/core/security/cors#cors-with-named-policy-and-middleware)
+* Cleaner than per-endpoint attributes
+
+
+---
+
+### CORS Gotchas
+
+* `Access-Control-Allow-Origin: *` can't be used with credentials
+* Wildcards in origins require `*` alone, not `*.example.com`
+* **CORS is not authorization** - attackers bypass with curl/Postman
+* Preflight cache (`Max-Age`) can mask configuration changes
+* Middleware order matters - `UseCors()` must come before `UseAuthorization()`
 
 
 ---
