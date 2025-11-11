@@ -65,7 +65,7 @@ flavor: 'Deck'
 
 ---
 
-### ASP.NET Core Identity
+### [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity)
 * Includes UI for
   * End users
   * Management
@@ -89,6 +89,7 @@ flavor: 'Deck'
 ---
 
 ### `launchSetting.json`
+{/* TODO: Update this */}
 ```json title='launchSetting.json'
 "iisSettings": {
     "windowsAuthentication": true,
@@ -100,10 +101,10 @@ flavor: 'Deck'
 ---
 
 ### Schemes and Handlers
-* ___Authentication Handler___ does the actual work
-* ___Authentication Scheme___ 
-  * Configures the handler instance
-  * Functions as a handle for other components to reference
+* ___[Authentication Handler](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.authenticationhandler-1)___ does the actual work
+* ___[Authentication Scheme](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/?view=aspnetcore-9.0#authentication-scheme)___ 
+  - Configures the handler instance
+  - Functions as a handle for other components to reference
 
 
 ---
@@ -141,6 +142,7 @@ services
 ---
 
 ### Step 2: Consume Services
+{/* TODO: Consolidate this into a title=Program.cs */}
 ```csharp title='Program.cs'
   app.UseAuthentication();
 ```
