@@ -14,8 +14,9 @@
   padding: 1rem 1.5rem 1rem 1.5rem;
   border-image-slice: 15% 20% fill;
   border-width: 2.25rem 1.5rem 2.25rem 1.5rem;
-  margin-left: 1.5rem;
+  margin-left: 2em !important;
   margin-right: 2rem;
+  margin-bottom: 1rem;
   opacity: 100%;
 }
 
@@ -135,6 +136,17 @@
     }
   }
 
+  blockquote {
+    @apply border-l-8;
+    @apply border-gray-400;
+    @apply pl-4;
+    @apply my-4;
+    padding-right: 3em;
+    font-size: 90%;
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
   div.expressive-code {
     @apply max-w-7xl;
     @apply pl-2;
@@ -240,12 +252,12 @@
 
     th:first-child,
     td:first-child {
-      padding-left: .5em;
+      padding-left: 0.5em;
     }
 
     th:last-child,
     td:last-child {
-      padding-right: .5em;
+      padding-right: 0.5em;
     }
   }
 
