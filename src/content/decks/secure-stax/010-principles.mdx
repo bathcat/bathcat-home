@@ -40,11 +40,10 @@ By the end of this deck, you should be able to answer--
 ![Andrej Karpathy](./assets/me_new.via-karpathy.ai.jpg)
 </figure>
 
-> Millions and hundreds of millions of people's personal Social Security 
-> numbers get leaked or something like that. So in software, people should 
+> So in software, people should 
 > be careful, kind of like in self-driving. In self-driving, if things go 
 > wrong, you might get injured. There are worse outcomes. But in software, 
-> it's almost unbounded how terrible something could be.
+> it's __almost unbounded how terrible something could be__.
 
 #### [Andrej Karpathy](https://www.youtube.com/watch?v=lXUZvyajciY)
 
@@ -87,241 +86,10 @@ By the end of this deck, you should be able to answer--
   - Exploit multiple vulnerabilities in sequence
   - Range from individuals to state actors to criminal enterprises
 * Defense requires layered security approach
-* *Good news*: No single failure causes catastrophe
+* *Good news*: Single failures are rarely catastrophic
 
----
 
 
-
-
-
-
-## Mindset
-
-
----
-
-### Overview
-1. Not Binary
-1. Relative
-1. Process
-
-
----
-
-### Security is Not Binary
-#### [Gene Spafford](https://en.wikipedia.org/wiki/Gene_Spafford):
-<figure class='bc-framed-image bc-figure-float' style='width:25%;height:auto;'>
-![Gene Spafford](./assets/Gene-spafford.jpg)
-</figure>
-
-
-> The only truly secure system is one that is powered off, 
-> cast in a block of concrete and sealed in a lead-lined room 
-> with armed guards - and even then I have my doubts. 
-
----
-
-### Security is relative
-* There's no door that the NSA can't get in, but that doesn't matter. 
-* (Hereafter referred to as a skilled and determined hacker.) 
-* But even with those resources, it's not worth the money.
-
-
----
-
-### Bear Joke 
-<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
-![Bear Safety](./assets/bear_safety.jpg)
-</figure>
-
----
-
-### Security is a Feature
-* It's just for a long time, no one was very articulate
-* They just say, it should 'be secure'
-* Think about your risk profile and risk tolerance
-
-
----
-
-### Alignment is Hard
-#### [Mark Magliocco:](https://blog.sonatype.com/beyond-npm-audit)
-<br/>
-
-> Agreement is easy... alignment is hard. When I ask my wife if she wants dinner,
-> she quickly says okay-- the trouble starts when I ask where we should go.
-
-
----
-
-### Security Should be Redundant
-<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
-![Motte and Bailey](./assets/motte_and_bailey.jpg)
-</figure>
-
-
-* Defence in depth
-* Like a [Motte-and-bailey castle](https://en.wikipedia.org/wiki/Motte-and-bailey_castle)
-* Example: 
-  * Secure your identity database
-  * Hash and salt passwords
-
-
----
-
-### Stand on the shoulders of giants
-* Don't roll your own stuff
-* Think hard before adopting non-mainstream stuff (e.g. Choose Vue over Elm (or whatever))
-* Avoid dependencies. If you don't need dancing bunnies, or whatever, maybe roll your own.
-* Follow best-practices
-
-
-
----
-
-### Think Like a Practitioner
-* The one time I got fired 
-* Hippocratic oath
-* Responsibility to users
-
-
----
-
-
-
-
-
-
-## Basicist Rules for Web Apps
-
-
----
-
-### Think about __Trust__
-* Can you trust the integrity an HTTP request?
-* Answer: No
-* What about internally-facing services?
-* Also: No
-
-
----
-
-### Don't Mix Streams
-
-
-* An entire class of vulnerabilities comes f
-  rom mixing superficially similar text-like data:
-  - SQL Injection
-  - XSS
-  - Command Injection
-  - LDAP Injection
-* Analogy: Tap water and flood water
-
----
-
-### Recipe: Value Objects & Branded Types
-* Way out of primitive obsession
-* 
-
----
-
-### [Vogen](https://TODO_Vogen_link.com)
-* Code generator for generating value objects
-```csharp title='SanitizedString.cs'
-using Vogen;
-
-[ValueObject<string>()]
-public partial struct SanitizedString{}
-```
-
-```csharp title='UserProfile.cs'
-public sealed record UserProfile
-{
-  public Guid Id { get; init; }
-  public string Name { get; init; }
-  public string Email { get; init; }
-  public SanitizedString Bio { get; init; }
-}
-
-```
-
-
-
----
-
-### Validate Input
-> **Input validation** is the process of ensuring input data is consistent with application expectations. Data that falls outside of an expected set of values can cause our application to yield unexpected results, for example violating business logic, triggering faults, and even allowing an attacker to take control of resources or the application itself. 
-
-
----
-
-### Never Trust Input
-* When building a client, assume the server is compromised
-* Building an API, assume you're talking to a hacker
-
-
----
-
-### Bad Input Validation Enables
-* Cross Site Scripting
-* SQL Injection
-* Path Traversal
-
-
----
-
-### Encode HTML
-* HTML is a very, very permissive format
-* Browsers try their best to render the content, even if it is malformed
-
-
----
-
-### Bind Parameters for Database Queries
-* **Don't** concatenate strings
-* Use a prepared statement
-  e.g. [SqlCommand](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand)
-* Better yet [EF Core](https://docs.microsoft.com/en-us/ef/core/)
-
-
----
-
-### Protect Data in Transit
-* SSL Everywhere
-
-
----
-
-### Follow Checklists
-* Look it up
-* cheatsheetseries.owasp.org
-
-
----
-
-### Security Theater
-* Lots of security practices don't help
-  * Password expiration
-  * PIN complexity
-* Do it anyway
-* Tall poppy syndrome
-
-
-
----
-
-### Resources
-
-* Sites
-  * [Schneier on Security](https://www.schneier.com/)
-  * [OWASP Cheat Sheet Series](https://owasp.org/www-project-cheat-sheets/cheatsheets/)
-  * [Krebs on Security](https://krebsonsecurity.com/)
-
-* Books
-  * Kevin Mitnick
-  * The Gift of Fear 
-  * Facing Violence
 
 ---
 
@@ -349,14 +117,7 @@ public sealed record UserProfile
 4. [Insecure Design](https://owasp.org/Top10/A04_2021-Insecure_Design/)
 5. [Security Misconfiguration](https://owasp.org/Top10/A05_2021-Security_Misconfiguration/)
 
----
-
-### OWASP Top 10 List (II)
-6. [Vulnerable and Outdated Components](https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/)
-7. [Identification and Authentication Failures](https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/)
-8. [Software and Data Integrity Failures](https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/)
-9. [Security Logging and Monitoring Failures](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/)
-10. [Server-Side Request Forgery](https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/)
+Etc, etc, etc.
 
 ---
 
@@ -461,6 +222,314 @@ mindmap
 * **In code review**: Technical mechanisms (SQL injection, XSS)
 * **In architecture review**: Design patterns and principles
 * Don't let any single taxonomy constrain your thinking
+
+---
+
+
+
+## Mindset
+
+
+---
+
+### Overview
+1. Not Binary
+1. Relative
+1. Process
+
+
+---
+
+### Security is Not Binary
+#### [Gene Spafford](https://en.wikipedia.org/wiki/Gene_Spafford):
+<figure class='bc-framed-image bc-figure-float' style='width:25%;height:auto;'>
+![Gene Spafford](./assets/Gene-spafford.jpg)
+</figure>
+
+
+> The only truly secure system is one that is powered off, 
+> cast in a block of concrete and sealed in a lead-lined room 
+> with armed guards - and even then I have my doubts. 
+
+
+---
+
+### Security is relative
+* There's no door that the NSA can't get in, but that doesn't matter. 
+* (Hereafter referred to as a skilled and determined hacker.) 
+* But even with those resources, it's not worth the money.
+
+
+---
+
+### Surface Area vs Blast Radius
+* **Surface Area**: What can be attacked
+  - Public APIs
+  - User input fields
+  - Third-party dependencies
+  - Exposed ports and services
+* **Blast Radius**: Damage when something fails
+  - Single user vs entire database
+  - One service vs entire infrastructure
+
+---
+
+### Minimize Both
+* **Reduce Surface Area**
+  - Principle of least privilege
+  - Remove unused endpoints
+  - Limit exposed functionality
+* **Contain Blast Radius**
+  - Database connection with minimal permissions
+  - Separate read/write databases
+  - Network segmentation
+
+---
+
+### Bear Joke 
+<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
+![Bear Safety](./assets/bear_safety.jpg)
+</figure>
+
+---
+
+### Security is a Feature
+* It's just for a long time, no one was very articulate
+* They just say, it should 'be secure'
+* Think about your risk profile and risk tolerance
+
+
+---
+
+### Security Needs Tickets
+* If security is a feature, it needs:
+  - Requirements
+  - Tracking
+  - Prioritization
+  - Definition of done
+* Checklists map naturally to Jira tickets
+* Makes security work visible and measurable
+* Easier to allocate time and resources
+
+---
+
+### Alignment is Hard
+#### [Mark Magliocco:](https://blog.sonatype.com/beyond-npm-audit)
+<br/>
+
+> Agreement is easy... alignment is hard. When I ask my wife if she wants dinner,
+> she quickly says okay-- the trouble starts when I ask where we should go.
+
+
+---
+
+### Security Should be Redundant
+<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
+![Motte and Bailey](./assets/motte_and_bailey.jpg)
+</figure>
+
+
+* Defence in depth
+* Like a [Motte-and-bailey castle](https://en.wikipedia.org/wiki/Motte-and-bailey_castle)
+* Example: 
+  * Secure your identity database
+  * Hash and salt passwords
+
+
+---
+
+### Stand on the shoulders of giants
+* Don't roll your own stuff
+* Think hard before adopting non-mainstream stuff (e.g. Choose Vue over Elm (or whatever))
+* Avoid dependencies. If you don't need dancing bunnies, or whatever, maybe roll your own.
+* Follow best-practices
+
+
+
+---
+
+### Think Like a Practitioner
+* You have a responsibility to your users
+* Their data, their accounts, their trust
+* Like a doctor: first, do no harm
+* Security breaches hurt real people
+* Take it seriously even when management doesn't
+
+
+---
+
+
+
+
+
+
+## Basicist Rules for Web Apps
+
+
+---
+
+### Think about __Trust__
+* Can you trust the integrity an HTTP request?
+* Answer: No
+* What about internally-facing services?
+* Also: No
+
+
+---
+
+### Don't Mix Streams
+
+* An entire class of vulnerabilities comes from mixing superficially similar text-like data:
+  - SQL Injection: mixing SQL code with user data
+  - XSS: mixing HTML/JavaScript with user content
+  - Command Injection: mixing shell commands with parameters
+  - Path Traversal: mixing file paths with user input
+  - LDAP Injection: mixing LDAP queries with user data
+* Analogy: Tap water and flood water look similar, but you don't want them in the same glass
+
+---
+
+### The String Problem
+* Everything looks like a string
+* But a file path is not semantically the same as a user bio
+* And HTML is not semantically the same as plain text
+* Treating them all as strings invites confusion
+* This confusion creates vulnerabilities
+
+---
+
+### Recipe: Value Objects & Branded Types
+* Primitive obsession: treating everything as strings
+* Problem: string concatenation works on anything
+  - Concatenate two dates? Meaningless
+  - Concatenate file paths? Path traversal
+  - Concatenate HTML fragments? XSS
+* Solution: Make the type system help you
+* If semantically different, make them different types
+
+---
+
+### [Vogen](https://github.com/SteveDunn/Vogen)
+* Code generator for generating value objects
+
+```csharp title='SanitizedString.cs'
+using Vogen;
+
+[ValueObject<string>()]
+public partial struct SanitizedString{}
+```
+
+```csharp title='UserProfile.cs'
+public sealed record UserProfile
+{
+  public Guid Id { get; init; }
+  public string Name { get; init; }
+  public string Email { get; init; }
+  public SanitizedString Bio { get; init; }
+}
+```
+
+Now you can't accidentally mix sanitized and unsanitized strings
+
+---
+
+### Trusted Types in the Browser
+* W3C standard applying same principle to JavaScript
+* Prevents strings from being used as HTML/URLs/Scripts
+* Requires explicit conversion through sanitization
+* Forces you to be intentional about trust boundaries
+
+
+
+---
+
+### Validate Input
+> **Input validation** is the process of ensuring input data is consistent with application expectations. Data that falls outside of an expected set of values can cause our application to yield unexpected results, for example violating business logic, triggering faults, and even allowing an attacker to take control of resources or the application itself. 
+
+
+---
+
+### Never Trust Input
+* When building a client, assume the server is compromised
+* Building an API, assume you're talking to a hacker
+
+
+---
+
+### Bad Input Validation Enables
+* Cross Site Scripting
+* SQL Injection
+* Path Traversal
+
+
+---
+
+### Encode HTML
+* HTML is a very, very permissive format
+* Browsers try their best to render the content, even if it is malformed
+
+
+---
+
+### Bind Parameters for Database Queries
+* **Don't** concatenate strings
+* Use a prepared statement
+  e.g. [SqlCommand](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand)
+* Better yet [EF Core](https://docs.microsoft.com/en-us/ef/core/)
+
+
+---
+
+### Protect Data in Transit
+* SSL Everywhere
+
+
+---
+
+### Follow Checklists
+* OWASP Cheat Sheet Series: cheatsheetseries.owasp.org
+* Translates directly to actionable work items
+* Each checklist item becomes a ticket
+* Makes security auditable and trackable
+
+
+---
+
+### Security Theater
+* Some practices have questionable efficacy
+  - Password expiration policies
+  - Complex PIN requirements
+  - Security questions
+* But they're still useful:
+  - Might actually help in ways we don't understand
+  - Industry standard for responsible organizations
+  - Hard to defend deviation during a breach
+
+---
+
+### The Rain Dance Problem
+* Even when people suspect rain dances are ineffectual
+* The person in charge can't cancel them
+* Because droughts actually happen
+* And when the drought comes, it's already a hard conversation
+* Without having to explain why you stopped doing what everyone else does
+* Do the industry-standard minimum, then add real security on top
+
+
+
+---
+
+### Resources
+
+* Sites
+  * [Schneier on Security](https://www.schneier.com/)
+  * [OWASP Cheat Sheet Series](https://owasp.org/www-project-cheat-sheets/cheatsheets/)
+  * [Krebs on Security](https://krebsonsecurity.com/)
+
+* Books
+  * Kevin Mitnick
+  * The Gift of Fear 
+  * Facing Violence
 
 ---
 
