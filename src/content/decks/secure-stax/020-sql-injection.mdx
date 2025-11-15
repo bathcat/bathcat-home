@@ -9,12 +9,18 @@ flavor: 'Deck'
 
 ---
 
-
 ### Goals
-* Explain how SQL injection attacks work
-* List 3 techniques to mitigate
+By the end of this deck, you should be able to answer--
+1. What is **SQL injection** and why does it still happen?
+2. Name 3 techniques to prevent SQL injection.
+3. Which EF Core method is safer: `FromSqlRaw` or `FromSqlInterpolated`?
 
 
+---
+
+### Roadmap
+1. Basics
+2. Mitigation
 
 ---
 
@@ -344,4 +350,14 @@ var param = cmd.Parameters.AddWithValue("@conditions", conditions);
 param.SqlDbType = SqlDbType.Structured; 
 ```
 
+---
+
+## Fin
+
+---
+
+### Recap
+1. What is **SQL injection** and why does it still happen?
+2. Name 3 techniques to prevent SQL injection.
+3. Which EF Core method is safer: `FromSqlRaw` or `FromSqlInterpolated`?
 

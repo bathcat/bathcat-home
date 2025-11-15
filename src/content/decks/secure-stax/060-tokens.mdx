@@ -10,15 +10,19 @@ flavor: 'Deck'
 ---
 
 ### Goals
-* Compare roles and claims
-* Define CSRF
-* Explain why .NET allows different authorization policies
-
+By the end of this deck, you should be able to answer--
+1. What's the difference between **OAuth** and **OpenID Connect**?
+2. Name 2 of the 3 parts of a **JWT** token.
+3. Which token storage location has the highest **XSS risk**?
 
 
 ---
 
+### Roadmap
+1. OAuth
+2. JWT
 
+---
 
 ## OAuth
 
@@ -382,5 +386,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   - Configurable
 * **Weaknesses**:
   - Tokens are stealable-- httponly cookies aren't
+
+---
+
+## Fin
+
+---
+
+### Recap
+1. What's the difference between **OAuth** and **OpenID Connect**?
+2. Name 2 of the 3 parts of a **JWT** token.
+3. Which token storage location has the highest **XSS risk**?
 
 
