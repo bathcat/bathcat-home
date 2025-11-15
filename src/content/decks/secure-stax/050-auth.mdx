@@ -788,6 +788,37 @@ export const authConfig: AuthConfig = {
 
 ---
 
+### Hybrid Token Strategy
+
+* **Web clients:** HttpOnly cookies protect against [XSS token theft](https://owasp.org/www-community/attacks/xss/)
+* **Native clients:** Standard Bearer tokens (cookies don't work well)
+* **Challenge:** Supporting both from same API endpoints
+* **Solution:** Middleware transparently converts cookies → Bearer header
+* Downstream authentication sees only Bearer tokens (consistent)
+
+---
+
+### Cookie-to-JWT Middleware
+
+```csharp title='CookieToJwtMiddleware.cs'
+public class CookieToJwtMiddleware {
+    private readonly RequestDelegate _next;
+
+    public async Task InvokeAsync(HttpContext context) {
+        if (!context.Request.Headers.ContainsKey("Authorization") 
+            && Cookies.HasAccessToken(context)) {
+            var accessToken = Cookies.GetAccessToken(context);
+            context.Request.Headers.Append("Authorization", $"Bearer {accessToken}");
+        }
+        await _next(context);
+    }
+}
+```
+
+Register before `UseAuthentication()` in middleware pipeline
+
+---
+
 ### OAuth Security Gotchas
 
 * Validate redirect_uri against whitelist (prevent [open redirects](https://cwe.mitre.org/data/definitions/601.html))
