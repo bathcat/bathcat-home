@@ -466,6 +466,64 @@ public static void MapSnakeEndpoints(this WebApplication app){
 
 
 
+## Cross-Site Request Forgery (CSRF)
+
+---
+
+### What's [CSRF](https://owasp.org/www-community/attacks/csrf)?
+
+* Attacker's site causes a browser to send state-changing requests to another site
+* Works when authentication is cookie-based and requests lack CSRF protection
+* Browser automatically attaches cookies, even across sites, if not restricted
+* Historically critical for banking and admin portals
+* Less common today: `SameSite` cookies and token-based auth reduce the risk
+
+---
+
+### Classic Form POST Attack
+
+* Victim is logged in to `example.com`
+* Attacker hosts page on `example.badactorstudio.com`
+* Visiting attacker page auto-submits a hidden form using victim's cookies
+
+```html title='index.html'
+<h1>You Are a Winner!</h1>
+<form action="https://example.com/api/account" method="post">
+  <input type="hidden" name="Transaction" value="withdraw" />
+  <input type="hidden" name="Amount" value="1000000" />
+  <input type="submit" value="Click Me" />
+</form>
+```
+
+---
+
+### Mitigations Over Time
+
+* Anti-forgery tokens: per-request secrets that attackers cannot read cross-site
+* CORS: protects XHR/fetch with credentials, but does not stop simple form POSTs
+* `SameSite` cookie attribute: modern browsers default to `Lax`, blocking most cross-site POSTs
+* Modern SPAs: use Bearer tokens in `Authorization` header instead of cookies
+* Legacy apps mixing cookies and APIs need explicit CSRF defenses
+
+---
+
+### Anti-Forgery in ASP.NET Core
+
+```csharp
+public void ConfigureServices(IServiceCollection services){
+    services.AddControllersWithViews(options => {
+        options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    });
+}
+```
+
+* Framework feature automatically validates anti-forgery tokens on unsafe HTTP verbs
+* Protects traditional server-rendered forms from CSRF attacks
+
+---
+
+
+
 ## Content Security Policy
 
 ---
