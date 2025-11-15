@@ -63,6 +63,79 @@ Content here
 - Blank line before and after the separator
 - Every content slide starts with `###` heading
 
+## Required Deck Structure
+
+Every deck should follow this standard structure to maintain consistency and help learners track their progress.
+
+### Goals Slide
+
+Place immediately after the deck title slide. Format as questions with definite answers that will be covered in the deck.
+
+```markdown
+---
+
+### Goals
+By the end of this deck, you should be able to answer--
+1. What are 2 components of a request's **origin**?
+2. What is **CORS** and what problems does it solve?
+3. What does **CSRF** stand for? And why is it not the problem that it used to be?
+4. What do **Trusted Types** have to do with _types_ in programming?
+
+
+---
+```
+
+**Guidelines:**
+- Start with "By the end of this deck, you should be able to answer--"
+- Ask 3-4 questions (not statements)
+- Questions should have definite answers covered in the deck
+- Be "forgiving" - ask for 2 when there are 3+ options
+- Bold important terms using `**term**`
+- Questions should be answerable after completing the deck
+
+### Roadmap Slide
+
+Place immediately after the Goals slide. Simple numbered list of major sections (the `##` headings in your deck).
+
+```markdown
+### Roadmap
+1. Browser Security Ecosystem
+2. Same Origin Policy
+3. Cross-Origin Resource Sharing
+4. Content Security Policy
+5. Trusted Types
+
+---
+```
+
+**Guidelines:**
+- Simple numbered list only
+- Each item corresponds to a `##` section heading in the deck
+- No bullets or sub-items
+- Keep it concise - just the section names
+
+### Recap Slide
+
+Place at the very end of the deck, just before the final `## Fin` section if present.
+
+```markdown
+---
+
+### Recap
+1. What are 2 components of a request's **origin**?
+2. What is **CORS** and what problems does it solve?
+3. What does **CSRF** stand for? And why is it not the problem that it used to be?
+4. What do **Trusted Types** have to do with _types_ in programming?
+
+---
+```
+
+**Guidelines:**
+- Exact duplicate of the Goals questions
+- Copy-paste from Goals slide to ensure consistency
+- Serves as reinforcement and self-assessment
+- No additional content - just the questions
+
 ## Content Guidelines
 
 ### Brevity
@@ -378,12 +451,15 @@ From the user's cursor rules:
 ## Testing Your Slides
 
 Before considering slides complete:
-1. Read each slide aloud - does it take more than 30 seconds?
-2. Check all links - do they go to authoritative sources?
-3. Run code examples - do they actually work?
-4. Review progression - does each slide build on the previous?
-5. Verify mermaid diagrams render properly
-6. Check for typos and formatting consistency
+1. **Structure**: Deck has Goals, Roadmap, and Recap slides in correct positions?
+2. **Goals/Recap match**: Recap questions are exact duplicates of Goals?
+3. **Roadmap accuracy**: Roadmap items match actual `##` section headings?
+4. Read each slide aloud - does it take more than 30 seconds?
+5. Check all links - do they go to authoritative sources?
+6. Run code examples - do they actually work?
+7. Review progression - does each slide build on the previous?
+8. Verify mermaid diagrams render properly
+9. Check for typos and formatting consistency
 
 ## Resources Referenced Often
 
