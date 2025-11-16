@@ -14,17 +14,98 @@ By the end of this deck, you should be able to answer--
 1. What is **SQL injection** and why does it still happen?
 2. Name 3 techniques to prevent SQL injection.
 3. Which EF Core method is safer: `FromSqlRaw` or `FromSqlInterpolated`?
+4. Why does SQL injection still matter if it's easy to prevent?
 
 
 ---
 
 ### Roadmap
-1. Basics
-2. Mitigation
+1. Overview
+2. Basics
+3. Mitigation
 
 ---
 
 
+
+## Overview
+
+---
+
+### SQL Injection in 2025
+* Easy to mitigate with modern ORMs and frameworks
+* Successful attacks declining year over year
+* Not a solved problem, but **much better** than 2010
+* So why dedicate a whole deck to it?
+
+---
+
+### But Why Still Care?
+* **Classic trust fallacy** - Textbook example of trusting user input
+* **Shame factor** - Classic blunder, like getting caught in a [land war in Asia](https://en.wikipedia.org/wiki/The_Princess_Bride)
+* **Devastating potential** - Write access to persistence = game over
+* **Easy to probe** - First thing attackers check for
+
+---
+
+### How Devastating?
+* Inject **XSS into every page** served to clients
+* Deploy **keyloggers** to every user session
+* Turn your application into an attack platform
+* One vulnerable endpoint can compromise entire userbase
+
+---
+
+### Data Exfiltration Reality
+* **PII** - Names, addresses, social security numbers
+* **Financial data** - Credit cards, bank accounts
+* **Authentication** - Password hashes, session tokens, API keys
+* **Business secrets** - Pricing, customer lists, proprietary data
+
+---
+
+### [Recent Victims](https://en.wikipedia.org/wiki/SQL_injection)
+{/* TODO: Update with newer examples as they emerge */}
+* [Cock.li email breach](https://socradar.io/major-cyber-attacks-june-2025/) (2025) - 1M+ users via Roundcube
+* [MOVEit breach](https://en.wikipedia.org/wiki/2023_MOVEit_data_breach) (2023) - 2,700+ orgs, 93M individuals
+* [Bulgarian Revenue Agency](https://www.bbc.com/news/world-europe-48925871) (2019) - 5M+ citizens
+
+---
+
+### When Vulnerabilities Sneak In
+* Simple CRUD with LINQ? Hard to mess up
+* **Dynamic queries** are the danger zone:
+  * User selects N filter terms
+  * Multiple "compare" checkboxes
+  * Wildcard searches across fields
+* Junior engineer reaches for [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-9.0)`StringBuilder`
+
+---
+
+### The Temptation
+
+```csharp title='ProductRepository.cs'
+var sql = "SELECT * FROM Products WHERE ";
+foreach(var term in searchTerms){
+    sql += "Name LIKE '%" + term + "%' OR ";
+}
+sql += "1=0";
+
+var products = context.Products
+    .FromSqlRaw(sql)
+    .ToList();
+```
+
+---
+
+### The Catch
+* Attackers need **write access** for maximum damage
+* [Timing attacks](https://owasp.org/www-community/attacks/Blind_SQL_Injection) like `WAITFOR` have low bandwidth
+* Require additional vulnerabilities:
+  * Leaked error messages (design/devops failure)
+  * Poor operational logging (millions of slow queries unnoticed)
+
+---
 
 
 
@@ -45,20 +126,6 @@ By the end of this deck, you should be able to answer--
 ![Exploits of a Mom](./assets/exploits_of_a_mom.png)
 </figure>
 
----
-
-### [Details](https://codecurmudgeon.com/wp/sql-injection-hall-of-shame/)
-* It's been around [forever](https://www.vice.com/en_us/article/aekzez/the-history-of-sql-injection-the-hack-that-will-never-go-away)
-* Still happening all the time 
-* Very Popular
-
-
----
-
-### SQL Injection is Popular
-1. Lots of vulnerable applications
-2. Databases make attractive targets
-
 
 ---
 
@@ -68,17 +135,6 @@ By the end of this deck, you should be able to answer--
 * Exfiltrate information
   - Error messages
   - Blind Attacks
-
-
-
-
----
-
-### [Recent SQL Injection Victims](https://nakedsecurity.sophos.com/2018/02/19/hackers-sentenced-for-sql-injections-that-cost-300-million/)
-{/* TODO: Update this */}
-* Bulgarian Revenue Agency
-* United Nations Internet Governance Forum
-* Johns Hopkins University
 
 
 ---
@@ -360,4 +416,5 @@ param.SqlDbType = SqlDbType.Structured;
 1. What is **SQL injection** and why does it still happen?
 2. Name 3 techniques to prevent SQL injection.
 3. Which EF Core method is safer: `FromSqlRaw` or `FromSqlInterpolated`?
+4. Why does SQL injection still matter if it's easy to prevent?
 
