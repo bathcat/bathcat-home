@@ -25,7 +25,6 @@ By the end of this deck, you should be able to answer--
 3. Server-side XSS
 4. DOM-Based XSS
 5. Server-Side Defenses
-6. Next Steps
 
 ---
 
@@ -339,18 +338,19 @@ export class LoginInfo implements OnInit {
 
 ### The Dangerous Pattern
 
-```typescript title='search-results.component.ts'
+```typescript title='search-results.component.ts' {12, 15}
 import { Component, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 
 export class SearchResultsComponent {
   private sanitizer = inject(DomSanitizer);
+  searchTerm = inject(ActivatedRoute).snapshot.queryParams['search'];
 
-  //Called from template
-  highlightQuery(text: string, query: string): SafeHtml {
+  highlightQuery(text: string): SafeHtml {
     const highlighted = text.replace(
-      new RegExp(query, 'gi'),
-      match => `<mark>${match}</mark>`
+      new RegExp(this.searchTerm, 'gi'),
+      match => `<span style="background: linear-gradient(45deg, #ff0, #f0f)">${match}</span>`
     );
     
     return this.sanitizer.bypassSecurityTrustHtml(highlighted);
@@ -362,11 +362,12 @@ export class SearchResultsComponent {
 ---
 
 ### What's Wrong Here?
-* `bypassSecurityTrustHtml` disables Angular's protections
-* `query` parameter is user-controlled
-* Attacker sends: `<img src=x onerror=alert('pwned')>`
-* Gets wrapped in `<mark>` tags but still executes
-* **Fix**: Sanitize both `text` and `query` before highlighting
+* Developer wants fancy gradient highlighting
+* Angular strips inline `style` attributes by default
+* So developer bypasses with `bypassSecurityTrustHtml`
+* `searchTerm` comes from query string (user-controlled)
+* Attacker crafts URL: `?search=<img src=x onerror=alert('pwned')>`
+* Victim clicks link, script executes with their session
 
 
 ---
@@ -374,20 +375,23 @@ export class SearchResultsComponent {
 ### Better Approach
 
 ```typescript title='search-results.component.ts'
-highlightQuery(text: string, query: string): string {
-  const safeText = text.replace(/[<>]/g, '');
-  const safeQuery = query.replace(/[<>]/g, '');
-  
-  return safeText.replace(
-    new RegExp(safeQuery, 'gi'),
-    match => `<mark>${match}</mark>`
+highlightQuery(text: string): string {
+  return text.replace(
+    new RegExp(this.searchTerm, 'gi'),
+    match => `<span class="search-highlight">${match}</span>`
   );
 }
 ```
 
+```css title='search-results.component.css'
+.search-highlight {
+  background: linear-gradient(45deg, #ff0, #f0f);
+}
+```
+
+* Use CSS classes instead of inline styles
 * No bypass needed
-* Angular's built-in sanitization handles the rest
-* Strips angle brackets from both inputs
+* Angular allows safe tags and class attributes
 
 
 
@@ -443,6 +447,31 @@ public class CommentDto {
 
 ---
 
+### Example: Explicit Sanitization
+
+```csharp title='CommentsController.cs'
+app.MapPost("/api/comments", async (
+    CommentDto request,
+    IHtmlSanitizer sanitizer,
+    AppDbContext db) => {
+    var comment = new Comment {
+        Content = sanitizer.Sanitize(request.Content),
+        AuthorId = request.AuthorId
+    };
+    
+    db.Comments.Add(comment);
+    await db.SaveChangesAsync();
+    
+    return Results.Created($"/api/comments/{comment.Id}", comment);
+});
+```
+
+* Sanitize before storage, not just validate
+* Use library like [HtmlSanitizer](https://github.com/mganss/HtmlSanitizer)
+
+
+---
+
 ### Benefits of Server-Side Detection
 * Know when someone is probing for vulnerabilities
 * Distinguish between fat-finger and attack
@@ -454,13 +483,7 @@ public class CommentDto {
 ---
 
 
-
-
-## Next Steps
-
----
-
-### Browser-Based Protections
+### Coming Up:Browser-Based Protections
 * XSS is one attack vector among many
 * Browsers provide additional defense layers:
   * **Content Security Policy (CSP)** - Control what scripts can run
@@ -483,6 +506,7 @@ public class CommentDto {
 2. What do XSS and SQL injection have in common?
 3. How does **Angular** automatically protect against XSS?
 4. Why are server-side safeguards still essential?
+
 
 
 
