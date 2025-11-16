@@ -158,7 +158,7 @@ By the end of this deck, you should be able to answer--
 * Prevention: User education, console warnings
 
 <a href='https://www.youtube.com/watch?v=pVIxO4Z_rYU'>
-  <figure  style='width:25%;height:auto;right:0;bottom:0;'>
+  <figure  style='width:25%;height:auto;right:0;bottom:0;transform:scaleX(-1);'>
   ![Self-XSS](./assets/self-xss.png)
   </figure>
 </a>
@@ -254,11 +254,84 @@ sequenceDiagram
 
 ---
 
+### Safe: Template Expressions
+* Angular escapes all special characters
+* Treats everything as plain text
+
+```typescript title='login-info.component.ts'
+@Component({
+  selector: 'app-login-info',
+  template: `
+    <h2>Template Expression:</h2>
+    <div>{{contents}}</div>`
+})
+export class LoginInfo {
+  @Input()
+  contents='<img src="x" onerror="alert(\'SNAKED\')">';
+}
+```
+
+* Renders literal string, no script execution
+
+
+---
+
+### Safe: InnerHTML Binding
+* DomSanitizer runs automatically
+* Strips dangerous elements and attributes
+
+```typescript title='login-info.component.ts'
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-login-info',
+  template: `
+    <h2>InnerHTML binding:</h2>
+    <div [innerHTML]='contents'></div>`
+})
+export class LoginInfo {
+  @Input()
+  contents='<img src="x" onerror="alert(\'SNAKED\')">';
+}
+```
+
+* `onerror` handler stripped, image displays safely
+
+
+---
+
+### Unsafe: Raw DOM Manipulation
+* Bypass Angular entirely, no automatic sanitization
+
+```typescript title='login-info.component.ts' {9}
+@Component({
+  selector: 'app-login-info',
+  template: `
+    <h2>Raw DOM access:</h2>
+    <div id='myDiv'></div>`
+})
+export class LoginInfo implements OnInit {
+  ngOnInit(): void {
+    document.getElementById('myDiv')!.innerHTML = this.contents;
+  }
+  
+  @Input()
+  contents='<img src="x" onerror="alert(\'SNAKED\')">';
+}
+```
+
+* Script executes - Angular can't protect you here
+
+
+---
+
 ### When Bypassing Seems Necessary
-* Dynamic HTML from trusted CMS
-* Syntax highlighting for code blocks
-* Rich text editor output
-* Custom font imports
+* Examples
+  - Dynamic HTML from trusted CMS
+  - Syntax highlighting for code blocks
+  - Rich text editor output
+  - Custom font imports
+* Use [DOMSanitizer](https://angular.io/api/platform-browser/DomSanitizer) to bypass Angular's protections
 * **Question first**: Do you really need this?
 
 
@@ -266,13 +339,14 @@ sequenceDiagram
 
 ### The Dangerous Pattern
 
-```typescript
+```typescript title='search-results.component.ts'
 import { Component, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export class SearchResultsComponent {
   private sanitizer = inject(DomSanitizer);
 
+  //Called from template
   highlightQuery(text: string, query: string): SafeHtml {
     const highlighted = text.replace(
       new RegExp(query, 'gi'),
@@ -299,7 +373,7 @@ export class SearchResultsComponent {
 
 ### Better Approach
 
-```typescript
+```typescript title='search-results.component.ts'
 highlightQuery(text: string, query: string): string {
   const safeText = text.replace(/[<>]/g, '');
   const safeQuery = query.replace(/[<>]/g, '');
