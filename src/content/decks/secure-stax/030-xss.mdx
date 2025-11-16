@@ -1,6 +1,6 @@
 ---
 title: "Xss"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+description: "Script injection vulnerabilities that let attackers run malicious code in users' browsers. More frequent than SQL injection but generally less devastating. Angular handles most protections automatically."
 status: 'Live'
 flavor: 'Deck'
 ---
@@ -12,16 +12,55 @@ flavor: 'Deck'
 ### Goals
 By the end of this deck, you should be able to answer--
 1. Name 3 flavors of **XSS** attack.
-2. What can an attacker access through a successful XSS attack?
+2. What do XSS and SQL injection have in common?
 3. How does **Angular** automatically protect against XSS?
+4. Why are server-side safeguards still essential?
 
 
 ---
 
 ### Roadmap
-1. Basics
-2. Server-side XSS
-3. DOM-Based XSS
+1. Overview
+2. Basics
+3. Server-side XSS
+4. DOM-Based XSS
+5. Server-Side Defenses
+6. Next Steps
+
+---
+
+## Overview
+
+---
+
+### XSS in 2025
+* Client-side frameworks (Angular, React, Vue) have robust built-in protections
+* Still common in legacy apps and custom implementations
+* You have to actively bypass safeguards to introduce vulnerabilities
+* Actual use cases for bypassing protections are fairly rare
+
+---
+
+### Terminology Note
+* "Cross-Site Scripting" is somewhat antiquated
+* Originally meant injecting scripts from one site into another
+* Now means any kind of script injection, not necessarily cross-site
+* More accurately: **client-side code injection**
+
+---
+
+### XSS vs SQL Injection
+* Both stem from trusting user input
+* Both treat string-like data as executable code instead of literal strings
+* **SQL Injection**: Less frequent, more devastating (full database access)
+* **XSS**: More frequent, less devastating (client-side only)
+
+---
+
+### Recent Incidents
+* [Angular vulnerability](https://security.snyk.io/vuln/SNYK-JS-ANGULAR-2949781) (2022) - IE caching bypass
+* [WordPress plugins](https://wpscan.com/statistics/) - Hundreds of XSS CVEs annually
+* Persistent problem despite modern framework protections
 
 ---
 
@@ -37,29 +76,18 @@ By the end of this deck, you should be able to answer--
   * Cookies
   * Session tokens
   * Misc Data
-Note: 
-- https://www.acunetix.com/websitesecurity/cross-site-scripting/
+{/* Note:  https://www.acunetix.com/websitesecurity/cross-site-scripting/ */}
 
 
 
 ---
 
-### What's the Worst that Can Happen?
-* The malicious script has access to everything on the web app
-* Arbitrarily manipulate the DOM
-
-
----
-
-### Possibly Worse
-* Impersonate the user in interacting with Web APIs
-  * Access sensitive data
-  * Break stuff
-* Access [HTML5 APIs](https://developer.mozilla.org/en-US/docs/Web/API):
-  * [Geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
-  * [Webcam / mic](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
-Note:
-- https://www.dionach.com/en-us/blog/the-real-impact-of-cross-site-scripting/
+### Impact Range
+* **Minimum**: Deface page content, annoy users
+* **Typical**: Steal session cookies, impersonate user in API calls
+* **Maximum**: Access HTML5 APIs ([geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API), [webcam](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API), [mic](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API))
+* **Nightmare**: Deploy persistent keyloggers across user base
+{/* Note: https://www.dionach.com/en-us/blog/the-real-impact-of-cross-site-scripting/ */}
 
 
 
@@ -116,15 +144,18 @@ Note:
   * `<IMG SRC="javascript:alert('pwned');">`
 * Also events: 
   * `<img src='http://example.com' onload='alert("pwned")'>`
-Note:
--https://owasp.org/www-community/xss-filter-evasion-cheatsheet
+{/* Note:https://owasp.org/www-community/xss-filter-evasion-cheatsheet */}
 
 
 
 ---
 
 ### Variation: Self-XSS
-#### Trick user into pasting something into the console
+* User tricked into pasting malicious code into browser console
+* Fairly rare in practice
+* Not really your concern as a developer
+* Users have access to dev tools - can't prevent this
+* Prevention: User education, console warnings
 
 <a href='https://www.youtube.com/watch?v=pVIxO4Z_rYU'>
   <figure  style='width:25%;height:auto;right:0;bottom:0;'>
@@ -154,10 +185,35 @@ Note:
 
 ---
 
-### Server-side Example
-<figure  style='width:65%;height:auto;margin-top:2rem;margin-right:8rem;'>
-![XSS-diagram](./assets/XSS-diagram.png)
-</figure>
+### Server-side Attack Flow
+
+<div style="transform: scale(0.9); transform-origin: top center;">
+
+```mermaid
+sequenceDiagram
+    participant Attacker
+    participant Website
+    participant Database
+    participant Victim
+
+    Note over Attacker: Step 1: Discover vulnerability
+    Attacker->>Website: Submit malicious script<br/>via form/comment
+    Website->>Database: Store unescaped content
+    
+    Note over Database: Poisoned data at rest
+    
+    Note over Victim: Step 2: Victim visits page
+    Victim->>Website: Normal page request
+    Website->>Database: Fetch content
+    Database-->>Website: Return poisoned content
+    Website-->>Victim: Serve page with script
+    
+    Note over Victim: Step 3: Script executes
+    Victim->>Attacker: Session cookie sent
+    Attacker->>Website: Impersonate victim
+```
+
+</div>
 
 ---
 
@@ -188,59 +244,76 @@ Note:
 
 ---
 
-### Angular's XSS Approach
-* Trusts no input
-* Automatically sanitizes and escapes untrusted values
-* Opt-out with [DOMSanitizer](https://angular.io/api/platform-browser/DomSanitizer)
-Note:
--https://angular.io/guide/security
--TODO: Angular is a good example, but broaden the conversation.
+### Angular: A Solved Problem*
+* Angular treats all input as untrusted by default
+* Automatic sanitization and escaping
+* Have to actively bypass protections
+* Bypass use cases are rare
+{/* Note: * = mostly solved. https://angular.io/guide/security */}
 
 
 ---
 
-### Example: LoginComponent
-```ts
-export class LoginInfoComponent  {
-  @Input()
-  contents='<img src="assets/duck.jpg" onload="alert(\'SN8KED\')">';
+### When Bypassing Seems Necessary
+* Dynamic HTML from trusted CMS
+* Syntax highlighting for code blocks
+* Rich text editor output
+* Custom font imports
+* **Question first**: Do you really need this?
+
+
+---
+
+### The Dangerous Pattern
+
+```typescript
+import { Component, inject } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+export class SearchResultsComponent {
+  private sanitizer = inject(DomSanitizer);
+
+  highlightQuery(text: string, query: string): SafeHtml {
+    const highlighted = text.replace(
+      new RegExp(query, 'gi'),
+      match => `<mark>${match}</mark>`
+    );
+    
+    return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+  }
 }
 ```
 
 
 ---
 
-### Sanitized: Template Expressions
-```ts
-  <h2>Template Expression:</h2>
-  <div>{{contents}}</div>
+### What's Wrong Here?
+* `bypassSecurityTrustHtml` disables Angular's protections
+* `query` parameter is user-controlled
+* Attacker sends: `<img src=x onerror=alert('pwned')>`
+* Gets wrapped in `<mark>` tags but still executes
+* **Fix**: Sanitize both `text` and `query` before highlighting
+
+
+---
+
+### Better Approach
+
+```typescript
+highlightQuery(text: string, query: string): string {
+  const safeText = text.replace(/[<>]/g, '');
+  const safeQuery = query.replace(/[<>]/g, '');
+  
+  return safeText.replace(
+    new RegExp(safeQuery, 'gi'),
+    match => `<mark>${match}</mark>`
+  );
+}
 ```
 
-
----
-
-### Escaped: InnerHTML
-* DOMSanitizer runs automatically
-```html
-<h2>InnerHTML binding:</h2>
-<div [innerHTML]='contents'></div>
-```
-
-
----
-
-
-
-
-### Demo: Bad Sanitation
-
-
----
-
-### Use Case For Opting Out
-* Dynamic Font Imports
-Note:
-- TODO: Find example snippet
+* No bypass needed
+* Angular's built-in sanitization handles the rest
+* Strips angle brackets from both inputs
 
 
 
@@ -257,14 +330,85 @@ Note:
 
 
 
+## Server-Side Defenses
+
+---
+
+### Why Client Protection Isn't Enough
+* Attackers can bypass client entirely
+* Use `curl` or Postman to inject content directly
+* Poisoned dependency could compromise Angular
+* Sloppy engineering happens
+* **Defense in depth**: Trust no single layer
+
+
+---
+
+### API-Side Responsibilities
+* Validate all input against expected patterns
+* Encode output before storing
+* Never trust "safe" input from client
+* Log suspicious patterns for monitoring
+* Reject obviously malicious content
+
+
+---
+
+### Example: .NET Validation
+
+```csharp
+public class CommentDto {
+    [Required]
+    [MaxLength(500)]
+    [RegularExpression(@"^[^<>]*$", 
+        ErrorMessage = "HTML tags not allowed")]
+    public string Content { get; set; }
+}
+```
+
+
+---
+
+### Benefits of Server-Side Detection
+* Know when someone is probing for vulnerabilities
+* Distinguish between fat-finger and attack
+* Rate-limit suspicious actors
+* Generate security metrics
+* Feed into SIEM for pattern analysis
+
+
+---
+
+
+
+
+## Next Steps
+
+---
+
+### Browser-Based Protections
+* XSS is one attack vector among many
+* Browsers provide additional defense layers:
+  * **Content Security Policy (CSP)** - Control what scripts can run
+  * **CORS** - Control cross-origin resource access
+  * **Trusted Types** - Prevent dangerous sink assignments
+* Next deck: How these mechanisms work and when to use them
+
+
+---
+
+
+
+
 ## Fin
 
 ---
 
 ### Recap
 1. Name 3 flavors of **XSS** attack.
-2. What can an attacker access through a successful XSS attack?
+2. What do XSS and SQL injection have in common?
 3. How does **Angular** automatically protect against XSS?
+4. Why are server-side safeguards still essential?
 
 
 
