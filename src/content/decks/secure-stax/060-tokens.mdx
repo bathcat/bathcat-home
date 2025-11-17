@@ -1,6 +1,6 @@
 ---
 title: "Tokens"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+description: "OAuth, JWT, and token-based authentication patterns for Angular and .NET applications. Learn delegation, federation, and session security."
 status: 'Live'
 flavor: 'Deck'
 ---
@@ -11,20 +11,87 @@ flavor: 'Deck'
 
 ### Goals
 By the end of this deck, you should be able to answer--
-1. What's the difference between **OAuth** and **OpenID Connect**?
-2. Name 2 of the 3 parts of a **JWT** token.
+1. What's the difference between **primary** and **session** authentication?
+2. What's the difference between **access tokens** and **refresh tokens**?
 3. Which token storage location has the highest **XSS risk**?
 
 
 ---
 
 ### Roadmap
-1. OAuth
-2. JWT
+1. Overview
+2. OAuth
+3. JWT & Refresh Tokens
 
 ---
 
+## Overview
+
+---
+
+### The Password Problem
+* Traditional auth: you store hashed passwords
+* Regulatory compliance burden (GDPR, SOC2, PCI)
+* Breach liability and notification requirements
+* [Password reuse](https://owasp.org/www-community/attacks/Credential_stuffing) across sites amplifies damage
+* OAuth delegates identity to Google, Microsoft, Auth0, etc.
+
+---
+
+### Primary vs Session Authentication
+
+* **Primary authentication:** User presents credentials (password, biometric, hardware key)
+* **Session authentication:** User proves they already authenticated
+* Primary auth happens once, session auth happens every request
+* Tokens and cookies are session authentication mechanisms
+* OAuth handles primary auth, your app handles session tokens
+
+---
+
+### The Attack Vector Shift
+
+* Traditional apps: attacker targets password database and login forms
+* OAuth-based apps: attacker targets session tokens instead
+* [Credential phishing](https://owasp.org/www-community/attacks/Credential_stuffing) → token hijacking
+* Token theft through [XSS](https://owasp.org/www-community/attacks/xss/), network interception, or malware
+* This shift motivates refresh tokens, rotation, and secure storage
+
+---
+
+### Federation & Microservices
+
+* Single auth service issues cryptographically signed tokens
+* All downstream services validate signature independently
+* No shared session store, no database calls for every auth check
+* Business logic services never implement authentication
+* Huge win at enterprise scale with many services
+* **Reality check:** Overkill for simple apps with one API
+
+[Microsoft: Federated Identity](https://learn.microsoft.com/en-us/azure/architecture/patterns/federated-identity)
+
+---
+
+### Token-Based Architecture
+<div style="transform: scale(1.55); transform-origin: top center; margin-left: 10em;">
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as Your App
+    participant OAuth as OAuth Provider
+    participant API as Microservices
+    
+    User->>OAuth: Present credentials (primary auth)
+    OAuth->>App: Issue signed token
+    App->>API: Request + token (session auth)
+    API->>API: Validate signature
+    API->>App: Protected resource
+```
+</div>
+---
+
 ## OAuth
+
+
 
 ---
 
@@ -33,7 +100,7 @@ By the end of this deck, you should be able to answer--
 * Third-party identity providers handle credentials
 * Your app receives tokens, never passwords
 * Key advantage: eliminates password management burden
-* Shifts security responsibility to specialists
+* Enables federation across services
 
 ---
 
@@ -53,21 +120,23 @@ timeline
 
 ---
 
-### The Password Problem
-* Traditional auth: you store hashed passwords
-* Regulatory compliance burden (GDPR, SOC2, PCI)
-* Breach liability and notification requirements
-* [Password reuse](https://owasp.org/www-community/attacks/Credential_stuffing) across sites amplifies damage
-* OAuth delegates identity to Google, Microsoft, Auth0, etc.
-
----
-
 ### Authentication vs Authorization
 * **Pedantic view:** [OAuth is authorization](https://oauth.net/articles/authentication/), not authentication
 * OAuth tells you what a user **can do**, not **who they are**
 * That's technically [OpenID Connect](https://openid.net/connect/)'s job (built on OAuth)
 * **Reality:** OAuth + OIDC = de facto authentication standard
 * Most implementations use both together
+
+---
+
+### OAuth Complaints
+
+* You don't need cryptography expertise to understand bcrypt + salt + pepper
+* But OAuth? That's a **trivia contest** across [many RFCs](https://oauth.net/specs/)
+* Google, Microsoft, Twitter implement OAuth differently
+* Constantly evolving best practices (OAuth 2.0 → 2.1, new PKCE requirements)
+* Easy to misconfigure securely
+* **Trade-off:** Still better than rolling your own password system
 
 ---
 
@@ -130,16 +199,6 @@ sequenceDiagram
 
 ---
 
-### OAuth Complaints
-* Specification complexity ([many RFCs](https://oauth.net/specs/))
-* Easy to misconfigure securely
-* Token storage and management burden
-* CORS preflight overhead with Bearer tokens
-* "Not authentication" confusion
-* Provider lock-in concerns
-
----
-
 ### .NET Backend: Google OAuth
 
 ```csharp title='Program.cs'
@@ -194,7 +253,205 @@ export const authConfig: AuthConfig = {
 
 ---
 
-### Token Management
+### OAuth Security Gotchas
+
+* Validate redirect_uri against whitelist (prevent [open redirects](https://cwe.mitre.org/data/definitions/601.html))
+* Always use **state** parameter (CSRF protection)
+* Validate JWT signatures with provider's public keys
+* Check token expiration and audience claims
+* **HTTPS only** in production
+* Avoid storing tokens in localStorage if possible
+
+[OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html)
+
+---
+
+## JWT & Refresh Tokens
+
+---
+
+### What's [JWT](https://jwt.io)?
+* <u>J</u>SON <u>W</u>eb <u>T</u>oken
+* Self-contained token with encoded claims
+* Signature verifies token hasn't been tampered with
+* Enables stateless session authentication
+
+---
+
+### [JWT Structure](https://datatracker.ietf.org/doc/html/rfc7519)  
+
+| Part | Content | Purpose |
+|------|---------|---------|
+| **Header** | Algorithm and token type | Describes how to validate |
+| **Payload** | Claims (user ID, roles, expiration) | The actual data |
+| **Signature** | HMAC or RSA signature | Proves authenticity |
+
+* Base64-encoded and concatenated: `eyJhbGc...eyJzdWI...SflKxw`
+
+---
+
+### Where Do I Get a Token?
+* On primary authentication
+* On refresh
+* In both cases, tokens come in pairs
+  - Access token (JWT)
+  - Refresh token (opaque string)
+
+---
+
+### Why Both Tokens?
+
+* **Security trade-off:** Short-lived access tokens limit blast radius
+* Stolen access token expires quickly (minutes/hours)
+* Refresh token compromise is detectable and revocable
+* User doesn't re-authenticate constantly
+* Refresh tokens stored as hashes (like passwords) in database
+* Enables logout: revoke refresh token, access token expires naturally
+
+---
+
+### Refresh Token Anatomy
+
+* Opaque tokens: cryptographically random strings
+* Not JWTs (not self-contained, not readable)
+* Stored as hashes in database with user association
+* **Why opaque?** Enables revocation, rotation, and invalidation
+* Server looks up hash, validates, issues new access token
+* Think of them like session IDs with longer lifespan
+
+---
+
+### Token Refresh Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant AuthServer
+    
+    Client->>AuthServer: POST /login (credentials)
+    AuthServer-->>Client: Access Token + Refresh Token
+    Client->>API: GET /data (Bearer Access Token)
+    API-->>Client: Protected Data
+    Note over Client,API: Access token expires
+    Client->>AuthServer: POST /refresh (Refresh Token)
+    AuthServer->>AuthServer: Validate hash in database
+    AuthServer-->>Client: New Access Token
+    Client->>API: GET /data (New Bearer Token)
+    API-->>Client: Protected Data
+```
+
+
+---
+
+### Request Anatomy (I)
+```http {5} title='Request with Access Token'
+GET /api/v1/deliveries/my-deliveries?skip=0&take=4 HTTP/1.1
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-US,en;q=0.9
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Connection: keep-alive
+```
+
+* Response:
+  - Either **200 OK** + Content
+  - **Or** **401 Unauthorized** - Access token expired (probably)
+
+---
+
+### Request Anatomy (II)
+```http {9} title='Request with Refresh Token'
+POST /api/v1/auth/refresh HTTP/1.1
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-US,en;q=0.9
+Connection: keep-alive
+Content-Length: 62
+Content-Type: application/json
+
+{"refreshToken": "8EE8wwVZYkcHaItS4_ZHS5p2bLObAjQdkUXBhMyAQY8"}
+```
+
+```json title='Response with New Access Token'
+{
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVC...",
+    "refreshToken": "O2ThQ6aTSxN6PUbaFyFT9bn1xqZoR-MrSpNpWLBMdxw",
+}
+```
+---
+
+### Access Tokens vs Refresh Tokens
+
+| | Access Token | Refresh Token |
+|---|--------------|---------------|
+| **Lifetime** | Minutes to hours | Days to months |
+| **Format** | Usually JWT (self-contained) | Opaque string |
+| **Usage** | Every API request | Token refresh only |
+| **Storage** | Memory or httpOnly cookie | Backend database |
+| **Revocation** | Difficult (stateless) | Easy (database lookup) |
+
+
+---
+
+
+
+### JWT in .NET
+
+```csharp title='ApplicationBuilderExtensions.cs'
+
+public static IHostApplicationBuilder AddAuthentication(this IHostApplicationBuilder builder){
+    var jwtSettings = builder.GetJwtSettings();
+
+    builder.Services.AddAuthentication(options =>{
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>{
+        options.TokenValidationParameters = new TokenValidationParameters{
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(jwtSettings.Secret),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+        };
+    });
+
+    return builder;
+}
+
+```
+
+---
+
+### Angular Interceptor
+
+```typescript
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return next(req).pipe(
+    catchError((error) => {
+      if (error.status === 401 && !req.url.includes('/auth/')) {
+        return authService.refreshToken().pipe(
+          switchMap(() => next(req)),
+          catchError(() => {
+            authService.signOut();
+            router.navigate(['/signin']);
+            return throwError(() => error);
+          })
+        );
+      }
+      return throwError(() => error);
+    })
+  );
+};
+```
+
+---
+
+### Token Storage
 
 | Storage Location | Security | Persistence | XSS Risk | CSRF Risk |
 |------------------|----------|-------------|----------|-----------|
@@ -240,152 +497,16 @@ Register before `UseAuthentication()` in middleware pipeline
 
 ---
 
-### OAuth Security Gotchas
-
-* Validate redirect_uri against whitelist (prevent [open redirects](https://cwe.mitre.org/data/definitions/601.html))
-* Always use **state** parameter (CSRF protection)
-* Validate JWT signatures with provider's public keys
-* Check token expiration and audience claims
-* **HTTPS only** in production
-* Avoid storing tokens in localStorage if possible
-
-[OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html)
-
----
-
-
-
-
-
-
-
-## JWT
-
----
-
-### Bad Old Days
-* Server-side session storage required
-* Problems:
-  - Scaling horizontally requires sticky sessions or shared session store
-  - Cross-domain authentication difficult
-  - Mobile apps and SPAs don't fit session model well
-* Session ID in cookie has no information
-
-
----
-
-### What's JWT?
-* <u>J</u>SON <u>W</u>eb <u>T</u>oken
-* Self-contained token with encoded claims
-* Three parts: Header.Payload.Signature
-* Signature verifies token hasn't been tampered with
-* Stateless authentication
-* [jwt.io](https://jwt.io)
-
----
-
-### How does JWT work?
-
-<div style="transform: scale(1.15); transform-origin: top center; margin-left: 15rem;"
->
-
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API
-    participant AuthServer
-    
-    Client->>AuthServer: POST /login (credentials)
-    AuthServer-->>Client: Access Token + Refresh Token
-    Client->>API: GET /data (Bearer Token)
-    API-->>Client: Protected Data
-    Note over Client,API: Access token expires
-    Client->>AuthServer: POST /refresh (Refresh Token)
-    AuthServer-->>Client: New Access Token
-    Client->>API: GET /data (New Bearer Token)
-    API-->>Client: Protected Data
-```
-
-</div>
-
----
-
-### Jwt in .NET
-
-```csharp title='ApplicationBuilderExtensions.cs'
-
-public static IHostApplicationBuilder AddAuthentication(this IHostApplicationBuilder builder){
-    var jwtSettings = builder.GetJwtSettings();
-
-    builder.Services.AddAuthentication(options =>{
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>{
-        options.TokenValidationParameters = new TokenValidationParameters{
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(jwtSettings.Secret),
-            ValidateIssuer = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidateAudience = true,
-            ValidAudience = jwtSettings.Audience,
-        };
-    });
-
-    return builder;
-}
-
-```
-
----
-### Angular Interceptor
-{/* TODO: Simplify below for essentials */}
-```typescript
-
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenStore = inject(TokenStoreService);
-  const authService = inject(AuthService);
-  const router = inject(Router);
-
-  return next(req).pipe(
-    catchError((error) => {
-      if (error.status === 401 && !req.url.includes('/auth/')) {
-        return authService.refreshToken().pipe(
-          switchMap(() => {
-            const newAccessToken = tokenStore.getAccessToken();
-            if (newAccessToken) {
-              req = req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${newAccessToken}`,
-                },
-              });
-            }
-            return next(req);
-          }),
-          catchError(() => {
-            authService.signOut();
-            router.navigate(['/signin']);
-          })
-        );
-      }
-      return throwError(() => error);
-    })
-  );
-};
-```
-
-
-
----
-
-
-### Jwt Evaluated
+### JWT Evaluated
 * **Strengths**:
-  - Self-contained, no database required
-  - Supports federation and multiple clients
-  - Configurable
+  - Self-contained, no database lookup required
+  - Supports federation and multiple services
+  - Configurable claims and expiration
+  - Scales horizontally without sticky sessions
 * **Weaknesses**:
-  - Tokens are stealable-- httponly cookies aren't
+  - Difficult to revoke before expiration
+  - Tokens are stealable if not using httpOnly cookies
+  - Larger size than opaque tokens
 
 ---
 
@@ -394,8 +515,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 ---
 
 ### Recap
-1. What's the difference between **OAuth** and **OpenID Connect**?
-2. Name 2 of the 3 parts of a **JWT** token.
-3. Which token storage location has the highest **XSS risk**?
+1. What's the difference between **primary** and **session** authentication?
+2. What's the difference between **OAuth** and **OpenID Connect**?
+3. Name 2 of the 3 parts of a **JWT** token.
+4. What's the difference between **access tokens** and **refresh tokens**?
+5. Which token storage location has the highest **XSS risk**?
 
 

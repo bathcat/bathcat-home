@@ -7,15 +7,13 @@ flavor: 'Deck'
 
 # Authorization, Authentication
 
-{/* TODO: Remove oauth from this deck. */}
-
 ---
 
 ### Goals
 By the end of this deck, you should be able to answer--
 1. What's the difference between **authentication** and **authorization**?
 2. Why is **resource-based authorization** needed beyond simple role checks?
-3. Name 2 components of the **OAuth 2.0 Authorization Code Flow**.
+3. Name 2 strategies for implementing **resource-based authorization**.
 
 
 ---
@@ -23,33 +21,49 @@ By the end of this deck, you should be able to answer--
 ### Roadmap
 1. Overview
 2. Authentication
-3. Authorization
-4. Angular Routing
-5. Resource-based Authorization
-6. OAuth
+3. RBAC
+4. Resource-based Authorization
 
 ---
 
 ## Overview
 
+---
+
+### Two Flavors of Authentication
+* **Primary authentication**: User provides credentials
+  - Password, OAuth, 2FA, biometrics
+  - User is present
+* **Session authentication**: System validates token
+  - Bearer tokens, cookies, session IDs
+  - User is absent
+* Explains why apps need multiple authentication schemes
 
 ---
 
-### Definitions _Review_
-* ___Authentication___ confirms a user identity
-* ___Authorization___  decides what that user can do
-
+### This Deck Is Different
+* Not vulnerability → mitigation pattern
+* More [Security Misconfiguration](https://owasp.org/Top10/2025/A02_2025-Security_Misconfiguration/) than code vulnerability
+* Each OAuth provider has unique quirks
+* Integration work > security engineering
+* Why Auth0/Okta exist: abstract configuration hell
 
 ---
 
-### Good News Everyone
-* Security is like everything else
-* Combination of 
-  * Injectable services
-  * Middleware
-  * Controller attributes
+### Tokens Are The Target Now
+* 2FA makes credentials harder to steal
+* UX demands longer sessions (Netflix, IoT, mobile)
+* The paradox: better credential security → more valuable tokens
+* Token theft/manipulation is the attack vector
+* Next deck: token security, storage, JWT
 
+---
 
+### Authorization Matters Most
+* [Broken Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/) is OWASP Top 10 #1 (2025)
+* Authentication gets you in the door
+* Authorization decides what you can touch
+* Resource-based authorization is where it gets sophisticated
 
 ---
 
@@ -164,8 +178,17 @@ services
 
 ---
 
-## Authorization
+## RBAC
 
+---
+
+### What's [RBAC](https://en.wikipedia.org/wiki/Role-based_access_control)?
+* <u>R</u>ole-<u>B</u>ased <u>A</u>ccess <u>C</u>ontrol
+* Users assigned to roles, roles granted permissions
+* Simple and battle-tested
+* Easy to reason about, hard to screw up
+* When you can express authorization as RBAC, do it
+* [NIST standard](https://csrc.nist.gov/projects/role-based-access-control) since 1992
 
 ---
 
@@ -263,84 +286,7 @@ public static class Over21AuthorizationPolicy
 
 
 
-
-
-
-## Angular Routing
-{/* 
-Note:
-* Figure out what to do with this
-* Maybe call it client-side or something */}
-
----
-
-### Angular _'Security'_
-* Real work happens on the server
-* Angular uses routing to--
-  * Improve user experience
-  * Prevent information leaks
-
-
----
-
-### If You Need Secure **Content**
-* **SPA** means everyone gets everything
-* People can look at the source
-* For sensititve content, consider separate applications
-* User experience can be seamless
-
-
----
-
-### Review: Angular Modules
-* Not necessarily a depoyable unit
-* Facilitate 
-  * Organization
-  * Lazy loading
-  * Tree-shaking
-
-
----
-
-### Setting up the Angular Client
-```ts
-RouterModule.forRoot([
-  { path: 'login', component: LoginComponent },
-  { 
-  	path: 'snakes-administration', 
-  	component: SnakesAdministrationComponent, 
-  	canActivate: [AdministratorGuard],
-  },
-])
-```
-
-
----
-
-### Example
-```ts title='AdministratorGuard.ts'
-@Injectable()
-export class AdministratorGuard implements CanActivate {
-
-  constructor(private _service: AuthService, private _router: Router) {}
-
-  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    if (this._authService.isAuthenticated()) {
-        return true;
-    }
-    this._router.navigate(['/login']);
-    return false;
-  }
-}
-```
-
-
----
-
-
-
 ## Resource-based Authorization
-
 
 ---
 
@@ -356,19 +302,15 @@ export class AdministratorGuard implements CanActivate {
 
 ---
 
-### Anti-pattern: Inline Logic
+### Anti-pattern: IDOR
 ```csharp title='DeliveryService.cs'
-public async Task<Page<Delivery>> GetByCustomer(Guid customerId, int skip, int take)
-{
-    return await _deliveryStore.GetByCustomerId(customerId, skip, take);
-}
+public Task<Page<Delivery>> GetByCustomer(Guid customerId, int skip, int take)
+ => _deliveryStore.GetByCustomerId(customerId, skip, take);
 ```
 
 **Problems:**
-* No authorization check at all
+* No authorization check at all!
 * Anyone can query any customer's deliveries
-* Easy to forget and hard to catch in review
-* Security bug waiting to happen
 
 ---
 
@@ -408,20 +350,20 @@ public async Task<Page<Delivery>> GetByCustomer(Guid customerId, int skip, int t
 * **Option 2: Service Layer**
   - ✓ Single source of truth
   - ✓ Reusable across APIs
-  - ✗ Blurs business logic boundaries
+  - ✗ Mingles business logic with authorization logic
 
 **Recommendation**: Services layer when authorization is business logic
 
 ---
 
 ### Imperative Style: Explicit Checks
-```csharp title='DeliveryService.cs' {2-7}
+```csharp title='DeliveryController.cs' {2-7}
 public async Task<Result> BookDelivery(Guid customerId, DeliveryRequest request){
     _authorizationService.ThrowIfUnauthorized([UserRoles.Customer, UserRoles.Administrator]);
     
     if (!_currentUser.IsInRole(UserRoles.Administrator) &&
         _currentUser.CustomerId != customerId){
-        throw new UnauthorizedAccessException("Customers can only book deliveries for themselves.");
+        throw new UnauthorizedAccessException("You can only book for yourself.");
     }
     
     return await _deliveryService.BookDelivery(customerId, request);
@@ -478,7 +420,7 @@ public class DeliveryAuthorizationHandler
 ---
 
 ### Using Authorization Handlers
-```csharp title='DeliveryService.cs'
+```csharp title='DeliveryController.cs' {7-14}
 public async Task<Result<Delivery>> GetDelivery(Guid deliveryId){
     var delivery = await _deliveryStore.GetById(deliveryId);
     if (delivery is null){
@@ -612,238 +554,6 @@ public async Task Administrator_CanAccess_AllDeliveries(){
 
 ---
 
-
-
-
-## OAuth
-
----
-
-### What's [OAuth 2.0](https://oauth.net/2/)?
-* Delegated authorization framework
-* Third-party identity providers handle credentials
-* Your app receives tokens, never passwords
-* Key advantage: eliminates password management burden
-* Shifts security responsibility to specialists
-
----
-
-### OAuth/OpenID Timeline
-
-```mermaid
-timeline
-    2007 : OAuth 1.0 specification
-    2010 : OAuth 1.0a (security fixes)
-    2012 : OAuth 2.0 (RFC 6749)
-    2014 : OpenID Connect 1.0
-         : PKCE extension (RFC 7636)
-    2019 : OAuth 2.0 Security Best Practices
-    2020 : OAuth 2.1 draft consolidation
-    2023 : Google Identity Services mainstream adoption
-```
-
----
-
-### The Password Problem
-* Traditional auth: you store hashed passwords
-* Regulatory compliance burden (GDPR, SOC2, PCI)
-* Breach liability and notification requirements
-* [Password reuse](https://owasp.org/www-community/attacks/Credential_stuffing) across sites amplifies damage
-* OAuth delegates identity to Google, Microsoft, Auth0, etc.
-
----
-
-### Authentication vs Authorization
-* **Pedantic view:** [OAuth is authorization](https://oauth.net/articles/authentication/), not authentication
-* OAuth tells you what a user **can do**, not **who they are**
-* That's technically [OpenID Connect](https://openid.net/connect/)'s job (built on OAuth)
-* **Reality:** OAuth + OIDC = de facto authentication standard
-* Most implementations use both together
-
----
-
-### OAuth 2.0 Authorization Code Flow
-
-<div style="transform: scale(1.25); transform-origin: top center; margin-left: 8em;">
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant SPA as Your SPA
-    participant Provider as Google/Auth0
-    participant API as Your API
-    
-    User->>SPA: Click "Sign in with Google"
-    SPA->>Provider: Redirect to authorization endpoint
-    Provider->>User: Show consent screen
-    User->>Provider: Grant permission
-    Provider->>SPA: Redirect with authorization code
-    SPA->>Provider: Exchange code for tokens
-    Provider->>SPA: Access token + ID token
-    SPA->>API: Request with Bearer token
-    API->>SPA: Protected resource
-```
-</div>
-
----
-
-### Authorization Code Flow: Step by Step
-
-| Step | Description |
-|------|-------------|
-| **1. Authorization Request** | Redirect to provider with client_id, redirect_uri, scope |
-| **2. User Consent** | Provider authenticates user and shows permissions |
-| **3. Authorization Code** | Provider redirects back with short-lived code |
-| **4. Token Exchange** | Backend exchanges code for tokens (client_secret required) |
-| **5. Access Resources** | Use access token in Authorization header |
-
-[OAuth 2.0 Authorization Framework (RFC 6749)](https://datatracker.ietf.org/doc/html/rfc6749)
-
----
-
-### Modern OAuth: [PKCE](https://datatracker.ietf.org/doc/html/rfc7636)
-* **P**roof **K**ey for **C**ode **E**xchange
-* Prevents authorization code interception attacks
-* Browser generates code_verifier (random string)
-* Sends code_challenge (hash of verifier) with auth request
-* Provider validates verifier matches challenge on token exchange
-* **Required** for SPAs and mobile apps
-* [Recommended for all OAuth clients](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics)
-
----
-
-### [Google Identity Services](https://developers.google.com/identity/gsi/web)
-* Modern alternative to traditional redirect flows
-* One Tap sign-in with minimal friction
-* Popup-based authorization (better UX)
-* Still OAuth 2.0 + OpenID Connect underneath
-* Similar patterns: Microsoft Identity Platform, Auth0 Universal Login
-
----
-
-### OAuth Complaints
-* Specification complexity ([many RFCs](https://oauth.net/specs/))
-* Easy to misconfigure securely
-* Token storage and management burden
-* CORS preflight overhead with Bearer tokens
-* "Not authentication" confusion
-* Provider lock-in concerns
-
----
-
-### .NET Backend: Google OAuth
-
-```csharp title='Program.cs'
-builder.Services
-    .AddAuthentication(options => {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-    })
-    .AddCookie()
-    .AddGoogle(options => {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-        options.Scope.Add("email");
-        options.Scope.Add("profile");
-    });
-```
-
-[Microsoft Docs: Google authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins)
-
----
-
-### Angular Frontend: OAuth Setup
-
-```typescript title='app.config.ts'
-import { AuthConfig } from 'angular-oauth2-oidc';
-
-export const authConfig: AuthConfig = {
-  issuer: 'https://accounts.google.com',
-  redirectUri: window.location.origin,
-  clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
-  scope: 'openid profile email',
-  responseType: 'code',
-  showDebugInformation: true,
-  strictDiscoveryDocumentValidation: false,
-};
-```
-
-[angular-oauth2-oidc documentation](https://github.com/manfredsteyer/angular-oauth2-oidc)
-
----
-
-### Token Exchange Pattern
-
-* SPA completes OAuth flow, receives Google's ID token
-* SPA sends Google token to **your API's** `/auth/google` endpoint
-* Your API validates Google token and issues **your own** JWT pair
-* SPA uses your tokens for all subsequent requests
-* **Why?** Decouple from provider, add custom claims, control expiration
-* Enables multiple auth methods (Google, Microsoft, local) with consistent tokens
-
-[Auth0: Token Exchange](https://auth0.com/docs/secure/tokens/token-exchange) | [OAuth 2.0 Token Exchange (RFC 8693)](https://datatracker.ietf.org/doc/html/rfc8693)
-
----
-
-### Token Management
-
-| Storage Location | Security | Persistence | XSS Risk | CSRF Risk |
-|------------------|----------|-------------|----------|-----------|
-| **Memory only** | High | Session only | Low | Low |
-| **localStorage** | Low | Persistent | **High** | Low |
-| **sessionStorage** | Medium | Tab-scoped | **High** | Low |
-| **HttpOnly Cookie** | High | Persistent | Low | **Medium** |
-
-* Access tokens: short-lived (minutes to hours)
-* Refresh tokens: long-lived (days to months), handle with care
-* [OWASP Token Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html#token-storage-on-client-side)
-
----
-
-### Hybrid Token Strategy
-
-* **Web clients:** HttpOnly cookies protect against [XSS token theft](https://owasp.org/www-community/attacks/xss/)
-* **Native clients:** Standard Bearer tokens (cookies don't work well)
-* **Challenge:** Supporting both from same API endpoints
-* **Solution:** Middleware transparently converts cookies → Bearer header
-* Downstream authentication sees only Bearer tokens (consistent)
-
----
-
-### Cookie-to-JWT Middleware
-
-```csharp title='CookieToJwtMiddleware.cs'
-public class CookieToJwtMiddleware {
-    private readonly RequestDelegate _next;
-
-    public async Task InvokeAsync(HttpContext context) {
-        if (!context.Request.Headers.ContainsKey("Authorization") 
-            && Cookies.HasAccessToken(context)) {
-            var accessToken = Cookies.GetAccessToken(context);
-            context.Request.Headers.Append("Authorization", $"Bearer {accessToken}");
-        }
-        await _next(context);
-    }
-}
-```
-
-Register before `UseAuthentication()` in middleware pipeline
-
----
-
-### OAuth Security Gotchas
-
-* Validate redirect_uri against whitelist (prevent [open redirects](https://cwe.mitre.org/data/definitions/601.html))
-* Always use **state** parameter (CSRF protection)
-* Validate JWT signatures with provider's public keys
-* Check token expiration and audience claims
-* **HTTPS only** in production
-* Avoid storing tokens in localStorage if possible
-
-[OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html)
-
----
-
 ## Fin
 
 ---
@@ -851,7 +561,7 @@ Register before `UseAuthentication()` in middleware pipeline
 ### Recap
 1. What's the difference between **authentication** and **authorization**?
 2. Why is **resource-based authorization** needed beyond simple role checks?
-3. Name 2 components of the **OAuth 2.0 Authorization Code Flow**.
+3. Name 2 strategies for implementing **resource-based authorization**.
 
 
 

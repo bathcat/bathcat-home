@@ -1,11 +1,11 @@
 ---
-title: "Browser Security Protections"
+title: "Browser Security "
 description: "Exploring ecosystem-level browser protections including SOP, CORS, CSP, and Trusted Types - and understanding why security is increasingly the engineer's responsibility."
 status: 'Live'
 flavor: 'Deck'
 ---
 
-# Browser Security Protections
+# Browser Security 
 
 ---
 
@@ -28,7 +28,41 @@ By the end of this deck, you should be able to answer--
 
 ---
 
-## Browser Security Ecosystem
+
+
+## Ecosystem
+
+---
+
+### [Samy Worm](https://en.wikipedia.org/wiki/Samy_(computer_worm)) (2005)
+
+* First major self-propagating XSS worm
+* Infected over 1 million MySpace profiles in 20 hours
+* Exploited lack of input sanitization and browser protections
+* Payload: Added "Samy is my hero" to profiles and spread to friends
+* **Lesson:** Browser ecosystem needed defense-in-depth protections
+
+---
+
+### The Early Web: 2005
+
+* Browsers had minimal cross-site protections
+* Same Origin Policy existed but was basic
+* No Content Security Policy
+* No built-in XSS mitigations
+* Security was mostly an afterthought
+* Ecosystem-level vulnerabilities were common
+
+---
+
+### Modern Browser Protections
+
+* **Same Origin Policy** - Isolates different origins from each other
+* **CORS** - Controlled sharing across origins
+* **Content Security Policy** - Restricts resource loading and script execution
+* **Trusted Types** - Prevents DOM-based XSS at the API level
+* **Other:** SRI, X-Frame-Options, HTTPS enforcement
+
 
 ---
 
@@ -46,36 +80,8 @@ timeline
     2023 : Trusted Types in major frameworks
 ```
 
----
 
-### The Early Web: 2005
 
-* Browsers had minimal cross-site protections
-* Same Origin Policy existed but was basic
-* No Content Security Policy
-* No built-in XSS mitigations
-* Security was mostly an afterthought
-* Ecosystem-level vulnerabilities were common
-
----
-
-### [Samy Worm](https://en.wikipedia.org/wiki/Samy_(computer_worm)) (2005)
-
-* First major self-propagating XSS worm
-* Infected over 1 million MySpace profiles in 20 hours
-* Exploited lack of input sanitization and browser protections
-* Payload: Added "Samy is my hero" to profiles and spread to friends
-* **Lesson:** Browser ecosystem needed defense-in-depth protections
-
----
-
-### Modern Browser Protections
-
-* **Same Origin Policy** - Isolates different origins from each other
-* **CORS** - Controlled sharing across origins
-* **Content Security Policy** - Restricts resource loading and script execution
-* **Trusted Types** - Prevents DOM-based XSS at the API level
-* **Other:** SRI, X-Frame-Options, HTTPS enforcement
 
 ---
 
@@ -94,8 +100,10 @@ timeline
 
 ---
 
-## Same Origin Policy
 
+
+
+## Same Origin Policy
 
 ---
 
@@ -136,7 +144,7 @@ sequenceDiagram
   * CSRF
   * DDOS
 * For the good of the ecosystem
-
+* It's **not** authorization
 
 
 ---
@@ -330,9 +338,10 @@ sequenceDiagram
 
 ---
 
+
+
+
 ## [ASP.NET Core Configuration](https://learn.microsoft.com/en-us/aspnet/core/security/cors)
-
-
 
 ---
 
@@ -476,7 +485,9 @@ public static void MapSnakeEndpoints(this WebApplication app){
 
 
 
-## Cross-Site Request Forgery (CSRF)
+## Cross-Site Request Forgery
+<br/>
+<div>(Optional)</div>
 
 ---
 
