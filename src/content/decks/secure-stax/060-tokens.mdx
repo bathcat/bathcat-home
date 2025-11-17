@@ -433,17 +433,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error) => {
-      if (error.status === 401 && !req.url.includes('/auth/')) {
-        return authService.refreshToken().pipe(
-          switchMap(() => next(req)),
-          catchError(() => {
-            authService.signOut();
-            router.navigate(['/signin']);
-            return throwError(() => error);
-          })
-        );
+      if (error.status !== 401) {
+        return throwError(() => error);
       }
-      return throwError(() => error);
+      return authService.refreshToken().pipe(
+        //Try again with the new token
+        switchMap(() => next(req)),
+        //Give up and sign out.
+        catchError(() => {
+          authService.signOut();
+          router.navigate(['/signin']);
+          return throwError(() => error);
+        })
+      );
     })
   );
 };
@@ -516,9 +518,6 @@ Register before `UseAuthentication()` in middleware pipeline
 
 ### Recap
 1. What's the difference between **primary** and **session** authentication?
-2. What's the difference between **OAuth** and **OpenID Connect**?
-3. Name 2 of the 3 parts of a **JWT** token.
-4. What's the difference between **access tokens** and **refresh tokens**?
-5. Which token storage location has the highest **XSS risk**?
-
+2. What's the difference between **access tokens** and **refresh tokens**?
+3. Which token storage location has the highest **XSS risk**?
 
