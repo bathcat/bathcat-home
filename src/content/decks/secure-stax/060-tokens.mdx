@@ -31,11 +31,11 @@ By the end of this deck, you should be able to answer--
 
 ### The Password Problem
 * Traditional auth: you store hashed passwords
-* Regulatory compliance burden (GDPR, SOC2, PCI)
-* Breach liability and notification requirements
-* [Password reuse](https://owasp.org/www-community/attacks/Credential_stuffing) across sites amplifies damage
-* OAuth delegates identity to Google, Microsoft, Auth0, etc.
-
+* Problems:
+  - Getting the implementation right
+  - Liability for a breach
+  - Regulatory compliance
+* ***It would be nice*** if my app could rely on someone else to handle authentication
 ---
 
 ### Primary vs Session Authentication
@@ -58,6 +58,17 @@ By the end of this deck, you should be able to answer--
 
 ---
 
+### What's a Security Token?
+
+* Proof you've authenticated, used for subsequent requests
+* Two flavors:
+  - **Self-contained** (like a driver's license): carries information with it
+  - **Opaque** (like a credit card number): just a reference, server must look up details
+* Self-contained tokens enable federation, opaque tokens enable revocation
+* Choice depends on your needs
+
+---
+
 ### Federation & Microservices
 
 * Single auth service issues cryptographically signed tokens
@@ -72,21 +83,33 @@ By the end of this deck, you should be able to answer--
 ---
 
 ### Token-Based Architecture
-<div style="transform: scale(1.55); transform-origin: top center; margin-left: 10em;">
+
+<div style="transform: scale(1.45); transform-origin: top center; margin-left: 10em;">
+
 ```mermaid
 sequenceDiagram
-    participant User
     participant App as Your App
-    participant OAuth as OAuth Provider
-    participant API as Microservices
+    participant Identity as Identity Service
+    participant API as Other Services
     
-    User->>OAuth: Present credentials (primary auth)
-    OAuth->>App: Issue signed token
+    App->>Identity: Present credentials (primary auth)
+    Identity->>App: Issue signed token
     App->>API: Request + token (session auth)
     API->>API: Validate signature
     API->>App: Protected resource
 ```
+
 </div>
+
+
+---
+### Notes
+
+* Identity service handles primary authentication
+* Other services trust the token, never see credentials
+* Clear separation: authentication vs authorization
+* Works with any provider (Google, internal, etc.)
+
 ---
 
 ## OAuth
@@ -118,75 +141,60 @@ timeline
     2023 : Google Identity Services mainstream adoption
 ```
 
+
 ---
 
-### Authentication vs Authorization
-* **Pedantic view:** [OAuth is authorization](https://oauth.net/articles/authentication/), not authentication
-* OAuth tells you what a user **can do**, not **who they are**
-* That's technically [OpenID Connect](https://openid.net/connect/)'s job (built on OAuth)
-* **Reality:** OAuth + OIDC = de facto authentication standard
-* Most implementations use both together
+### OAuth Use Cases
+
+* **Authentication offloading (95% of cases):**
+  - United Airlines doesn't want your password
+  - United just wants Google to confirm "this is really bob@gmail.com"
+  - No authorization needed, just identity
+* **Actual authorization (niche):**
+  - App needs to access user's Google Drive folders
+  - App posts tweets on user's behalf
+  - Requires delegated permissions
 
 ---
 
 ### OAuth Complaints
-
-* You don't need cryptography expertise to understand bcrypt + salt + pepper
-* But OAuth? That's a **trivia contest** across [many RFCs](https://oauth.net/specs/)
-* Google, Microsoft, Twitter implement OAuth differently
-* Constantly evolving best practices (OAuth 2.0 → 2.1, new PKCE requirements)
-* Easy to misconfigure securely
-* **Trade-off:** Still better than rolling your own password system
-
----
-
-### OAuth 2.0 Authorization Code Flow
-
-<div style="transform: scale(1.25); transform-origin: top center; margin-left: 8em;">
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant SPA as Your SPA
-    participant Provider as Google/Auth0
-    participant API as Your API
-    
-    User->>SPA: Click "Sign in with Google"
-    SPA->>Provider: Redirect to authorization endpoint
-    Provider->>User: Show consent screen
-    User->>Provider: Grant permission
-    Provider->>SPA: Redirect with authorization code
-    SPA->>Provider: Exchange code for tokens
-    Provider->>SPA: Access token + ID token
-    SPA->>API: Request with Bearer token
-    API->>SPA: Protected resource
-```
-</div>
+{/* TODO: Add these links:
+- [Still hard in 2025](https://nango.dev/blog/why-is-oauth-still-hard) */}
+* **Super complicated.** 17 [RFCs](https://oauth.net/specs/) for OAuth 2.0 alone.
+* **Implementations vary.** From the [spec](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-30#section-1.8): "this specification is likely to produce a wide range of non-interoperable implementations."
+* **Evolving best practices.** e.g. OAuth 2.0 → 2.1, new PKCE requirements
+* **Trade-off:** 
+  - __Possibly__ better than rolling your own password system
+  - __Certainly__ better than keeping passwords in your database
 
 ---
 
-### Authorization Code Flow: Step by Step
+### [Former Lead Author](https://gist.github.com/nckroy/dd2d4dfc86f7d13045ad715377b6a48f)
+<figure class='bc-framed-image bc-figure-float' style='width:25%;height:auto;'>
+![Borges](./assets/Borges_1921.jpg)
+</figure>
 
-| Step | Description |
-|------|-------------|
-| **1. Authorization Request** | Redirect to provider with client_id, redirect_uri, scope |
-| **2. User Consent** | Provider authenticates user and shows permissions |
-| **3. Authorization Code** | Provider redirects back with short-lived code |
-| **4. Token Exchange** | Backend exchanges code for tokens (client_secret required) |
-| **5. Access Resources** | Use access token in Authorization header |
 
-[OAuth 2.0 Authorization Framework (RFC 6749)](https://datatracker.ietf.org/doc/html/rfc6749)
+> OAuth 2.0 is a bad protocol. WS-* bad. It is bad enough that I no longer want to be associated with it. 
+> It is the biggest professional disappointment of my career.
+
+Eran Hammer, former lead author of OAuth 2.0
 
 ---
 
-### Modern OAuth: [PKCE](https://datatracker.ietf.org/doc/html/rfc7636)
-* **P**roof **K**ey for **C**ode **E**xchange
-* Prevents authorization code interception attacks
-* Browser generates code_verifier (random string)
-* Sends code_challenge (hash of verifier) with auth request
-* Provider validates verifier matches challenge on token exchange
-* **Required** for SPAs and mobile apps
-* [Recommended for all OAuth clients](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics)
+### OAuth: Two Patterns
+
+| Traditional Redirect | Modern JavaScript |
+|---------------------|-------------------|
+| Full page redirect to provider | Popup or embedded UI |
+| Authorization code in URL | Token delivered via JavaScript |
+| Backend exchanges code | SPA receives token directly |
+| Better security (backend secret) | Better UX (no page reload) |
+
+* **Reality:** You'll use provider's library (Google Identity Services, Auth0 SDK, etc.)
+* **Both patterns** follow same high-level flow
+* **Key point:** OAuth gets you a token, your backend validates it
+
 
 ---
 
@@ -196,6 +204,37 @@ sequenceDiagram
 * Popup-based authorization (better UX)
 * Still OAuth 2.0 + OpenID Connect underneath
 * Similar patterns: Microsoft Identity Platform, Auth0 Universal Login
+
+---
+
+### SPA Authentication Pattern
+
+<div style="transform: scale(1.35); transform-origin: top center; margin-left: 8em;">
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant SPA as Your SPA
+    participant Backend as Your Backend
+    participant Google
+    
+    User->>Google: Sign in via provider library
+    Google->>SPA: Access token (JWT)
+    SPA->>Backend: POST /auth/google (token)
+    Backend->>Backend: Validate token signature
+    Backend->>SPA: Set httpOnly cookie
+    SPA->>Backend: Subsequent requests (cookie)
+    Backend->>SPA: Protected data
+```
+
+</div>
+
+---
+
+### Notes
+* Provider handles primary auth, your backend handles session
+* Backend validates JWT signature (no call to Google needed)
+* httpOnly cookie protects against XSS
 
 ---
 
@@ -242,29 +281,17 @@ export const authConfig: AuthConfig = {
 
 ### Token Exchange Pattern
 
-* SPA completes OAuth flow, receives Google's ID token
-* SPA sends Google token to **your API's** `/auth/google` endpoint
-* Your API validates Google token and issues **your own** JWT pair
-* SPA uses your tokens for all subsequent requests
-* **Why?** Decouple from provider, add custom claims, control expiration
-* Enables multiple auth methods (Google, Microsoft, local) with consistent tokens
-
-[Auth0: Token Exchange](https://auth0.com/docs/secure/tokens/token-exchange) | [OAuth 2.0 Token Exchange (RFC 8693)](https://datatracker.ietf.org/doc/html/rfc8693)
+* **Step 1:** SPA completes OAuth, receives provider's token (Google, Microsoft, etc.)
+* **Step 2:** SPA sends provider token to your backend
+* **Step 3:** Backend validates provider token (checks signature + claims)
+* **Step 4:** Backend issues your own JWT + refresh token pair
+* **Step 5:** Backend sets httpOnly cookies (or returns tokens for mobile)
+* **Why?** Decouple from provider, add custom claims, unified token format across providers
 
 ---
 
-### OAuth Security Gotchas
 
-* Validate redirect_uri against whitelist (prevent [open redirects](https://cwe.mitre.org/data/definitions/601.html))
-* Always use **state** parameter (CSRF protection)
-* Validate JWT signatures with provider's public keys
-* Check token expiration and audience claims
-* **HTTPS only** in production
-* Avoid storing tokens in localStorage if possible
 
-[OWASP OAuth 2.0 Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html)
-
----
 
 ## JWT & Refresh Tokens
 
@@ -290,6 +317,19 @@ export const authConfig: AuthConfig = {
 
 ---
 
+### JWT: The Driver's License
+
+* **Like a driver's license:**
+  - Issued by trusted authority (state/auth server)
+  - Contains information (name, DOB, photo / userId, roles, expiration)
+  - Bouncer validates authenticity without calling DMV
+* **Unlike a credit card:**
+  - Credit card is just a number (opaque token)
+  - POS system must call issuer to check balance
+  - Enables revocation but requires lookup
+
+---
+
 ### Where Do I Get a Token?
 * On primary authentication
 * On refresh
@@ -299,7 +339,7 @@ export const authConfig: AuthConfig = {
 
 ---
 
-### Why Both Tokens?
+### Why Two Tokens?
 
 * **Security trade-off:** Short-lived access tokens limit blast radius
 * Stolen access token expires quickly (minutes/hours)
@@ -345,7 +385,7 @@ sequenceDiagram
 ---
 
 ### Request Anatomy (I)
-```http {5} title='Request with Access Token'
+```http {1,5} title='Request with Access Token'
 GET /api/v1/deliveries/my-deliveries?skip=0&take=4 HTTP/1.1
 Accept: application/json, text/plain, */*
 Accept-Encoding: gzip, deflate, br, zstd
@@ -361,7 +401,7 @@ Connection: keep-alive
 ---
 
 ### Request Anatomy (II)
-```http {9} title='Request with Refresh Token'
+```http {1,9} title='Request with Refresh Token'
 POST /api/v1/auth/refresh HTTP/1.1
 Accept: application/json, text/plain, */*
 Accept-Encoding: gzip, deflate, br, zstd
@@ -384,11 +424,11 @@ Content-Type: application/json
 ### Access Tokens vs Refresh Tokens
 
 | | Access Token | Refresh Token |
-|---|--------------|---------------|
+|---:|:--------------|:---------------|
 | **Lifetime** | Minutes to hours | Days to months |
 | **Format** | Usually JWT (self-contained) | Opaque string |
 | **Usage** | Every API request | Token refresh only |
-| **Storage** | Memory or httpOnly cookie | Backend database |
+| **API Storage** | Stateless | Backend database |
 | **Revocation** | Difficult (stateless) | Easy (database lookup) |
 
 
@@ -453,18 +493,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 ---
 
-### Token Storage
+### Token Storage (Client-Side)
 
-| Storage Location | Security | Persistence | XSS Risk | CSRF Risk |
-|------------------|:-----------|:------------|:---------|:----------|
+| Location | Security | Persistence | XSS Risk | CSRF Risk |
+|------------------:|:-----------|:------------|:---------|:----------|
 | **Memory only** | 🟢 High | Session only | 🟢 Low | 🟢 Low |
 | **localStorage** | 🔴 Low | Persistent | 🔴 High | 🟢 Low |
 | **sessionStorage** | 🟡 Medium | Tab-scoped | 🔴 High | 🟢 Low |
 | **HttpOnly Cookie** | 🟢 High | Persistent | 🟢 Low | 🟡 Medium |
-
-* Access tokens: short-lived (minutes to hours)
-* Refresh tokens: long-lived (days to months), handle with care
-* [OWASP Token Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html#token-storage-on-client-side)
 
 ---
 
