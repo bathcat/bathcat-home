@@ -456,11 +456,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 ### Token Storage
 
 | Storage Location | Security | Persistence | XSS Risk | CSRF Risk |
-|------------------|----------|-------------|----------|-----------|
-| **Memory only** | High | Session only | Low | Low |
-| **localStorage** | Low | Persistent | **High** | Low |
-| **sessionStorage** | Medium | Tab-scoped | **High** | Low |
-| **HttpOnly Cookie** | High | Persistent | Low | **Medium** |
+|------------------|:-----------|:------------|:---------|:----------|
+| **Memory only** | 🟢 High | Session only | 🟢 Low | 🟢 Low |
+| **localStorage** | 🔴 Low | Persistent | 🔴 High | 🟢 Low |
+| **sessionStorage** | 🟡 Medium | Tab-scoped | 🔴 High | 🟢 Low |
+| **HttpOnly Cookie** | 🟢 High | Persistent | 🟢 Low | 🟡 Medium |
 
 * Access tokens: short-lived (minutes to hours)
 * Refresh tokens: long-lived (days to months), handle with care
