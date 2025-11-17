@@ -1,11 +1,11 @@
 ---
-title: "Guiding Principles"
+title: "Principles"
 description: "Core security principles and mindset for building secure web applications. Learn defense-in-depth, security taxonomies, and fundamental rules that prevent common vulnerabilities."
 status: 'Live'
 flavor: 'Deck'
 ---
 
-# Guiding Principles
+# Principles
 
 ---
 
@@ -13,16 +13,16 @@ flavor: 'Deck'
 By the end of this deck, you should be able to answer--
 1. What are 2 of the "basicest" rules for web apps?
 2. Why is the **OWASP Top 10** more useful for executives than developers?
-3. Name 2 components of a **defense-in-depth** security strategy.
+3. Name 3 categories in our **workshop security taxonomy**.
 
 
 ---
 
 ### Roadmap
 1. Overview
-2. Mindset
-3. Basicist Rules for Web Apps
-4. Taxonomies
+2. Taxonomies
+3. Mindset
+4. Core Rules
 
 ---
 
@@ -146,82 +146,32 @@ Etc, etc, etc.
 
 ---
 
-### Taxonomy: What Attackers Want
+### Taxonomy: Workshop Focus
 
 <figure class='bc-figure-hero-diagram'>
 
 ```mermaid
 mindmap
-  root((Attacker Goals))
-    Data Theft
-      SQL injection
-      Path traversal
-      IDOR attacks
-      API enumeration
-    Account Takeover
-      Session hijacking
-      CSRF
-      Weak passwords
-      Credential stuffing
-    System Control
-      Command injection
-      Deserialization
-      File upload exploits
-      SSRF
-    Disruption
-      DoS and DDoS
-      Resource exhaustion
-      ReDoS
-      Database locks
-    Reconnaissance
-      Information disclosure
-      Error messages
-      Exposed endpoints
-      Version fingerprinting
-```
-</figure>
----
-
-### Taxonomy: Who Gets Yelled At
-
-<figure class='bc-figure-hero-diagram'>
-
-```mermaid
-mindmap
-  root((Security Failures))
-    Architect
-      Passwords in plain text
-      No encryption at rest
-      Homebrew crypto
-      Missing authentication
-    Engineer
-      SQL injection
-      XSS vulnerabilities
-      Path traversal
-      CSRF holes
-    DevOps
-      Config files in production
-      Default credentials
-      Debug mode enabled
-      Secrets in source control
-    Operations
-      Ignore failed login alerts
-      Miss SQL injection patterns
-      No rate limiting response
-      Unpatched dependencies
-
+  root((Security Vulnerabilities))
+    Input Trust Violations
+      SQL Injection
+      XSS
+      Path Traversal
+      Mass Assignment
+    Access Control
+      Broken Authentication
+      Broken Authorization
+      IDOR
+    Configuration Issues
+      CORS and CSP
+      Information Disclosure
+      Missing Security Headers
+    Supply Chain
+      Vulnerable Dependencies
+      Dependency Scanning
 ```
 </figure>
 
----
-
-### Use the Right Tool
-* **In threat modeling**: What attackers want
-* **In incident response**: Who gets yelled at
-* **In compliance meetings**: OWASP Top 10
-* **In code review**: Technical mechanisms (SQL injection, XSS)
-* **In architecture review**: Design patterns and principles
-* Don't let any single taxonomy constrain your thinking
 
 ---
 
@@ -293,56 +243,11 @@ mindmap
 
 ---
 
-### Security is a Feature
-* It's just for a long time, no one was very articulate
-* They just say, it should 'be secure'
-* Think about your risk profile and risk tolerance
-
-
----
-
-### Security Needs Tickets
-* If security is a feature, it needs:
-  - Requirements
-  - Tracking
-  - Prioritization
-  - Definition of done
-* Checklists map naturally to Jira tickets
-* Makes security work visible and measurable
-* Easier to allocate time and resources
-
----
-
-### Alignment is Hard
-#### [Mark Magliocco:](https://blog.sonatype.com/beyond-npm-audit)
-<br/>
-
-> Agreement is easy... alignment is hard. When I ask my wife if she wants dinner,
-> she quickly says okay-- the trouble starts when I ask where we should go.
-
-
----
-
-### Security Should be Redundant
-<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
-![Motte and Bailey](./assets/motte_and_bailey.jpg)
-</figure>
-
-
-* Defence in depth
-* Like a [Motte-and-bailey castle](https://en.wikipedia.org/wiki/Motte-and-bailey_castle)
-* Example: 
-  * Secure your identity database
-  * Hash and salt passwords
-
-
----
-
-### Stand on the shoulders of giants
-* Don't roll your own stuff
-* Think hard before adopting non-mainstream stuff (e.g. Choose Vue over Elm (or whatever))
-* Avoid dependencies. If you don't need dancing bunnies, or whatever, maybe roll your own.
-* Follow best-practices
+### Stand on the Shoulders of Giants
+* Use established frameworks and libraries
+* Avoid reinventing security primitives
+* Choose mainstream tools with active communities
+* Balance dependencies: avoid them when simple, use them when complex
 
 
 
@@ -368,43 +273,27 @@ mindmap
 
 ---
 
-### Think about __Trust__
-* Can you trust the integrity an HTTP request?
-* Answer: No
-* What about internally-facing services?
-* Also: No
-
+### Rule 1: Treat external data with suspicion
+* User input, API responses, file uploads - all untrusted
+* Validate, sanitize, and encode before use
+* Never concatenate untrusted data into code (SQL, HTML, shell commands)
+* Use type systems to distinguish trusted from untrusted data
 
 ---
 
 ### Don't Mix Streams
-
-* An entire class of vulnerabilities comes from mixing superficially similar text-like data:
-  - SQL Injection: mixing SQL code with user data
-  - XSS: mixing HTML/JavaScript with user content
-  - Command Injection: mixing shell commands with parameters
-  - Path Traversal: mixing file paths with user input
-  - LDAP Injection: mixing LDAP queries with user data
-* Analogy: Tap water and flood water look similar, but you don't want them in the same glass
+* SQL Injection: mixing SQL code with user data
+* XSS: mixing HTML/JavaScript with user content
+* Path Traversal: mixing file paths with user input
+* Command Injection: mixing shell commands with parameters
+* Solution: Parameterized queries, template engines, value objects
 
 ---
 
-### The String Problem
-* Everything looks like a string
-* But a file path is not semantically the same as a user bio
-* And HTML is not semantically the same as plain text
-* Treating them all as strings invites confusion
-* This confusion creates vulnerabilities
-
----
-
-### Recipe: Value Objects & Branded Types
-* Primitive obsession: treating everything as strings
-* Problem: string concatenation works on anything
-  - Concatenate two dates? Meaningless
-  - Concatenate file paths? Path traversal
-  - Concatenate HTML fragments? XSS
-* Solution: Make the type system help you
+### Make Types Help You
+* Use [branded types](https://github.com/SteveDunn/Vogen) or value objects for sensitive data
+* `SanitizedString` vs `string` prevents accidental misuse
+* [Trusted Types](https://web.dev/trusted-types/) in browser prevent XSS
 * If semantically different, make them different types
 
 ---
@@ -429,91 +318,45 @@ public sealed record UserProfile
 }
 ```
 
-Now you can't accidentally mix sanitized and unsanitized strings
 
 ---
 
-### Trusted Types in the Browser
-* W3C standard applying same principle to JavaScript
-* Prevents strings from being used as HTML/URLs/Scripts
-* Requires explicit conversion through sanitization
-* Forces you to be intentional about trust boundaries
-
-
-
----
-
-### Validate Input
-> **Input validation** is the process of ensuring input data is consistent with application expectations. Data that falls outside of an expected set of values can cause our application to yield unexpected results, for example violating business logic, triggering faults, and even allowing an attacker to take control of resources or the application itself. 
-
+### Rule 2: Minimize surface area and blast radius
+* **Surface Area**: What can be attacked
+  - Remove unused endpoints and features
+  - Principle of least privilege
+* **Blast Radius**: Damage when something fails
+  - Database connections with minimal permissions
+  - Network segmentation
+  - Isolate sensitive operations
 
 ---
 
-### Never Trust Input
-* When building a client, assume the server is compromised
-* Building an API, assume you're talking to a hacker
-
-
----
-
-### Bad Input Validation Enables
-* Cross Site Scripting
-* SQL Injection
-* Path Traversal
-
-
----
-
-### Encode HTML
-* HTML is a very, very permissive format
-* Browsers try their best to render the content, even if it is malformed
-
-
----
-
-### Bind Parameters for Database Queries
-* **Don't** concatenate strings
-* Use a prepared statement
-  e.g. [SqlCommand](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand)
-* Better yet [EF Core](https://docs.microsoft.com/en-us/ef/core/)
-
-
----
-
-### Protect Data in Transit
-* SSL Everywhere
-
-
----
-
-### Follow Checklists
-* OWASP Cheat Sheet Series: cheatsheetseries.owasp.org
-* Translates directly to actionable work items
-* Each checklist item becomes a ticket
+### Rule 3: Follow established checklists
+* [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
+* Translate checklist items directly into tickets
 * Makes security auditable and trackable
-
-
----
-
-### Security Theater
-* Some practices have questionable efficacy
-  - Password expiration policies
-  - Complex PIN requirements
-  - Security questions
-* But they're still useful:
-  - Might actually help in ways we don't understand
-  - Industry standard for responsible organizations
-  - Hard to defend deviation during a breach
+* Industry standards provide cover during incidents
 
 ---
 
-### The Rain Dance Problem
-* Even when people suspect rain dances are ineffectual
-* The person in charge can't cancel them
-* Because droughts actually happen
-* And when the drought comes, it's already a hard conversation
-* Without having to explain why you stopped doing what everyone else does
-* Do the industry-standard minimum, then add real security on top
+### Rule 4: Build redundant protections
+<figure class='bc-figure-float' style='width:25%;height:auto;bottom:0;'>
+![Motte and Bailey](./assets/motte_and_bailey.jpg)
+</figure>
+
+* Defense in depth like a [Motte-and-bailey castle](https://en.wikipedia.org/wiki/Motte-and-bailey_castle)
+* Secure the database AND hash passwords
+* Validate client-side AND server-side
+* Single failures rarely catastrophic
+
+---
+
+### Rule 5: Treat security as a feature
+* Requires requirements, tracking, and prioritization
+* Define risk profile and risk tolerance
+* Security work needs tickets like any other feature
+* Industry-standard minimums plus real protections
 
 
 
@@ -538,6 +381,6 @@ Now you can't accidentally mix sanitized and unsanitized strings
 ---
 
 ### Recap
-1. What are 2 of the "basicest" rules for web apps?
+1. What are the 5 **core security rules** for web applications?
 2. Why is the **OWASP Top 10** more useful for executives than developers?
-3. Name 2 components of a **defense-in-depth** security strategy.
+3. Name 3 categories in our **workshop security taxonomy**.
