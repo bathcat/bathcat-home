@@ -309,8 +309,7 @@ public partial struct SanitizedString{}
 ```
 
 ```csharp title='UserProfile.cs'
-public sealed record UserProfile
-{
+public sealed record UserProfile{
   public Guid Id { get; init; }
   public string Name { get; init; }
   public string Email { get; init; }
@@ -384,3 +383,20 @@ public sealed record UserProfile
 1. What are the 5 **core security rules** for web applications?
 2. Why is the **OWASP Top 10** more useful for executives than developers?
 3. Name 3 categories in our **workshop security taxonomy**.
+
+---
+
+## Lab 05: Pentest
+
+---
+
+### Setup & Casting
+
+* [Let's red team](https://github.com/bathcat/mango-bay/tree/main/docs/labs/05.pentest)
+* Goals (Red team)
+  1. Break the app
+  1. Find vulnerabilities
+  1. Report them
+* Goals (Seminar)
+  1. Explore the app
+  2. Understand architecture
